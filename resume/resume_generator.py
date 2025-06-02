@@ -8,7 +8,7 @@ from weasyprint import HTML
 
 
 # Initialize OpenAI client
-client = OpenAI(api_key='REMOVED')
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 def generate_resume(name, phone, email, job_title, experience):
