@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Job Listings</h2>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <input type="text" class="form-control" name="keyword" placeholder="Keyword (e.g. Python Developer)" value="{{ keyword }}">
+        </div>
+        <div class="col-md-5">
+            <input type="text" class="form-control" name="location" placeholder="Location (e.g. New York)" value="{{ location }}">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </form>
+    {% if jobs %}
+        <div class="list-group">
+            {% for job in jobs %}
+            <a href="{{ job.url }}" class="list-group-item list-group-item-action" target="_blank">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ job.title }}</h5>
+                    <small>{{ job.location }}</small>
+                </div>
+                <p class="mb-1">{{ job.company }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No job listings found. Try a different search.</p>
+    {% endif %}
+</div>
+{% endblock %}

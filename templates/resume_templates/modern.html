@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 40px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            border-bottom: 2px solid #3498db;
+            margin-bottom: 20px;
+        }
+        .name {
+            font-size: 28px;
+            color: #2c3e50;
+        }
+        .contact {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 20px;
+        }
+        p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+            <div class="header">
+                <div class="name">{{name}}</div>
+                <div class="contact">{{email}} | {{phone}}</div>
+            </div>
+            <div class="section">
+                <h2>Resume Details</h2>
+                <p>{{ resume.content.replace('\n', '<br>') | safe }}</p>
+
+            </div>
+            <form action="{{ url_for('payment') }}" method="GET">
+                <button type="submit" class="btn btn-primary">Download PDF</button>
+            </form>
+        </body>
+</html>

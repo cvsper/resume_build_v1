@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Choose Resume Design{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="text-center mb-4">Choose a Resume Design</h2>
+  <div class="row">
+    
+    <!-- Thumbnails -->
+    <div class="col-md-6 mb-4">
+      <form method="POST" id="templateForm">
+        <div class="row g-3">
+          {% set templates = [
+            {'name': 'classic', 'image': url_for('static', filename='img/thumbnails/classic.png')},
+            {'name': 'modern', 'image': url_for('static', filename='img/thumbnails/modern.png')},
+            {'name': 'elegant', 'image': url_for('static', filename='img/thumbnails/elegant.png')}
+          ] %}
+          {% for template in templates %}
+          <div class="col-6">
+            <label class="d-block text-center">
+              <input type="radio" name="template" value="{{ template.name }}" hidden onchange="loadPreview(this.value)">
+              <img src="{{ template.image }}" alt="{{ template.name }}"
+                   class="img-thumbnail template-thumbnail">
+              <div class="mt-1">{{ template.name | capitalize }}</div>
+            </label>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary px-4 py-2">Preview</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Live Preview -->
+    <div class="col-md-6">
+      <h5 class="text-center">Live Preview</h5>
+      <div id="previewPane" class="preview-box d-flex align-items-center justify-content-center">
+        <em>Select a template to preview it here</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .template-thumbnail {
+    width: 100%;
+    border: 3px solid transparent;
+    border-radius: 12px;
+    transition: transform 0.2s, border 0.2s;
+    cursor: pointer;
+  }
+
+  input[type="radio"]:checked + .template-thumbnail {
+    transform: scale(1.05);
+    border-color: #007bff;
+  }
+
+  .preview-box {
+    height: 500px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+    padding: 1rem;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  @media (max-width: 768px) {
+    .preview-box {
+      height: 350px;
+    }
+  }
+</style>
+
+<script>
+  function loadPreview(templateName) {
+    const previewPane = document.getElementById('previewPane');
+    previewPane.innerHTML = '<div class="text-center w-100"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+    fetch(`/preview-template/${templateName}`)
+      .then(res => res.ok ? res.text() : Promise.reject('Failed to load'))
+      .then(html => {
+        previewPane.innerHTML = html;
+      })
+      .catch(() => {
+        previewPane.innerHTML = '<p class="text-danger">Error loading preview.</p>';
+      });
+  }
+</script>
+{% endblock %}

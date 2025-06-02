@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Link Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8d7da; color: #721c24; padding: 2em; }
+        .container { background: #fff; border: 1px solid #f5c6cb; border-radius: 8px; padding: 2em; max-width: 600px; margin: 2em auto; }
+        h1 { color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Something went wrong!</h1>
+        <p>We couldn't generate a link you tried to access. This usually means a feature is temporarily unavailable or a route is missing.</p>
+        <p><strong>Error details:</strong></p>
+        <pre>{{ error_message }}</pre>
+        <a href="{{ url_for('dashboard') }}">Return to Dashboard</a>
+    </div>
+</body>
+</html>

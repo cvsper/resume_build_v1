@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Interview Q&A</title>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f7fafd; font-family: 'Inter', Arial, sans-serif; }
+        .sidebar { min-height: 100vh; background: #fff; box-shadow: 2px 0 16px rgba(0,0,0,0.04); padding: 32px 0 0 0; position: fixed; left: 0; top: 0; width: 240px; z-index: 100; }
+        .sidebar .nav-link { color: #222; font-weight: 500; font-size: 1.1rem; padding: 16px 32px; border-radius: 0 24px 24px 0; margin-bottom: 8px; transition: background 0.2s, color 0.2s; }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #e9f5ff; color: #1976d2; }
+        .sidebar .sidebar-header { text-align: center; margin-bottom: 32px; }
+        .sidebar .sidebar-header img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; }
+        .sidebar .sidebar-header h4 { font-size: 1.2rem; font-weight: 600; }
+        .main-content { margin-left: 240px; padding: 48px 32px 32px 32px; }
+        @media (max-width: 991px) { .sidebar { width: 100%; min-height: auto; position: static; box-shadow: none; padding: 0; } .main-content { margin-left: 0; padding: 24px 8px; } }
+        #fade-wrapper { opacity: 1; transition: opacity 0.5s; }
+        .qa-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+        }
+        .qa-card .card-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .qa-card .card-body {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+        .btn-primary {
+            background-color: #1976d2;
+            border-color: #1976d2;
+        }
+        .btn-primary:hover {
+            background-color: #155a9c;
+            border-color: #155a9c;
+        }
+        .btn-danger {
+            background-color: #d32f2f;
+            border-color: #d32f2f;
+        }
+        .btn-danger:hover {
+            background-color: #9a2323;
+            border-color: #9a2323;
+        }
+    </style>
+</head>
+<body>
+<div id="fade-wrapper">
+    <div class="sidebar d-flex flex-column">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Account Picture">
+            <h4>{{ current_user.name or current_user.email }}</h4>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-house"></i> Dashboard</a>
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}"><i class="bi bi-file-earmark-person"></i> Resumes</a>
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}"><i class="bi bi-envelope-paper"></i> Cover Letters</a>
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}"><i class="bi bi-question-circle"></i> Interview Q&A</a>
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}"><i class="bi bi-briefcase"></i> Jobs</a>
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}"><i class="bi bi-person"></i> My Account</a>
+            <a class="nav-link mt-4 text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </div>
+    <div class="main-content">
+        <div class="text-center mb-5">
+            <h2 class="display-5">Interview Questions & Answers</h2>
+            <p class="text-muted">Generate and review tailored Q&A for your upcoming interviews.</p>
+        </div>
+        <form method="POST" action="{{ url_for('generate_interview_qa_route') }}" class="row g-3 mb-4">
+            <div class="col-md-8">
+                <input type="text" name="job_title" class="form-control" placeholder="Enter Job Title" required>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-lightbulb"></i> Generate Q&A</button>
+            </div>
+        </form>
+        {% if interview_qa_list %}
+            {% for entry in interview_qa_list %}
+            <div class="card qa-card mb-4">
+                <div class="card-header">Interview for {{ entry.job_title }}</div>
+                <div class="card-body">
+                    <pre>{{ entry.qa }}</pre>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="text-center">
+                <a href="{{ url_for('clear_interview_qa') }}" class="btn btn-danger mt-3"><i class="bi bi-x-circle"></i> Clear All Q&A</a>
+            </div>
+        {% else %}
+            <p class="text-center text-muted">No interview Q&A generated yet.</p>
+        {% endif %}
+    </div>
+</div>
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fade-wrapper').style.opacity = 0;
+    setTimeout(function() {
+        document.getElementById('fade-wrapper').style.transition = 'opacity 0.5s';
+        document.getElementById('fade-wrapper').style.opacity = 1;
+    }, 50);
+});
+Array.from(document.querySelectorAll('.nav-link')).forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        if (link.href && !link.classList.contains('active')) {
+            e.preventDefault();
+            document.getElementById('fade-wrapper').style.opacity = 0;
+            setTimeout(function() {
+                window.location = link.href;
+            }, 400);
+        }
+    });
+});
+</script>
+</body>
+</html>

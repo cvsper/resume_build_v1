@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f7fafd;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: #fff;
+            box-shadow: 2px 0 16px rgba(0,0,0,0.04);
+            padding: 32px 0 0 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            z-index: 100;
+        }
+        .sidebar .nav-link {
+            color: #222;
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 16px 32px;
+            border-radius: 0 24px 24px 0;
+            margin-bottom: 8px;
+            transition: background 0.2s, color 0.2s, opacity 0.4s;
+            opacity: 1;
+        }
+        .sidebar .nav-link:hover {
+            opacity: 0.6;
+        }
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            background: #e9f5ff;
+            color: #1976d2;
+        }
+        .sidebar .sidebar-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .sidebar .sidebar-header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        .sidebar .sidebar-header h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 48px 32px 32px 32px;
+        }
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: static;
+                box-shadow: none;
+                padding: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 24px 8px;
+            }
+        }
+        #fade-wrapper { opacity: 1; transition: opacity 0.5s; }
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            padding: 32px;
+        }
+        .dashboard-card {
+            flex: 1 1 calc(33.333% - 24px);
+            max-width: calc(33.333% - 24px);
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+        .dashboard-card h5 {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            color: #1976d2;
+        }
+        .dashboard-card p {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        .dashboard-card a {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            color: #fff;
+            background: #1976d2;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .dashboard-card a:hover {
+            background: #145a9e;
+        }
+        @media (max-width: 768px) {
+            .dashboard-card {
+                flex: 1 1 calc(100% - 24px);
+                max-width: calc(100% - 24px);
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="fade-wrapper">
+    <div class="sidebar d-flex flex-column">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture">
+            <h4>{{ current_user.name or current_user.email }}</h4>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-house"></i> Dashboard</a>
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}"><i class="bi bi-file-earmark-person"></i> Resumes</a>
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}"><i class="bi bi-envelope-paper"></i> Cover Letters</a>
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}"><i class="bi bi-question-circle"></i> Interview Q&amp;A</a>
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}"><i class="bi bi-briefcase"></i> Jobs</a>
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}"><i class="bi bi-person"></i> My Account</a>
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        </nav>
+    </div>
+    <div class="main-content">
+        <h2 class="mb-4">Welcome, {{ current_user.name or current_user.email }}!</h2>
+        <p class="lead">This is your dashboard overview. Use the sidebar to manage your resumes, cover letters, interview Q&amp;A, and account.</p>
+        <div class="dashboard-container">
+            <div class="dashboard-card">
+                <h5><i class="bi bi-file-earmark-person"></i> Resumes</h5>
+                <p>Create, edit, and download your resumes.</p>
+                <a href="{{ url_for('resumes') }}"><i class="bi bi-arrow-right"></i> Go to Resumes</a>
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-envelope-paper"></i> Cover Letters</h5>
+                <p>Manage your cover letters for job applications.</p>
+                <a href="{{ url_for('cover_letters') }}"><i class="bi bi-arrow-right"></i> Go to Cover Letters</a>
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-question-circle"></i> Interview Q&amp;A</h5>
+                <p>Generate and review interview questions and answers.</p>
+                <a href="{{ url_for('interview_qa') }}"><i class="bi bi-arrow-right"></i> Go to Interview Q&amp;A</a>
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-briefcase"></i> Jobs</h5>
+                <p>Browse and search for jobs from top sources.</p>
+                <a href="{{ url_for('jobs') }}"><i class="bi bi-arrow-right"></i> Go to Jobs</a>
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-upload"></i> Upload Resume</h5>
+                <p>Upload an existing resume to edit and customize it.</p>
+                <form method="POST" action="{{ url_for('upload_resume') }}" enctype="multipart/form-data">
+                    <input type="file" name="resume_file" class="form-control mb-3" required>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-upload"></i> Upload</button>
+                </form>
+            </div>
+            <div class="dashboard-card" style="background: linear-gradient(135deg, #e9f5ff 60%, #fff 100%); box-shadow: 0 6px 24px rgba(25, 118, 210, 0.08); border: 1px solid #d0e6fa;">
+                <h5 style="color: #145a9e;"><i class="bi bi-person-circle" style="font-size: 2rem;"></i> My Account</h5>
+                <p style="font-size: 1.05rem; color: #333;">Edit your account details, change your profile picture, and update your preferences.</p>
+                <a href="{{ url_for('my_account') }}" class="btn btn-outline-primary px-4 py-2 mt-2" style="font-weight: 600; border-width: 2px; border-radius: 8px;">Go to My Account</a>
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-linkedin"></i> Import LinkedIn</h5>
+                <p>Import your LinkedIn profile to create resumes and cover letters.</p>
+                {% if import_linkedin is defined or (has_endpoint and has_endpoint('import_linkedin')) %}
+                    <a href="{{ url_for('import_linkedin') }}"><i class="bi bi-arrow-right"></i> Import LinkedIn</a>
+                {% else %}
+                    <span class="text-muted">LinkedIn import is currently unavailable.</span>
+                {% endif %}
+            </div>
+            <div class="dashboard-card">
+                <h5><i class="bi bi-graph-up"></i> Resume Analyst</h5>
+                <p>Analyze your resume for ATS compatibility and improvements.</p>
+                <span class="text-muted">Go to Resumes to analyze your documents.</span>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// Fade in on page load
+window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fade-wrapper').style.opacity = 0;
+    setTimeout(function() {
+        document.getElementById('fade-wrapper').style.transition = 'opacity 0.5s';
+        document.getElementById('fade-wrapper').style.opacity = 1;
+    }, 50);
+});
+// Fade out on navigation
+Array.from(document.querySelectorAll('.nav-link')).forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        if (link.href && !link.classList.contains('active')) {
+            e.preventDefault();
+            document.getElementById('fade-wrapper').style.opacity = 0;
+            setTimeout(function() {
+                window.location = link.href;
+            }, 400);
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Preview</title>
+    <style>
+        iframe {
+            width: 100%;
+            height: 90vh;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Preview</h1>
+    <iframe src="{{ pdf_url }}"></iframe>
+    <form action="{{ url_for('create_checkout_session') }}" method="POST">
+    <button type="submit" class="btn btn-success">Pay & Download PDF ($4.99)</button>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Generate Resume{% endblock %}
+{% block content %}
+<!-- Load Lottie Player -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.1/lottie.min.js"></script>
+
+<style>
+    #loading-screen {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        z-index: 9999;
+        text-align: center;
+        padding-top: 20%;
+        font-size: 1.5em;
+        color: #333;
+    }
+</style>
+
+<div id="loading-screen">
+    <div id="lottie-loader" style="width: 150px; height: 150px; margin: 0 auto;"></div>
+    <p>Generating your resume. Please wait...</p>
+</div>
+
+<div class="container mt-5">
+  <h2>Generate Your Resume</h2>
+  <form method="POST" onsubmit="return delayedSubmit()">
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-control" name="name" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Phone number</label>
+      <input type="text" class="form-control" name="phone" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email address</label>
+      <input type="text" class="form-control" name="email" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Job Title</label>
+      <input type="text" class="form-control" name="job_title" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Your Experience</label>
+      <textarea class="form-control" name="experience" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate</button>
+  </form>
+</div>
+
+<script>
+    function delayedSubmit() {
+        document.getElementById('loading-screen').style.display = 'block';
+
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-loader'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: "{{ url_for('static', filename='img/load.json') }}"
+        });
+
+        setTimeout(() => {
+            document.getElementById('resumeForm').submit(); // Make sure the ID matches the <form>
+        }, 500);
+
+        return true; // prevent immediate navigation
+    }
+</script>
+{% endblock %}
