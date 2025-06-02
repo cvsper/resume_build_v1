@@ -1,7 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash
 from resume.resume_generator import generate_resume, generate_cover_letter, generate_interview_qa
-import os
-from dotenv import load_dotenv
 import tempfile
 from weasyprint import HTML
 import stripe
@@ -19,7 +21,7 @@ from werkzeug.routing import BuildError
 
 
 
-load_dotenv()
+
 
 ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID")
 ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY")
