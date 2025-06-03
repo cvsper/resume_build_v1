@@ -53,7 +53,7 @@
             <div class="dashboard-card">
                 <h5>{{ job.title }}</h5>
                 <p>{{ job.company }} - {{ job.location }}</p>
-                <a href="{{ url_for('job_detail', id=job.id) }}"><i class="bi bi-arrow-right"></i> View</a>
+                <a href="{{ job.url }}" target="_blank"><i class="bi bi-arrow-right"></i> View</a>
             </div>
             {% endfor %}
         </div>
