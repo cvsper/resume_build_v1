@@ -712,3 +712,54 @@ def import_linkedin():
 @app.errorhandler(BuildError)
 def handle_build_error(e):
     return render_template('build_error.html', error_message=str(e)), 500
+
+@app.route('/resume-creation-menu')
+@login_required
+def resume_creation_menu():
+    return render_template('resume_creation_menu.html', current_user=current_user, active_page='resumes')
+
+@app.route('/create-from-scratch')
+@login_required
+def create_from_scratch():
+    return render_template('create_resume.html', current_user=current_user, active_page='resumes')
+
+@app.route('/upload-existing-resume', methods=['GET', 'POST'])
+@login_required
+def upload_existing_resume():
+    if request.method == 'POST':
+        if 'resume_file' not in request.files:
+            flash('No file selected', 'danger')
+            return redirect(url_for('upload_existing_resume'))
+        
+        file = request.files['resume_file']
+        if file.filename == '':
+            flash('No file selected', 'danger')
+            return redirect(url_for('upload_existing_resume'))
+        
+        if file and file.filename.lower().endswith(('.pdf', '.doc', '.docx')):
+            try:
+                # For now, create a basic resume entry and redirect to edit
+                title = f"Uploaded Resume - {current_user.name or current_user.email}"
+                content = "Please edit this resume with your information."
+                template = 'classic'
+                
+                new_resume = Resume(user_id=current_user.id, title=title, content=content, template=template)
+                db.session.add(new_resume)
+                db.session.commit()
+                
+                # Generate basic thumbnail
+                rendered_html = render_template(f"resume_templates/{template}.html", resume=new_resume)
+                try:
+                    generate_resume_thumbnail(new_resume.id, rendered_html)
+                except Exception as e:
+                    logging.error(f'Thumbnail generation failed: {e}')
+                
+                flash('Resume uploaded successfully! Please edit it with your information.', 'success')
+                return redirect(url_for('edit_resume', resume_id=new_resume.id))
+            except Exception as e:
+                flash('Error processing uploaded file. Please try again.', 'danger')
+                return redirect(url_for('upload_existing_resume'))
+        else:
+            flash('Please upload a PDF, DOC, or DOCX file.', 'danger')
+    
+    return render_template('upload_existing_resume.html', current_user=current_user, active_page='resumes')
