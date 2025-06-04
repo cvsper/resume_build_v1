@@ -77,7 +77,9 @@ class User(UserMixin, db.Model):
     oauth_provider = db.Column(db.String(50))
     password = db.Column(db.String(256), nullable=False)
     preferred_template = db.Column(db.String(50), default='classic')
-    profile_pic = db.Column(db.String(200), default='default.jpg')  # New field!
+    profile_pic = db.Column(db.String(200), default='default.jpg')
+    subscription = db.Column(db.String(50), default='Free')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Resume(db.Model):
@@ -510,6 +512,39 @@ def download_pdf(resume_id):
 @login_required
 def create_checkout_session():
     resume_id = request.form.get('resume_id')
+    plan = request.form.get('plan')
+    
+    # Handle subscription upgrade
+    if plan:
+        # Plan pricing (in cents for Stripe)
+        plan_prices = {
+            'Pro': 999,  # $9.99
+            'Premium': 1999  # $19.99
+        }
+        
+        if plan not in plan_prices:
+            return redirect(url_for('my_account'))
+        
+        try:
+            # In a real application, you would integrate with Stripe or another payment processor
+            # For demo purposes, we'll simulate a successful payment
+            
+            # Simulate payment processing delay
+            import time
+            time.sleep(1)
+            
+            # Update user subscription
+            current_user.subscription = plan
+            db.session.commit()
+            
+            # Redirect back to account page with success message
+            return redirect(url_for('my_account') + '?payment=success')
+            
+        except Exception as e:
+            # Handle payment failure
+            return redirect(url_for('my_account') + '?payment=failed')
+    
+    # Handle resume download payment
     if not resume_id:
         return "Missing resume_id", 400
     try:
@@ -650,11 +685,83 @@ def jobs():
 @login_required
 def my_account():
     if request.method == 'POST':
+        # Handle profile updates
         name = request.form.get('name')
+        email = request.form.get('email')
         preferred_template = request.form.get('preferred_template')
         file = request.files.get('profile_pic')
+        
+        # Handle password change
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        # Handle subscription changes
+        change_subscription = request.form.get('change_subscription')
+        subscription = request.form.get('subscription')
+        
+        # Handle account deletion
+        delete_account = request.form.get('delete_account')
+        
+        if delete_account:
+            # Delete all user data
+            resumes = Resume.query.filter_by(user_id=current_user.id).all()
+            for resume in resumes:
+                db.session.delete(resume)
+            
+            cover_letters = CoverLetter.query.filter_by(user_id=current_user.id).all()
+            for cover_letter in cover_letters:
+                db.session.delete(cover_letter)
+            
+            # Delete user profile picture if exists
+            if current_user.profile_pic:
+                try:
+                    profile_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.profile_pic)
+                    if os.path.exists(profile_pic_path):
+                        os.remove(profile_pic_path)
+                except:
+                    pass
+            
+            # Delete the user account
+            db.session.delete(current_user)
+            db.session.commit()
+            logout_user()
+            return redirect(url_for('index'))
+        
+        if change_subscription and subscription:
+            # Update subscription (this would integrate with payment processor in production)
+            current_user.subscription = subscription
+            db.session.commit()
+            return redirect(url_for('my_account'))
+        
+        if current_password and new_password and confirm_password:
+            # Verify current password
+            if check_password_hash(current_user.password, current_password):
+                if new_password == confirm_password:
+                    if len(new_password) >= 6:
+                        current_user.password = generate_password_hash(new_password)
+                        db.session.commit()
+                        return redirect(url_for('my_account'))
+                    else:
+                        return render_template('profile.html', user=current_user, active_page='my_account', 
+                                             error="Password must be at least 6 characters long")
+                else:
+                    return render_template('profile.html', user=current_user, active_page='my_account', 
+                                         error="New passwords do not match")
+            else:
+                return render_template('profile.html', user=current_user, active_page='my_account', 
+                                     error="Current password is incorrect")
+        
+        # Handle profile information updates
         if name:
             current_user.name = name
+        if email and email != current_user.email:
+            # Check if email is already taken
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                return render_template('profile.html', user=current_user, active_page='my_account', 
+                                     error="Email already exists")
+            current_user.email = email
         if preferred_template:
             current_user.preferred_template = preferred_template
         if file and allowed_file(file.filename):
@@ -662,8 +769,10 @@ def my_account():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             current_user.profile_pic = filename
+            
         db.session.commit()
         return redirect(url_for('my_account'))
+    
     return render_template('profile.html', user=current_user, active_page='my_account')
 
 def generate_resume_thumbnail(resume_id, html_content):
@@ -808,3 +917,9 @@ def upload_existing_resume():
             flash('Please upload a PDF, DOC, or DOCX file.', 'danger')
     
     return render_template('upload_existing_resume.html', current_user=current_user, active_page='resumes')
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    print("Starting app on http://127.0.0.1:5003")
+    app.run(debug=True, host='127.0.0.1', port=5003)
