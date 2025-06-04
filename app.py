@@ -242,24 +242,42 @@ def dashboard():
 @login_required
 def create_cover_letter():
     if request.method == 'POST':
-        job_title = request.form.get('job_title')
-        description = request.form.get('description')
-        name = current_user.name
+        job_title = request.form.get('job_title', '').strip()
+        description = request.form.get('description', '').strip()
+        
+        # Validation
+        if not job_title:
+            flash('Please enter a job title.', 'error')
+            return render_template('create_cover_letter.html', current_user=current_user, active_page='cover_letters')
+        
+        if len(job_title) < 2:
+            flash('Job title must be at least 2 characters long.', 'error')
+            return render_template('create_cover_letter.html', current_user=current_user, active_page='cover_letters')
+        
+        name = current_user.name or current_user.email.split('@')[0].title()
         email = current_user.email
         
-        # Use GPT to generate cover letter content
-        content = generate_cover_letter(name, email, job_title, description)
-        
-        new_cover_letter = CoverLetter(
-            user_id=current_user.id,
-            job_title=job_title,
-            content=content
-        )
-        db.session.add(new_cover_letter)
-        db.session.commit()
-        return redirect(url_for('dashboard'))
+        try:
+            # Use GPT to generate cover letter content
+            content = generate_cover_letter(name, email, job_title, description)
+            
+            new_cover_letter = CoverLetter(
+                user_id=current_user.id,
+                job_title=job_title,
+                content=content
+            )
+            db.session.add(new_cover_letter)
+            db.session.commit()
+            
+            flash(f'Cover letter for "{job_title}" created successfully!', 'success')
+            return redirect(url_for('cover_letters'))
+            
+        except Exception as e:
+            app.logger.error(f"Error generating cover letter: {str(e)}")
+            flash('Sorry, there was an error generating your cover letter. Please try again.', 'error')
+            return render_template('create_cover_letter.html', current_user=current_user, active_page='cover_letters')
     
-    return render_template('create_cover_letter.html')
+    return render_template('create_cover_letter.html', current_user=current_user, active_page='cover_letters')
 
 @app.route('/create-resume', methods=['GET', 'POST'])
 @login_required
@@ -917,6 +935,12 @@ def upload_existing_resume():
             flash('Please upload a PDF, DOC, or DOCX file.', 'danger')
     
     return render_template('upload_existing_resume.html', current_user=current_user, active_page='resumes')
+
+@app.route('/clear-prefill-job-title', methods=['POST'])
+@login_required
+def clear_prefill_job_title():
+    session.pop('prefill_job_title', None)
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     with app.app_context():
