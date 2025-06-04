@@ -27,6 +27,66 @@
         @media (max-width: 768px) { .dashboard-container { flex-direction: column; gap: 16px; padding: 8px; } .dashboard-card { flex: 1 1 100%; max-width: 100%; padding: 16px; } }
         @media (max-width: 575px) { .sidebar .sidebar-header img { width: 32px; height: 32px; } .sidebar .sidebar-header h4 { font-size: 0.95rem; } .main-content { padding: 12px 2px; } }
         #fade-wrapper { opacity: 1; transition: opacity 0.5s; }
+        .create-first-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            text-align: center;
+            padding: 60px 40px;
+        }
+        .create-first-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 20px 40px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .create-first-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .create-first-btn:hover::before {
+            left: 100%;
+        }
+        .create-first-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .create-first-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        .create-first-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .create-first-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
     </style>
 </head>
 <body>
@@ -48,15 +108,39 @@
     </div>
     <div class="main-content">
         <h2 class="mb-4">Interview Q&amp;A</h2>
+        {% if interview_qa_list|length > 0 %}
+        <div class="mb-4 text-end">
+            <form method="POST" action="{{ url_for('interview_qa') }}" class="d-inline-flex align-items-center gap-3">
+                <input type="text" name="job_title" class="form-control" placeholder="Enter job title" required style="width: 250px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Generate Q&A
+                </button>
+            </form>
+        </div>
         <div class="dashboard-container">
-            {% for qa in interview_qas %}
+            {% for qa in interview_qa_list %}
             <div class="dashboard-card">
-                <h5>{{ qa.question }}</h5>
-                <p>{{ qa.answer|truncate(120) }}</p>
-                <a href="{{ url_for('edit_interview_qa', id=qa.id) }}"><i class="bi bi-pencil"></i> Edit</a>
+                <h5>{{ qa.job_title }}</h5>
+                <p>{{ qa.qa|truncate(120) }}</p>
+                <small class="text-muted">Interview Questions & Answers</small>
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="create-first-section">
+            <div class="create-first-icon">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h3 class="create-first-title">Create Your First Interview Q&A</h3>
+            <p class="create-first-subtitle">Generate personalized interview questions and answers for specific job roles to help you prepare and excel in your interviews.</p>
+            <form method="POST" action="{{ url_for('interview_qa') }}" class="d-flex flex-column align-items-center gap-3">
+                <input type="text" name="job_title" class="form-control text-center" placeholder="Enter job title (e.g., Software Engineer)" required style="max-width: 350px; border-radius: 15px; padding: 12px 20px;">
+                <button type="submit" class="create-first-btn">
+                    <i class="bi bi-plus-circle me-2"></i>Generate Interview Q&A
+                </button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 </div>
 <script>

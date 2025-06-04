@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create Your First - Demo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f7fafd; 
+            font-family: 'Inter', Arial, sans-serif; 
+            padding: 40px 20px;
+        }
+        .create-first-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+        .create-first-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 20px 40px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .create-first-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .create-first-btn:hover::before {
+            left: 100%;
+        }
+        .create-first-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        .create-first-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        .create-first-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .create-first-subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>Create Your First Buttons - Demo</h1>
+            <p class="lead">Clean, modern buttons that appear when users haven't created any items yet.</p>
+        </div>
+
+        <!-- Resume Create First -->
+        <div class="create-first-section">
+            <div class="create-first-icon">
+                <i class="bi bi-file-earmark-person"></i>
+            </div>
+            <h3 class="create-first-title">Create Your First Resume</h3>
+            <p class="create-first-subtitle">Start building your professional resume with our easy-to-use tools and beautiful templates.</p>
+            <a href="#" class="create-first-btn">
+                <i class="bi bi-plus-circle me-2"></i>Create Resume
+            </a>
+        </div>
+
+        <!-- Cover Letter Create First -->
+        <div class="create-first-section">
+            <div class="create-first-icon">
+                <i class="bi bi-envelope-paper"></i>
+            </div>
+            <h3 class="create-first-title">Create Your First Cover Letter</h3>
+            <p class="create-first-subtitle">Craft compelling cover letters that complement your resume and help you stand out to employers.</p>
+            <a href="#" class="create-first-btn">
+                <i class="bi bi-plus-circle me-2"></i>Create Cover Letter
+            </a>
+        </div>
+
+        <!-- Interview Q&A Create First -->
+        <div class="create-first-section">
+            <div class="create-first-icon">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h3 class="create-first-title">Create Your First Interview Q&A</h3>
+            <p class="create-first-subtitle">Generate personalized interview questions and answers for specific job roles to help you prepare and excel in your interviews.</p>
+            <div class="d-flex flex-column align-items-center gap-3">
+                <input type="text" class="form-control text-center" placeholder="Enter job title (e.g., Software Engineer)" style="max-width: 350px; border-radius: 15px; padding: 12px 20px;">
+                <a href="#" class="create-first-btn">
+                    <i class="bi bi-plus-circle me-2"></i>Generate Interview Q&A
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
