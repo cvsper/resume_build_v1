@@ -561,27 +561,63 @@ def interview_qa():
             return redirect(url_for('interview_qa'))
     return render_template('interview_qa.html', interview_qa_list=interview_qa_list, current_user=current_user, active_page='interview_qa')
 
+def get_user_location():
+    """Get user's approximate location using IP geolocation or return default."""
+    try:
+        # Try to get user's location from IP
+        response = requests.get('http://ip-api.com/json/', timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('status') == 'success':
+                city = data.get('city', '')
+                region = data.get('regionName', '')
+                country = data.get('country', '')
+                if city and region:
+                    return f"{city}, {region}"
+                elif city:
+                    return city
+                elif region:
+                    return region
+    except:
+        pass
+    
+    # Default to major US cities if location detection fails
+    return "New York, NY"
+
 @app.route('/jobs')
 @login_required
 def jobs():
     keyword = request.args.get('keyword', '')
     location = request.args.get('location', '')
+    
+    # If no location is specified, try to get user's location
+    if not location:
+        location = get_user_location()
+    
+    # If no keyword is specified, show general jobs
+    if not keyword:
+        keyword = 'software developer'  # Default search term for better results
+    
     api_url = f'https://api.adzuna.com/v1/api/jobs/us/search/1'
     params = {
         'app_id': ADZUNA_APP_ID,
         'app_key': ADZUNA_APP_KEY,
         'what': keyword,
         'where': location,
-        'results_per_page': 20,  # Updated to fetch 20 jobs at a time
+        'results_per_page': 25,  # Show more jobs
         'content-type': 'application/json'
     }
+    
     response = None
+    error_message = None
+    job_listings = []
+    
     try:
-        response = requests.get(api_url, params=params, timeout=1)
+        response = requests.get(api_url, params=params, timeout=10)
     except requests.RequestException as e:
         print(f"Adzuna API error: {e}")
-        return render_template('jobs.html', jobs=[], keyword=keyword, location=location, current_user=current_user, active_page='jobs', error_message='Could not load jobs. Please try again later.')
-    job_listings = []
+        error_message = 'Could not load jobs. Please try again later.'
+    
     if response is not None:
         try:
             if response.status_code == 200:
@@ -591,15 +627,24 @@ def jobs():
                     'company': job.get('company', {}).get('display_name', 'N/A'),
                     'location': job.get('location', {}).get('display_name', 'N/A'),
                     'url': job.get('redirect_url', '#'),
-                    'description': job.get('description', '')
+                    'description': job.get('description', ''),
+                    'salary': job.get('salary_min', None),
+                    'salary_max': job.get('salary_max', None)
                 } for job in data.get('results', [])]
             else:
                 print(f"Adzuna API returned status {response.status_code}: {response.text}")
-                return render_template('jobs.html', jobs=[], keyword=keyword, location=location, current_user=current_user, active_page='jobs', error_message='Adzuna API error. Please try again later.')
+                error_message = 'Unable to fetch jobs at the moment. Please try again later.'
         except Exception as e:
             print(f"Error parsing Adzuna API response: {e}")
-            return render_template('jobs.html', jobs=[], keyword=keyword, location=location, current_user=current_user, active_page='jobs', error_message='Error loading jobs. Please try again later.')
-    return render_template('jobs.html', jobs=job_listings, keyword=keyword, location=location, current_user=current_user, active_page='jobs', error_message=None)
+            error_message = 'Error processing job listings. Please try again later.'
+    
+    return render_template('jobs.html', 
+                         jobs=job_listings, 
+                         keyword=keyword, 
+                         location=location, 
+                         current_user=current_user, 
+                         active_page='jobs', 
+                         error_message=error_message)
 
 @app.route('/my-account', methods=['GET', 'POST'])
 @login_required
