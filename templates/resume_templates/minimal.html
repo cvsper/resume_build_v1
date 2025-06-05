@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: #fafafa;
+            color: #333;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: none;
+            border: 1px solid #e1e5e9;
+        }
+        .header {
+            padding: 2rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        .name {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 0.25rem;
+            color: #1a1a1a;
+        }
+        .title {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+            font-weight: 400;
+        }
+        .contact {
+            font-size: 0.95rem;
+            color: #555;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .section {
+            margin-bottom: 2rem;
+        }
+        .section:last-child {
+            margin-bottom: 0;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e1e5e9;
+            padding-bottom: 0.5rem;
+        }
+        .section-content {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.6;
+        }
+        .download-btn {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 2rem auto;
+            display: block;
+        }
+        .download-btn:hover {
+            background: #0056cc;
+        }
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="name">{{name}}</div>
+            <div class="title">{{job_title or 'Professional'}}</div>
+            <div class="contact">
+                <span>{{email}}</span>
+                <span>{{phone}}</span>
+            </div>
+        </div>
+        <div class="content">
+            <div class="section">
+                <h2 class="section-title">Profile</h2>
+                <div class="section-content">
+                    {{ resume.content.replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <form action="{{ url_for('payment') }}" method="GET">
+        <button type="submit" class="download-btn">Download PDF</button>
+    </form>
+</body>
+</html>

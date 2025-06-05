@@ -37,6 +37,15 @@ if not stripe_secret:
     raise RuntimeError("STRIPE_SECRET_KEY environment variable not set. Please set it in your environment or Render dashboard.")
 stripe.api_key = stripe_secret
 
+stripe_publishable_key = os.getenv("STRIPE_PUBLISHABLE_KEY")
+if not stripe_publishable_key:
+    raise RuntimeError("STRIPE_PUBLISHABLE_KEY environment variable not set. Please set it in your environment or Render dashboard.")
+
+# Make Stripe publishable key available to all templates
+@app.context_processor
+def inject_stripe_key():
+    return {'stripe_publishable_key': stripe_publishable_key}
+
 supabase_db_url = os.getenv('SUPABASE_DB_URL')
 if not supabase_db_url:
     raise RuntimeError('SUPABASE_DB_URL environment variable not set. Get your connection string from your Supabase project.')
@@ -489,7 +498,7 @@ def create_resume():
             # Show a user-friendly error if content is missing
             error_message = 'Please enter your experience or resume content.'
             return render_template('create_resume.html', error_message=error_message)
-        template = request.form.get('template', 'classic')
+        template = request.form.get('template', session.get('selected_template', 'classic'))
         name = request.form.get('name', '')
         # Capitalize the first letter of each word in the name
         name = ' '.join([part.capitalize() for part in name.split()])
@@ -674,6 +683,20 @@ def preview_resume_content(resume_id):
         return "Unauthorized", 403
     return render_template(f"resume_templates/{resume.template}.html", resume=resume)
 
+@app.route('/preview-resume-payment/<int:resume_id>')
+@login_required
+def preview_resume_payment(resume_id):
+    resume = Resume.query.get_or_404(resume_id)
+    if resume.user_id != current_user.id:
+        return "Unauthorized", 403
+    
+    # Generate the PDF URL for preview
+    pdf_url = url_for('preview_resume_content', resume_id=resume_id)
+    
+    return render_template('preview.html', 
+                         resume_id=resume_id, 
+                         pdf_url=pdf_url, 
+                         resume=resume)
 
 @app.route('/payment')
 @login_required
@@ -709,11 +732,42 @@ def process_payment():
     session['has_paid'] = True
     return redirect(url_for('dashboard'))
 
+@app.route('/payment-success/<int:resume_id>')
+@login_required
+def payment_success(resume_id):
+    # Mark payment as completed
+    session['has_paid'] = True
+    # Redirect to actual PDF download
+    return redirect(url_for('download_pdf', resume_id=resume_id))
+
+@app.route('/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
+    
+    try:
+        # In production, you would verify the webhook signature here
+        # event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        
+        # For now, we'll just log the webhook event
+        import json
+        event = json.loads(payload)
+        
+        if event['type'] == 'checkout.session.completed':
+            # Handle successful payment
+            session_id = event['data']['object']['id']
+            print(f"Payment successful for session: {session_id}")
+            
+        return '', 200
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return '', 400
+
 @app.route('/download-pdf/<int:resume_id>')
 @login_required
 def download_pdf(resume_id):
     if not session.get('has_paid'):
-        return redirect(url_for('payment'))
+        return redirect(url_for('preview_resume_payment', resume_id=resume_id))
     resume = Resume.query.get_or_404(resume_id)
     if resume.user_id != current_user.id:
         return "Unauthorized", 403
@@ -771,8 +825,8 @@ def create_checkout_session():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=url_for('download_pdf', resume_id=resume_id, _external=True),
-            cancel_url=url_for('dashboard', _external=True),
+            success_url=url_for('payment_success', resume_id=resume_id, _external=True),
+            cancel_url=url_for('preview_resume_payment', resume_id=resume_id, _external=True),
         )
         return redirect(checkout_session.url, code=303)
     except Exception as e:
@@ -1140,8 +1194,62 @@ def clear_prefill_job_title():
     session.pop('prefill_job_title', None)
     return jsonify({'success': True})
 
+# API Routes for Stripe Configuration
+@app.route('/api/stripe-config')
+def get_stripe_config():
+    """Provide Stripe publishable key for frontend"""
+    return jsonify({'publishable_key': stripe_publishable_key})
+
+@app.route('/choose-design', methods=['GET', 'POST'])
+@login_required
+def choose_design():
+    if request.method == 'POST':
+        template = request.form.get('template', 'classic')
+        # Store selected template in session for the resume creation process
+        session['selected_template'] = template
+        return redirect(url_for('create_resume'))
+    return render_template('choose_design.html')
+
+@app.route('/preview-template/<template_name>')
+@login_required
+def preview_template(template_name):
+    # Validate template name
+    valid_templates = ['classic', 'modern', 'elegant', 'minimal', 'professional', 'executive', 'creative']
+    if template_name not in valid_templates:
+        return "Invalid template", 404
+    
+    # Create a sample resume object for preview
+    sample_resume = type('obj', (object,), {
+        'title': 'Sample Resume',
+        'content': '''
+        <h2>John Doe</h2>
+        <p>Email: john.doe@email.com | Phone: (555) 123-4567</p>
+        
+        <h3>Experience</h3>
+        <div>
+            <strong>Software Engineer</strong> - Tech Company (2020-Present)
+            <ul>
+                <li>Developed web applications using modern frameworks</li>
+                <li>Collaborated with cross-functional teams</li>
+                <li>Improved system performance by 30%</li>
+            </ul>
+        </div>
+        
+        <h3>Education</h3>
+        <div>
+            <strong>Bachelor of Science in Computer Science</strong><br>
+            University Name (2016-2020)
+        </div>
+        
+        <h3>Skills</h3>
+        <p>Python, JavaScript, React, SQL, Git</p>
+        '''
+    })
+    
+    return render_template(f"resume_templates/{template_name}.html", resume=sample_resume)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    print("Starting app on http://127.0.0.1:5003")
-    app.run(debug=True, host='127.0.0.1', port=5003)
+    print("Starting app on http://127.0.0.1:5006")
+    app.run(debug=True, host='127.0.0.1', port=5006)

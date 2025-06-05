@@ -823,6 +823,10 @@
                                 <option value="classic" {% if current_user.preferred_template == 'classic' %}selected{% endif %}>Classic</option>
                                 <option value="modern" {% if current_user.preferred_template == 'modern' %}selected{% endif %}>Modern</option>
                                 <option value="elegant" {% if current_user.preferred_template == 'elegant' %}selected{% endif %}>Elegant</option>
+                                <option value="minimal" {% if current_user.preferred_template == 'minimal' %}selected{% endif %}>Minimal</option>
+                                <option value="professional" {% if current_user.preferred_template == 'professional' %}selected{% endif %}>Professional</option>
+                                <option value="executive" {% if current_user.preferred_template == 'executive' %}selected{% endif %}>Executive</option>
+                                <option value="creative" {% if current_user.preferred_template == 'creative' %}selected{% endif %}>Creative</option>
                             </select>
                             <div id="template-help" class="sr-only">Choose your default resume template style</div>
                         </div>

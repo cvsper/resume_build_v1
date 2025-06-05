@@ -11,12 +11,16 @@
       <form method="POST" id="templateForm">
         <div class="row g-3">
           {% set templates = [
-            {'name': 'classic', 'image': url_for('static', filename='img/thumbnails/classic.png')},
-            {'name': 'modern', 'image': url_for('static', filename='img/thumbnails/modern.png')},
-            {'name': 'elegant', 'image': url_for('static', filename='img/thumbnails/elegant.png')}
+            {'name': 'classic', 'image': url_for('static', filename='img/templates/classic.png')},
+            {'name': 'modern', 'image': url_for('static', filename='img/templates/modern.png')},
+            {'name': 'elegant', 'image': url_for('static', filename='img/templates/elegant.png')},
+            {'name': 'minimal', 'image': url_for('static', filename='img/templates/minimal.png')},
+            {'name': 'professional', 'image': url_for('static', filename='img/templates/professional.png')},
+            {'name': 'executive', 'image': url_for('static', filename='img/templates/executive.png')},
+            {'name': 'creative', 'image': url_for('static', filename='img/templates/creative.png')}
           ] %}
           {% for template in templates %}
-          <div class="col-6">
+          <div class="col-4 mb-3">
             <label class="d-block text-center">
               <input type="radio" name="template" value="{{ template.name }}" hidden onchange="loadPreview(this.value)">
               <img src="{{ template.image }}" alt="{{ template.name }}"

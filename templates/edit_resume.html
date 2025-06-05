@@ -10,16 +10,15 @@
     <div class="mb-3">
     <label for="template" class="form-label">Template</label>
     <select class="form-control" name="template" id="template">
-        <option value="classic">Classic</option>
-        <option value="modern">Modern</option>
-        <option value="minimal">Minimal</option>
+        <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
+        <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
+        <option value="elegant" {% if resume.template == 'elegant' %}selected{% endif %}>Elegant</option>
+        <option value="minimal" {% if resume.template == 'minimal' %}selected{% endif %}>Minimal</option>
+        <option value="professional" {% if resume.template == 'professional' %}selected{% endif %}>Professional</option>
+        <option value="executive" {% if resume.template == 'executive' %}selected{% endif %}>Executive</option>
+        <option value="creative" {% if resume.template == 'creative' %}selected{% endif %}>Creative</option>
     </select>
 </div>
-<select class="form-control" name="template" id="template">
-    <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
-    <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
-    <option value="minimal" {% if resume.template == 'minimal' %}selected{% endif %}>Minimal</option>
-</select>
 
     <form method="POST">
         <div class="mb-3">
