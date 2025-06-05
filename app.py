@@ -100,6 +100,7 @@ class User(UserMixin, db.Model):
     preferred_template = db.Column(db.String(50), default='classic')
     profile_pic = db.Column(db.String(200), default='default.jpg')
     subscription = db.Column(db.String(50), default='Free')
+    stripe_customer_id = db.Column(db.String(100))  # Store Stripe customer ID
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -746,14 +747,22 @@ def stripe_webhook():
     sig_header = request.headers.get('Stripe-Signature')
     
     try:
-        # Verify webhook signature for production security
+        # Enhanced webhook signature verification for production security
         webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
         if webhook_secret:
+            # Production mode - verify signature
             event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+            print(f"✅ Webhook signature verified for event: {event.get('type', 'unknown')}")
         else:
             # Development mode - parse payload without verification
             import json
             event = json.loads(payload)
+            print(f"⚠️  Development mode: Processing webhook without signature verification")
+        
+        # Enhanced logging
+        event_type = event.get('type', 'unknown')
+        event_id = event.get('id', 'unknown')
+        print(f"📨 Processing webhook: {event_type} (ID: {event_id})")
         
         # Handle different webhook events
         if event['type'] == 'checkout.session.completed':
@@ -765,14 +774,18 @@ def stripe_webhook():
                 # Handle subscription payment
                 user_id = session_data.get('metadata', {}).get('user_id')
                 plan = session_data.get('metadata', {}).get('plan')
+                customer_id = session_data.get('customer')
                 
                 if user_id and plan:
                     # Update user subscription in database
                     user = User.query.get(user_id)
                     if user:
+                        # Update both subscription and Stripe customer ID
                         user.subscription = plan
+                        if customer_id and not user.stripe_customer_id:
+                            user.stripe_customer_id = customer_id
                         db.session.commit()
-                        print(f"✅ Subscription activated: User {user.email} → {plan}")
+                        print(f"✅ Subscription activated: User {user.email} → {plan} (Customer: {customer_id})")
                     else:
                         print(f"⚠️  User not found for subscription: {user_id}")
                 else:
@@ -791,28 +804,61 @@ def stripe_webhook():
             invoice = event['data']['object']
             customer_id = invoice.get('customer')
             subscription_id = invoice.get('subscription')
+            amount = invoice.get('amount_paid', 0) / 100
+            currency = invoice.get('currency', 'usd').upper()
             print(f"✅ Recurring payment successful: {subscription_id}")
+            print(f"   Customer: {customer_id}, Amount: {currency} ${amount:.2f}")
             
         elif event['type'] == 'invoice.payment_failed':
             # Handle failed subscription payments
             invoice = event['data']['object']
             customer_id = invoice.get('customer')
             subscription_id = invoice.get('subscription')
+            attempt_count = invoice.get('attempt_count', 1)
             print(f"❌ Recurring payment failed: {subscription_id}")
+            print(f"   Customer: {customer_id}, Attempt: {attempt_count}")
+            
+            # Find user and potentially update subscription status
+            if customer_id:
+                user = User.query.filter_by(stripe_customer_id=customer_id).first()
+                if user:
+                    print(f"   Associated user: {user.email}")
+                    # Note: Don't immediately downgrade - Stripe handles retries
             
         elif event['type'] == 'customer.subscription.deleted':
             # Handle subscription cancellation
             subscription = event['data']['object']
             customer_id = subscription.get('customer')
-            print(f"🔄 Subscription cancelled: {subscription.get('id')}")
+            subscription_id = subscription.get('id')
+            print(f"🔄 Subscription cancelled: {subscription_id}")
+            
+            # Find user and downgrade to Free plan
+            if customer_id:
+                user = User.query.filter_by(stripe_customer_id=customer_id).first()
+                if user:
+                    user.subscription = 'Free'
+                    db.session.commit()
+                    print(f"   User {user.email} downgraded to Free plan")
+            
+        elif event['type'] == 'customer.subscription.updated':
+            # Handle subscription updates (plan changes, etc.)
+            subscription = event['data']['object']
+            customer_id = subscription.get('customer')
+            status = subscription.get('status')
+            print(f"🔄 Subscription updated: {subscription.get('id')} → Status: {status}")
             
         elif event['type'] == 'payment_intent.succeeded':
             payment_intent = event['data']['object']
+            amount = payment_intent.get('amount', 0) / 100
+            currency = payment_intent.get('currency', 'usd').upper()
             print(f"✅ Payment intent succeeded: {payment_intent['id']}")
+            print(f"   Amount: {currency} ${amount:.2f}")
             
         elif event['type'] == 'payment_intent.payment_failed':
             payment_intent = event['data']['object']
+            failure_reason = payment_intent.get('last_payment_error', {}).get('message', 'Unknown')
             print(f"❌ Payment failed: {payment_intent['id']}")
+            print(f"   Reason: {failure_reason}")
             
         else:
             print(f"📋 Unhandled webhook event: {event['type']}")
@@ -820,11 +866,20 @@ def stripe_webhook():
         return '', 200
         
     except stripe.error.SignatureVerificationError as e:
-        print(f"⚠️  Webhook signature verification failed: {e}")
-        return '', 400
+        print(f"🚨 Webhook signature verification failed: {e}")
+        print(f"   Payload length: {len(payload)}")
+        print(f"   Signature header: {sig_header[:50] if sig_header else 'None'}...")
+        return 'Invalid signature', 400
+        
+    except json.JSONDecodeError as e:
+        print(f"🚨 Invalid JSON payload: {e}")
+        return 'Invalid JSON', 400
+        
     except Exception as e:
-        print(f"❌ Webhook error: {e}")
-        return '', 400
+        print(f"🚨 Webhook processing error: {e}")
+        import traceback
+        traceback.print_exc()
+        return 'Webhook error', 500
 
 @app.route('/download-pdf/<int:resume_id>')
 @login_required
@@ -1341,6 +1396,139 @@ def subscription_success(plan):
         return redirect(url_for('my_account') + '?payment=success&plan=' + plan)
     else:
         return redirect(url_for('my_account') + '?payment=failed')
+
+# Add new Stripe webhook endpoints and enhanced subscription management
+@app.route('/create-customer-portal', methods=['POST'])
+@login_required
+def create_customer_portal():
+    """Create a Stripe Customer Portal session for subscription management"""
+    try:
+        # Get or create Stripe customer for the user
+        customer_id = current_user.stripe_customer_id
+        
+        if not customer_id:
+            # Create new Stripe customer
+            customer = stripe.Customer.create(
+                email=current_user.email,
+                name=current_user.name or current_user.email.split('@')[0],
+                metadata={'user_id': current_user.id}
+            )
+            current_user.stripe_customer_id = customer.id
+            db.session.commit()
+            customer_id = customer.id
+        
+        # Create Customer Portal session
+        portal_session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url=url_for('my_account', _external=True)
+        )
+        
+        return redirect(portal_session.url, code=303)
+        
+    except Exception as e:
+        print(f"Customer Portal error: {e}")
+        flash('Unable to access billing portal. Please try again.', 'error')
+        return redirect(url_for('my_account'))
+
+@app.route('/subscription-billing-history')
+@login_required
+def subscription_billing_history():
+    """Get user's billing history from Stripe"""
+    try:
+        if not current_user.stripe_customer_id:
+            return jsonify({'invoices': []})
+        
+        # Get customer's invoices
+        invoices = stripe.Invoice.list(
+            customer=current_user.stripe_customer_id,
+            limit=20
+        )
+        
+        billing_history = []
+        for invoice in invoices.data:
+            billing_history.append({
+                'id': invoice.id,
+                'amount': invoice.amount_paid / 100,  # Convert from cents
+                'currency': invoice.currency.upper(),
+                'status': invoice.status,
+                'created': datetime.fromtimestamp(invoice.created).strftime('%Y-%m-%d'),
+                'description': invoice.description or 'Subscription payment',
+                'invoice_pdf': invoice.invoice_pdf,
+                'hosted_invoice_url': invoice.hosted_invoice_url
+            })
+        
+        return jsonify({'invoices': billing_history})
+        
+    except Exception as e:
+        print(f"Billing history error: {e}")
+        return jsonify({'error': 'Unable to retrieve billing history'})
+
+@app.route('/cancel-subscription', methods=['POST'])
+@login_required
+def cancel_subscription():
+    """Cancel user's active subscription"""
+    try:
+        if not current_user.stripe_customer_id:
+            flash('No active subscription found.', 'error')
+            return redirect(url_for('my_account'))
+        
+        # Get customer's active subscriptions
+        subscriptions = stripe.Subscription.list(
+            customer=current_user.stripe_customer_id,
+            status='active'
+        )
+        
+        if subscriptions.data:
+            # Cancel the first active subscription
+            subscription = subscriptions.data[0]
+            stripe.Subscription.modify(
+                subscription.id,
+                cancel_at_period_end=True
+            )
+            
+            flash('Your subscription will be cancelled at the end of the current billing period.', 'success')
+        else:
+            flash('No active subscription found to cancel.', 'error')
+        
+        return redirect(url_for('my_account'))
+        
+    except Exception as e:
+        print(f"Subscription cancellation error: {e}")
+        flash('Unable to cancel subscription. Please try again.', 'error')
+        return redirect(url_for('my_account'))
+
+@app.route('/reactivate-subscription', methods=['POST'])
+@login_required
+def reactivate_subscription():
+    """Reactivate a cancelled subscription"""
+    try:
+        if not current_user.stripe_customer_id:
+            flash('No subscription found.', 'error')
+            return redirect(url_for('my_account'))
+        
+        # Get customer's subscriptions
+        subscriptions = stripe.Subscription.list(
+            customer=current_user.stripe_customer_id,
+            status='all'
+        )
+        
+        for subscription in subscriptions.data:
+            if subscription.cancel_at_period_end:
+                # Reactivate subscription
+                stripe.Subscription.modify(
+                    subscription.id,
+                    cancel_at_period_end=False
+                )
+                flash('Your subscription has been reactivated!', 'success')
+                return redirect(url_for('my_account'))
+        
+        flash('No cancelled subscription found to reactivate.', 'error')
+        return redirect(url_for('my_account'))
+        
+    except Exception as e:
+        print(f"Subscription reactivation error: {e}")
+        flash('Unable to reactivate subscription. Please try again.', 'error')
+        return redirect(url_for('my_account'))
 
 if __name__ == '__main__':
     with app.app_context():
