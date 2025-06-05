@@ -764,7 +764,11 @@
             {% if request.args.get('payment') == 'success' %}
                 <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
                     <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
-                    Your subscription has been successfully updated!
+                    {% if request.args.get('plan') %}
+                        🎉 Welcome to {{ request.args.get('plan') }}! Your subscription has been successfully activated.
+                    {% else %}
+                        Your subscription has been successfully updated!
+                    {% endif %}
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
                 </div>
             {% elif request.args.get('payment') == 'failed' %}
@@ -1267,6 +1271,8 @@ document.getElementById('profile_pic').addEventListener('change', function(e) {
 
 // Enhanced plan upgrade/downgrade functions with better UX
 function upgradePlan(plan) {
+    console.log(`Attempting to upgrade to ${plan} plan`);
+    
     const confirmMessage = `Are you sure you want to upgrade to the ${plan} plan?`;
     const modal = createConfirmationModal(
         'Upgrade Subscription',
@@ -1274,6 +1280,15 @@ function upgradePlan(plan) {
         'Upgrade',
         'Cancel',
         function() {
+            console.log('User confirmed upgrade, submitting form...');
+            
+            // Show loading state
+            const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
+            upgradeButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            });
+            
             // Create form and submit to payment gateway
             const form = document.createElement('form');
             form.method = 'POST';
@@ -1285,7 +1300,23 @@ function upgradePlan(plan) {
             planInput.value = plan;
             form.appendChild(planInput);
             
+            // Add CSRF token if available
+            const csrfToken = document.querySelector('meta[name=csrf-token]');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken.getAttribute('content');
+                form.appendChild(csrfInput);
+            }
+            
             document.body.appendChild(form);
+            
+            // Add error handling
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted, redirecting to Stripe...');
+            });
+            
             form.submit();
         }
     );

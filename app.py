@@ -757,14 +757,54 @@ def stripe_webhook():
         
         # Handle different webhook events
         if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-            session_id = session['id']
-            print(f"✅ Payment successful for session: {session_id}")
+            session_data = event['data']['object']
+            session_id = session_data['id']
+            
+            # Check if it's a subscription or one-time payment
+            if session_data.get('mode') == 'subscription':
+                # Handle subscription payment
+                user_id = session_data.get('metadata', {}).get('user_id')
+                plan = session_data.get('metadata', {}).get('plan')
+                
+                if user_id and plan:
+                    # Update user subscription in database
+                    user = User.query.get(user_id)
+                    if user:
+                        user.subscription = plan
+                        db.session.commit()
+                        print(f"✅ Subscription activated: User {user.email} → {plan}")
+                    else:
+                        print(f"⚠️  User not found for subscription: {user_id}")
+                else:
+                    print(f"⚠️  Missing metadata in subscription session: {session_id}")
+            else:
+                # Handle one-time payment (resume downloads)
+                print(f"✅ One-time payment successful for session: {session_id}")
             
             # Log payment details
-            amount = session.get('amount_total', 0) / 100  # Convert from cents
-            currency = session.get('currency', 'usd').upper()
+            amount = session_data.get('amount_total', 0) / 100  # Convert from cents
+            currency = session_data.get('currency', 'usd').upper()
             print(f"   Amount: {currency} ${amount:.2f}")
+            
+        elif event['type'] == 'invoice.payment_succeeded':
+            # Handle successful recurring subscription payments
+            invoice = event['data']['object']
+            customer_id = invoice.get('customer')
+            subscription_id = invoice.get('subscription')
+            print(f"✅ Recurring payment successful: {subscription_id}")
+            
+        elif event['type'] == 'invoice.payment_failed':
+            # Handle failed subscription payments
+            invoice = event['data']['object']
+            customer_id = invoice.get('customer')
+            subscription_id = invoice.get('subscription')
+            print(f"❌ Recurring payment failed: {subscription_id}")
+            
+        elif event['type'] == 'customer.subscription.deleted':
+            # Handle subscription cancellation
+            subscription = event['data']['object']
+            customer_id = subscription.get('customer')
+            print(f"🔄 Subscription cancelled: {subscription.get('id')}")
             
         elif event['type'] == 'payment_intent.succeeded':
             payment_intent = event['data']['object']
@@ -819,22 +859,36 @@ def create_checkout_session():
             return redirect(url_for('my_account'))
         
         try:
-            # In a real application, you would integrate with Stripe or another payment processor
-            # For demo purposes, we'll simulate a successful payment
-            
-            # Simulate payment processing delay
-            import time
-            time.sleep(1)
-            
-            # Update user subscription
-            current_user.subscription = plan
-            db.session.commit()
-            
-            # Redirect back to account page with success message
-            return redirect(url_for('my_account') + '?payment=success')
+            # Create Stripe Checkout Session for subscription
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'unit_amount': plan_prices[plan],
+                        'product_data': {
+                            'name': f'{plan} Subscription',
+                            'description': f'Monthly {plan} subscription with unlimited features'
+                        },
+                        'recurring': {
+                            'interval': 'month'
+                        }
+                    },
+                    'quantity': 1,
+                }],
+                mode='subscription',
+                success_url=url_for('subscription_success', plan=plan, _external=True),
+                cancel_url=url_for('my_account', _external=True),
+                customer_email=current_user.email,
+                metadata={
+                    'user_id': current_user.id,
+                    'plan': plan
+                }
+            )
+            return redirect(checkout_session.url, code=303)
             
         except Exception as e:
-            # Handle payment failure
+            print(f"Stripe error: {e}")
             return redirect(url_for('my_account') + '?payment=failed')
     
     # Handle resume download payment
@@ -1270,6 +1324,23 @@ def preview_template(template_name):
     })
     
     return render_template(f"resume_templates/{template_name}.html", resume=sample_resume)
+
+@app.route('/subscription-success/<plan>')
+@login_required
+def subscription_success(plan):
+    """Handle successful subscription payments"""
+    # Update user subscription in database
+    if plan in ['Pro', 'Premium']:
+        current_user.subscription = plan
+        db.session.commit()
+        
+        # Log successful subscription
+        print(f"✅ User {current_user.email} successfully subscribed to {plan}")
+        
+        # Redirect to account page with success message
+        return redirect(url_for('my_account') + '?payment=success&plan=' + plan)
+    else:
+        return redirect(url_for('my_account') + '?payment=failed')
 
 if __name__ == '__main__':
     with app.app_context():
