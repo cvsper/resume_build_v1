@@ -1,11 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Cover Letters</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+{% extends "base.html" %}
+
+{% block title %}Cover Letters - Professional Cover Letter Builder | Create & Manage{% endblock %}
+
+{% block meta_description %}Create and manage professional cover letters with our easy-to-use builder. Template library, personalized content, and PDF downloads for job applications.{% endblock %}
+
+{% block meta_keywords %}cover letter builder, professional cover letters, job application letters, cover letter templates, create cover letter, download cover letter PDF{% endblock %}
+
+{% block head %}
+<!-- Cover Letters Page Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Cover Letters - Professional Cover Letter Builder",
+  "description": "Create, edit, and manage professional cover letters with templates and personalization tools for job applications",
+  "url": "{{ request.url }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url_for('index', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Dashboard",
+        "item": "{{ url_for('dashboard', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Cover Letters",
+        "item": "{{ request.url }}"
+      }
+    ]
+  },
+  "mainEntity": {
+    "@type": "CreativeWork",
+    "@id": "cover-letter-collection",
+    "name": "Cover Letter Collection",
+    "description": "User's collection of professional cover letters with management tools"
+  }
+}
+</script>
+
+<!-- Cover Letter Collection Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Professional Cover Letter Collection",
+  "description": "Collection of professional cover letters for job applications",
+  "numberOfItems": {{ cover_letters|length if cover_letters else 0 }},
+  "itemListElement": [
+    {% if cover_letters %}
+      {% for letter in cover_letters %}
+      {
+        "@type": "CreativeWork",
+        "position": {{ loop.index }},
+        "name": "Cover Letter #{{ letter.id }}",
+        "description": "Professional cover letter for job application",
+        "dateCreated": "{{ letter.created_at.isoformat() if letter.created_at else '' }}",
+        "creator": {
+          "@type": "Person",
+          "name": "{{ current_user.name or 'User' }}"
+        }
+      }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    {% endif %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block styles %}
     <style>
         body { background-color: #f7fafd; font-family: 'Inter', Arial, sans-serif; }
         .sidebar { min-height: 100vh; background: #fff; box-shadow: 2px 0 16px rgba(0,0,0,0.04); padding: 32px 0 0 0; position: fixed; left: 0; top: 0; width: 240px; z-index: 100; transition: all 0.3s; }
@@ -88,74 +159,195 @@
             max-width: 500px;
         }
     </style>
-</head>
-<body>
-<div id="fade-wrapper">
-    <div class="sidebar d-flex flex-column flex-md-column flex-lg-column flex-xl-column flex-xxl-column">
-        <div class="sidebar-header">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture">
-            <h4>{{ current_user.name or current_user.email }}</h4>
-        </div>
-        <nav class="nav flex-column flex-md-row flex-lg-column flex-xl-column flex-xxl-column">
-            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="bi bi-house"></i> <span class="d-none d-md-inline">Dashboard</span></a>
-            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}"><i class="bi bi-file-earmark-person"></i> <span class="d-none d-md-inline">Resumes</span></a>
-            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}"><i class="bi bi-envelope-paper"></i> <span class="d-none d-md-inline">Cover Letters</span></a>
-            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}"><i class="bi bi-question-circle"></i> <span class="d-none d-md-inline">Interview Q&amp;A</span></a>
-            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}"><i class="bi bi-briefcase"></i> <span class="d-none d-md-inline">Jobs</span></a>
-            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}"><i class="bi bi-person"></i> <span class="d-none d-md-inline">My Account</span></a>
-            <a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> <span class="d-none d-md-inline">Logout</span></a>
-        </nav>
-    </div>
-    <div class="main-content">
-        <h2 class="mb-4">Your Cover Letters</h2>
-        {% if cover_letters|length > 0 %}
-        <div class="mb-4 text-end">
-            <a href="{{ url_for('create_cover_letter') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-2"></i>Create New Cover Letter
-            </a>
-        </div>
-        <div class="dashboard-container">
-            {% for cover_letter in cover_letters %}
-            <div class="dashboard-card">
-                <h5>{{ cover_letter.job_title }}</h5>
-                <p>{{ cover_letter.content|truncate(120) }}</p>
-                <a href="{{ url_for('edit_cover_letter', letter_id=cover_letter.id) }}"><i class="bi bi-pencil"></i> Edit</a>
+{% endblock %}
+
+{% block content %}
+<main role="main" aria-labelledby="page-title">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
+        <header class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
+                 alt="Profile picture of {{ current_user.name or current_user.email }}" 
+                 aria-describedby="user-info">
+            <div id="user-info">
+                <h4 class="user-name">{{ current_user.name or current_user.email }}</h4>
+                <span class="user-role" aria-label="User role">Job Seeker</span>
             </div>
-            {% endfor %}
-        </div>
+        </header>
+        <nav class="nav flex-column" aria-label="Main navigation">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" 
+               href="{{ url_for('dashboard') }}" 
+               aria-label="Go to Dashboard">
+                <i class="bi bi-house" aria-hidden="true"></i> 
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" 
+               href="{{ url_for('resumes') }}"
+               aria-label="Manage your resumes">
+                <i class="bi bi-file-earmark-person" aria-hidden="true"></i> 
+                <span>Resumes</span>
+            </a>
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" 
+               href="{{ url_for('cover_letters') }}"
+               aria-current="page"
+               aria-label="Manage your cover letters - current page">
+                <i class="bi bi-envelope-paper" aria-hidden="true"></i> 
+                <span>Cover Letters</span>
+            </a>
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" 
+               href="{{ url_for('interview_qa') }}"
+               aria-label="Interview questions and answers">
+                <i class="bi bi-question-circle" aria-hidden="true"></i> 
+                <span>Interview Q&amp;A</span>
+            </a>
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" 
+               href="{{ url_for('jobs') }}"
+               aria-label="Browse job opportunities">
+                <i class="bi bi-briefcase" aria-hidden="true"></i> 
+                <span>Jobs</span>
+            </a>
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" 
+               href="{{ url_for('my_account') }}"
+               aria-label="Manage your account settings">
+                <i class="bi bi-person" aria-hidden="true"></i> 
+                <span>My Account</span>
+            </a>
+            <a class="nav-link text-danger logout" 
+               href="{{ url_for('logout') }}"
+               aria-label="Sign out of your account">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> 
+                <span>Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <section class="main-content" role="main">
+        <header class="page-header">
+            <h1 id="page-title">Your Cover Letters</h1>
+            {% if cover_letters|length > 0 %}
+            <div class="header-actions">
+                <a href="{{ url_for('create_cover_letter') }}" 
+                   class="btn btn-primary"
+                   aria-label="Create a new cover letter">
+                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Create New Cover Letter
+                </a>
+            </div>
+            {% endif %}
+        </header>
+
+        {% if cover_letters|length > 0 %}
+        <!-- Cover Letters Collection -->
+        <section class="cover-letters-collection" aria-labelledby="letters-heading">
+            <h2 id="letters-heading" class="visually-hidden">Cover Letters Collection</h2>
+            <div class="dashboard-container" role="grid" aria-label="Cover letters grid">
+                {% for cover_letter in cover_letters %}
+                <article class="dashboard-card" 
+                         role="gridcell" 
+                         itemscope 
+                         itemtype="https://schema.org/CreativeWork"
+                         aria-labelledby="letter-title-{{ cover_letter.id }}">
+                    <header>
+                        <h3 id="letter-title-{{ cover_letter.id }}" itemprop="name">{{ cover_letter.job_title }}</h3>
+                    </header>
+                    <div class="card-content">
+                        <p itemprop="description" aria-label="Cover letter preview">{{ cover_letter.content|truncate(120) }}</p>
+                        {% if cover_letter.created_at %}
+                        <time datetime="{{ cover_letter.created_at.isoformat() }}" 
+                              itemprop="dateCreated"
+                              aria-label="Created on {{ cover_letter.created_at.strftime('%B %d, %Y') }}">
+                            {{ cover_letter.created_at.strftime('%b %d, %Y') }}
+                        </time>
+                        {% endif %}
+                    </div>
+                    <footer class="card-actions">
+                        <a href="{{ url_for('edit_cover_letter', letter_id=cover_letter.id) }}"
+                           class="btn btn-outline-primary"
+                           aria-label="Edit cover letter for {{ cover_letter.job_title }}">
+                            <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                        </a>
+                    </footer>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
         {% else %}
-        <div class="create-first-section">
-            <div class="create-first-icon">
+        <!-- Empty State -->
+        <section class="create-first-section" aria-labelledby="empty-state-title">
+            <div class="create-first-icon" aria-hidden="true">
                 <i class="bi bi-envelope-paper"></i>
             </div>
-            <h3 class="create-first-title">Create Your First Cover Letter</h3>
-            <p class="create-first-subtitle">Craft compelling cover letters that complement your resume and help you stand out to employers.</p>
-            <a href="{{ url_for('create_cover_letter') }}" class="create-first-btn">
-                <i class="bi bi-plus-circle me-2"></i>Create Cover Letter
+            <h2 id="empty-state-title" class="create-first-title">Create Your First Cover Letter</h2>
+            <p class="create-first-subtitle">
+                Craft compelling cover letters that complement your resume and help you stand out to employers.
+            </p>
+            <a href="{{ url_for('create_cover_letter') }}" 
+               class="create-first-btn"
+               aria-label="Create your first cover letter to get started">
+                <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Create Cover Letter
             </a>
-        </div>
+        </section>
         {% endif %}
-    </div>
-</div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+{% block extra_js %}
 <script>
-window.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('fade-wrapper').style.opacity = 0;
-    setTimeout(function() {
-        document.getElementById('fade-wrapper').style.transition = 'opacity 0.5s';
-        document.getElementById('fade-wrapper').style.opacity = 1;
-    }, 50);
-});
-Array.from(document.querySelectorAll('.nav-link')).forEach(function(link) {
-    link.addEventListener('click', function(e) {
-        if (link.href && !link.classList.contains('active')) {
-            e.preventDefault();
-            document.getElementById('fade-wrapper').style.opacity = 0;
-            setTimeout(function() {
-                window.location = link.href;
-            }, 400);
-        }
+// Enhanced page transition effects for better user experience
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth fade-in effect for page load
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'translateY(20px)';
+        
+        setTimeout(function() {
+            mainContent.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'translateY(0)';
+        }, 100);
+    }
+
+    // Enhanced navigation with accessibility
+    const navLinks = document.querySelectorAll('.nav-link:not(.active)');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            // Skip transition for external links or same page
+            if (link.href && !link.classList.contains('active') && 
+                link.getAttribute('href').startsWith('/')) {
+                e.preventDefault();
+                
+                // Add loading state
+                link.setAttribute('aria-busy', 'true');
+                
+                // Fade out effect
+                if (mainContent) {
+                    mainContent.style.opacity = '0';
+                    mainContent.style.transform = 'translateY(-20px)';
+                }
+                
+                setTimeout(function() {
+                    window.location = link.href;
+                }, 300);
+            }
+        });
+    });
+
+    // Enhance card interactions for better UX
+    const cards = document.querySelectorAll('.dashboard-card');
+    cards.forEach(function(card) {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        });
     });
 });
 </script>
-</body>
-</html>
+{% endblock %}

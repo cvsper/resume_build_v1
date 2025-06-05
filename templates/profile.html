@@ -1,12 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>My Account</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% extends "base.html" %}
+
+{% block title %}My Account - Profile Settings | Resume Builder{% endblock %}
+
+{% block meta_description %}Manage your account settings, update personal information, change password, and configure preferences for your resume builder profile.{% endblock %}
+
+{% block meta_keywords %}my account, profile settings, user account, account management, profile update, change password, user preferences{% endblock %}
+
+{% block head %}
+<!-- Profile Page Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "My Account - Profile Settings",
+  "description": "User account management page with profile settings, security options, and preferences",
+  "url": "{{ request.url }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url_for('index', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Dashboard",
+        "item": "{{ url_for('dashboard', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "My Account",
+        "item": "{{ request.url }}"
+      }
+    ]
+  },
+  "mainEntity": {
+    "@type": "Person",
+    "@id": "user-profile",
+    "name": "{{ current_user.name or 'User' }}",
+    "email": "{{ current_user.email }}"
+  }
+}
+</script>
+
+<!-- User Profile Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "mainEntity": {
+    "@type": "Person",
+    "name": "{{ current_user.name or 'User' }}",
+    "email": "{{ current_user.email }}",
+    "image": "{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic, _external=True) if current_user.profile_pic else '' }}"
+  }
+}
+</script>
+{% endblock %}
+
+{% block styles %}
     <style>
         :root {
             --primary-blue: #3B82F6;
@@ -35,6 +91,12 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             line-height: 1.6;
             color: var(--gray-700);
+        }
+
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            background: inherit;
         }
 
         .sidebar {
@@ -622,305 +684,355 @@
         .feature-coming-soon p {
             color: var(--gray-600);
             margin-bottom: 0;
-        }
+    }
     </style>
-</head>
-<body>
-<div id="fade-wrapper">
-    <div class="sidebar d-flex flex-column">
-        <div class="sidebar-header">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture">
-            <h4>{{ current_user.name or current_user.email.split('@')[0] }}</h4>
-            <div class="user-role">Resume Builder User</div>
-        </div>
-        <nav class="nav flex-column">
-            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-house"></i> Dashboard
+{% endblock %}
+
+{% block content %}
+<main role="main" aria-labelledby="page-title">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
+        <header class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
+                 alt="Profile picture of {{ current_user.name or current_user.email.split('@')[0] }}" 
+                 aria-describedby="user-info">
+            <div id="user-info">
+                <h4 class="user-name">{{ current_user.name or current_user.email.split('@')[0] }}</h4>
+                <div class="user-role" aria-label="User role">Resume Builder User</div>
+            </div>
+        </header>
+        <nav class="nav flex-column" aria-label="Main navigation">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" 
+               href="{{ url_for('dashboard') }}" 
+               aria-label="Go to Dashboard">
+                <i class="bi bi-house" aria-hidden="true"></i> Dashboard
             </a>
-            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}">
-                <i class="bi bi-file-earmark-person"></i> Resumes
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" 
+               href="{{ url_for('resumes') }}"
+               aria-label="Manage your resumes">
+                <i class="bi bi-file-earmark-person" aria-hidden="true"></i> Resumes
             </a>
-            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}">
-                <i class="bi bi-envelope-paper"></i> Cover Letters
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" 
+               href="{{ url_for('cover_letters') }}"
+               aria-label="Manage your cover letters">
+                <i class="bi bi-envelope-paper" aria-hidden="true"></i> Cover Letters
             </a>
-            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}">
-                <i class="bi bi-question-circle"></i> Interview Q&A
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" 
+               href="{{ url_for('interview_qa') }}"
+               aria-label="Interview questions and answers">
+                <i class="bi bi-question-circle" aria-hidden="true"></i> Interview Q&A
             </a>
-            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}">
-                <i class="bi bi-briefcase"></i> Jobs
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" 
+               href="{{ url_for('jobs') }}"
+               aria-label="Browse job opportunities">
+                <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs
             </a>
-            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}">
-                <i class="bi bi-person"></i> My Account
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" 
+               href="{{ url_for('my_account') }}"
+               aria-current="page"
+               aria-label="Manage your account settings - current page">
+                <i class="bi bi-person" aria-hidden="true"></i> My Account
             </a>
-            <a class="nav-link text-danger" href="{{ url_for('logout') }}">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <a class="nav-link text-danger logout" 
+               href="{{ url_for('logout') }}"
+               aria-label="Sign out of your account">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
             </a>
         </nav>
-    </div>
+    </aside>
 
-    <div class="main-content">
-        <div class="header-section">
-            <h1 class="page-title">
-                <i class="bi bi-person-circle"></i>
+    <!-- Main Content Area -->
+    <div class="main-content" id="fade-wrapper">
+        <header class="header-section" role="banner">
+            <h1 id="page-title" class="page-title">
+                <i class="bi bi-person-circle" aria-hidden="true"></i>
                 Account Settings
             </h1>
             <p class="page-subtitle">Manage your profile, subscription, and account preferences</p>
-        </div>
+        </header>
 
-        <div class="account-content">
+        <section class="account-content" role="main" aria-labelledby="page-title">
             <!-- Success/Error Messages -->
             {% if error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
                     {{ error }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
                 </div>
             {% endif %}
             
             {% if request.args.get('payment') == 'success' %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>
+                <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
                     Your subscription has been successfully updated!
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
                 </div>
             {% elif request.args.get('payment') == 'failed' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
                     Payment failed. Please try again or contact support.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
                 </div>
             {% endif %}
 
-            <div class="account-grid">
+            <div class="account-grid" role="grid" aria-label="Account management sections">
                 <!-- Profile Information -->
-                <div class="account-card">
-                    <h3 class="card-title">
-                        <i class="bi bi-person"></i>
+                <article class="account-card" role="gridcell" aria-labelledby="profile-title">
+                    <h3 id="profile-title" class="card-title">
+                        <i class="bi bi-person" aria-hidden="true"></i>
                         Profile Information
                     </h3>
                     
-                    <form method="POST" action="{{ url_for('my_account') }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ url_for('my_account') }}" enctype="multipart/form-data" 
+                          aria-labelledby="profile-title" novalidate>
                         <div class="profile-pic-section">
                             <div class="profile-pic-container">
                                 <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
-                                     alt="Profile Picture" class="profile-pic" id="profilePicPreview">
-                                <label for="profile_pic" class="pic-upload-btn">
-                                    <i class="bi bi-camera"></i>
+                                     alt="Current profile picture for {{ current_user.name or current_user.email.split('@')[0] }}" 
+                                     class="profile-pic" id="profilePicPreview">
+                                <label for="profile_pic" class="pic-upload-btn" aria-label="Upload new profile picture">
+                                    <i class="bi bi-camera" aria-hidden="true"></i>
                                 </label>
-                                <input type="file" name="profile_pic" id="profile_pic" class="file-input" accept="image/*">
+                                <input type="file" name="profile_pic" id="profile_pic" class="file-input" 
+                                       accept="image/*" aria-describedby="profile-pic-help">
+                                <div id="profile-pic-help" class="sr-only">Choose a new profile picture (JPG, PNG, or GIF format)</div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" 
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" name="name" id="name" class="form-control" 
                                    value="{{ current_user.name or '' }}" 
-                                   placeholder="Enter your full name">
+                                   placeholder="Enter your full name"
+                                   aria-describedby="name-help">
+                            <div id="name-help" class="sr-only">Enter your full name as you'd like it to appear on your resume</div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" 
-                                   value="{{ current_user.email }}" readonly>
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-control" 
+                                   value="{{ current_user.email }}" readonly
+                                   aria-describedby="email-help">
+                            <div id="email-help" class="sr-only">Your email address cannot be changed</div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Preferred Resume Template</label>
-                            <select name="preferred_template" class="form-control">
+                            <label for="preferred_template" class="form-label">Preferred Resume Template</label>
+                            <select name="preferred_template" id="preferred_template" class="form-control"
+                                    aria-describedby="template-help">
                                 <option value="classic" {% if current_user.preferred_template == 'classic' %}selected{% endif %}>Classic</option>
                                 <option value="modern" {% if current_user.preferred_template == 'modern' %}selected{% endif %}>Modern</option>
                                 <option value="elegant" {% if current_user.preferred_template == 'elegant' %}selected{% endif %}>Elegant</option>
                             </select>
+                            <div id="template-help" class="sr-only">Choose your default resume template style</div>
                         </div>
 
-                        <button type="submit" class="btn-primary">
-                            <i class="bi bi-check-circle me-2"></i>
+                        <button type="submit" class="btn-primary" aria-describedby="update-profile-help">
+                            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
                             Update Profile
                         </button>
+                        <div id="update-profile-help" class="sr-only">Save changes to your profile information</div>
                     </form>
-                </div>
+                </article>
 
                 <!-- Security Settings -->
-                <div class="account-card">
-                    <h3 class="card-title">
-                        <i class="bi bi-shield-lock"></i>
+                <article class="account-card" role="gridcell" aria-labelledby="security-title">
+                    <h3 id="security-title" class="card-title">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
                         Security Settings
                     </h3>
                     
-                    <form method="POST" action="{{ url_for('my_account') }}">
+                    <form method="POST" action="{{ url_for('my_account') }}" 
+                          aria-labelledby="security-title" novalidate>
                         <input type="hidden" name="change_password" value="1">
                         
                         <div class="form-group">
-                            <label class="form-label">Current Password</label>
-                            <input type="password" name="current_password" class="form-control" 
-                                   placeholder="Enter current password" required>
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <input type="password" name="current_password" id="current_password" 
+                                   class="form-control" placeholder="Enter current password" required
+                                   aria-describedby="current-password-help">
+                            <div id="current-password-help" class="sr-only">Enter your current password to confirm your identity</div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">New Password</label>
-                            <input type="password" name="new_password" class="form-control" 
-                                   placeholder="Enter new password" required>
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" name="new_password" id="new_password" 
+                                   class="form-control" placeholder="Enter new password" required
+                                   aria-describedby="new-password-help">
+                            <div id="new-password-help" class="sr-only">Choose a strong password with at least 8 characters</div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Confirm New Password</label>
-                            <input type="password" name="confirm_password" class="form-control" 
-                                   placeholder="Confirm new password" required>
+                            <label for="confirm_password" class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirm_password" id="confirm_password" 
+                                   class="form-control" placeholder="Confirm new password" required
+                                   aria-describedby="confirm-password-help">
+                            <div id="confirm-password-help" class="sr-only">Re-enter your new password to confirm</div>
                         </div>
 
-                        <button type="submit" class="btn-warning">
-                            <i class="bi bi-key me-2"></i>
+                        <button type="submit" class="btn-warning" aria-describedby="change-password-help">
+                            <i class="bi bi-key me-2" aria-hidden="true"></i>
                             Change Password
                         </button>
+                        <div id="change-password-help" class="sr-only">Update your account password</div>
                     </form>
 
-                    <div class="feature-coming-soon">
-                        <h4><i class="bi bi-shield-check me-2"></i>Two-Factor Authentication</h4>
+                    <div class="feature-coming-soon" role="region" aria-labelledby="2fa-title">
+                        <h4 id="2fa-title"><i class="bi bi-shield-check me-2" aria-hidden="true"></i>Two-Factor Authentication</h4>
                         <p>Coming soon - Add an extra layer of security to your account</p>
                     </div>
-                </div>
+                </article>
 
                 <!-- Subscription & Plans -->
-                <div class="account-card subscription-section">
-                    <h3 class="card-title">
-                        <i class="bi bi-credit-card"></i>
+                <article class="account-card subscription-section" role="gridcell" aria-labelledby="subscription-title">
+                    <h3 id="subscription-title" class="card-title">
+                        <i class="bi bi-credit-card" aria-hidden="true"></i>
                         Subscription & Plans
                         {% if user.subscription == 'Premium' %}
-                            <span class="premium-badge">Premium</span>
+                            <span class="premium-badge" aria-label="Currently on Premium plan">Premium</span>
                         {% elif user.subscription == 'Pro' %}
-                            <span class="premium-badge">Pro</span>
+                            <span class="premium-badge" aria-label="Currently on Pro plan">Pro</span>
                         {% endif %}
                     </h3>
 
-                    <div class="plan-cards">
+                    <div class="plan-cards" role="group" aria-labelledby="subscription-title">
                         <!-- Free Plan -->
-                        <div class="plan-card {% if not user.subscription or user.subscription == 'Free' %}recommended{% endif %}">
-                            <h4 class="plan-name">Free</h4>
-                            <div class="plan-price">$0</div>
+                        <div class="plan-card {% if not user.subscription or user.subscription == 'Free' %}recommended{% endif %}"
+                             role="article" aria-labelledby="free-plan-title">
+                            <h4 id="free-plan-title" class="plan-name">Free</h4>
+                            <div class="plan-price" aria-label="Free plan costs 0 dollars">$0</div>
                             <div class="plan-period">per month</div>
-                            <ul class="plan-features">
-                                <li><i class="bi bi-check-circle"></i> 3 Resume Downloads</li>
-                                <li><i class="bi bi-check-circle"></i> Basic Templates</li>
-                                <li><i class="bi bi-check-circle"></i> Job Search</li>
-                                <li class="unavailable"><i class="bi bi-x-circle"></i> Premium Templates</li>
-                                <li class="unavailable"><i class="bi bi-x-circle"></i> AI-Powered Suggestions</li>
-                                <li class="unavailable"><i class="bi bi-x-circle"></i> Priority Support</li>
+                            <ul class="plan-features" aria-label="Free plan features">
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> 3 Resume Downloads</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Basic Templates</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Job Search</li>
+                                <li class="unavailable"><i class="bi bi-x-circle" aria-hidden="true"></i> Premium Templates</li>
+                                <li class="unavailable"><i class="bi bi-x-circle" aria-hidden="true"></i> AI-Powered Suggestions</li>
+                                <li class="unavailable"><i class="bi bi-x-circle" aria-hidden="true"></i> Priority Support</li>
                             </ul>
                             {% if not user.subscription or user.subscription == 'Free' %}
-                                <button class="select-plan-btn current">Current Plan</button>
+                                <button class="select-plan-btn current" disabled aria-label="Currently on Free plan">Current Plan</button>
                             {% else %}
-                                <button class="select-plan-btn" onclick="downgradePlan('Free')">Downgrade</button>
+                                <button class="select-plan-btn" onclick="downgradePlan('Free')" 
+                                        aria-label="Downgrade to Free plan">Downgrade</button>
                             {% endif %}
                         </div>
 
                         <!-- Pro Plan -->
-                        <div class="plan-card {% if user.subscription == 'Pro' %}recommended{% endif %}">
-                            <h4 class="plan-name">Pro</h4>
-                            <div class="plan-price">$9.99</div>
+                        <div class="plan-card {% if user.subscription == 'Pro' %}recommended{% endif %}"
+                             role="article" aria-labelledby="pro-plan-title">
+                            <h4 id="pro-plan-title" class="plan-name">Pro</h4>
+                            <div class="plan-price" aria-label="Pro plan costs 9 dollars and 99 cents">$9.99</div>
                             <div class="plan-period">per month</div>
-                            <ul class="plan-features">
-                                <li><i class="bi bi-check-circle"></i> Unlimited Downloads</li>
-                                <li><i class="bi bi-check-circle"></i> All Templates</li>
-                                <li><i class="bi bi-check-circle"></i> Advanced Job Search</li>
-                                <li><i class="bi bi-check-circle"></i> AI Resume Optimization</li>
-                                <li><i class="bi bi-check-circle"></i> Cover Letter AI</li>
-                                <li class="unavailable"><i class="bi bi-x-circle"></i> Priority Support</li>
+                            <ul class="plan-features" aria-label="Pro plan features">
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Unlimited Downloads</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> All Templates</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Advanced Job Search</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> AI Resume Optimization</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Cover Letter AI</li>
+                                <li class="unavailable"><i class="bi bi-x-circle" aria-hidden="true"></i> Priority Support</li>
                             </ul>
                             {% if user.subscription == 'Pro' %}
-                                <button class="select-plan-btn current">Current Plan</button>
+                                <button class="select-plan-btn current" disabled aria-label="Currently on Pro plan">Current Plan</button>
                             {% else %}
-                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Pro')">
+                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Pro')"
+                                        aria-label="{% if not user.subscription or user.subscription == 'Free' %}Upgrade to Pro plan{% else %}Switch to Pro plan{% endif %}">
                                     {% if not user.subscription or user.subscription == 'Free' %}Upgrade to Pro{% else %}Switch to Pro{% endif %}
                                 </button>
                             {% endif %}
                         </div>
 
                         <!-- Premium Plan -->
-                        <div class="plan-card {% if user.subscription == 'Premium' %}recommended{% endif %}">
-                            <h4 class="plan-name">Premium</h4>
-                            <div class="plan-price">$19.99</div>
+                        <div class="plan-card {% if user.subscription == 'Premium' %}recommended{% endif %}"
+                             role="article" aria-labelledby="premium-plan-title">
+                            <h4 id="premium-plan-title" class="plan-name">Premium</h4>
+                            <div class="plan-price" aria-label="Premium plan costs 19 dollars and 99 cents">$19.99</div>
                             <div class="plan-period">per month</div>
-                            <ul class="plan-features">
-                                <li><i class="bi bi-check-circle"></i> Everything in Pro</li>
-                                <li><i class="bi bi-check-circle"></i> Personal Career Coach</li>
-                                <li><i class="bi bi-check-circle"></i> Priority Support</li>
-                                <li><i class="bi bi-check-circle"></i> LinkedIn Integration</li>
-                                <li><i class="bi bi-check-circle"></i> Interview Simulator</li>
-                                <li><i class="bi bi-check-circle"></i> Salary Negotiation Tips</li>
+                            <ul class="plan-features" aria-label="Premium plan features">
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Everything in Pro</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Personal Career Coach</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Priority Support</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> LinkedIn Integration</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Interview Simulator</li>
+                                <li><i class="bi bi-check-circle" aria-hidden="true"></i> Salary Negotiation Tips</li>
                             </ul>
                             {% if user.subscription == 'Premium' %}
-                                <button class="select-plan-btn current">Current Plan</button>
+                                <button class="select-plan-btn current" disabled aria-label="Currently on Premium plan">Current Plan</button>
                             {% else %}
-                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Premium')">
+                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Premium')"
+                                        aria-label="Upgrade to Premium plan">
                                     Upgrade to Premium
                                 </button>
                             {% endif %}
                         </div>
                     </div>
-                </div>
+                </article>
 
                 <!-- Usage Statistics -->
-                <div class="account-card usage-stats">
-                    <h3 class="card-title">
-                        <i class="bi bi-bar-chart"></i>
+                <article class="account-card usage-stats" role="gridcell" aria-labelledby="stats-title">
+                    <h3 id="stats-title" class="card-title">
+                        <i class="bi bi-bar-chart" aria-hidden="true"></i>
                         Your Activity
                     </h3>
                     
-                    <div class="stats-grid">
-                        <div class="stat-card">
+                    <div class="stats-grid" role="group" aria-labelledby="stats-title">
+                        <div class="stat-card" role="article" aria-labelledby="resumes-stat">
                             <div class="stat-icon blue">
-                                <i class="bi bi-file-earmark-person"></i>
+                                <i class="bi bi-file-earmark-person" aria-hidden="true"></i>
                             </div>
                             <div class="stat-number">{{ current_user.resumes|length if current_user.resumes else 0 }}</div>
-                            <div class="stat-label">Resumes Created</div>
+                            <div id="resumes-stat" class="stat-label">Resumes Created</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" role="article" aria-labelledby="covers-stat">
                             <div class="stat-icon green">
-                                <i class="bi bi-envelope-paper"></i>
+                                <i class="bi bi-envelope-paper" aria-hidden="true"></i>
                             </div>
                             <div class="stat-number">{{ current_user.cover_letters|length if current_user.cover_letters else 0 }}</div>
-                            <div class="stat-label">Cover Letters</div>
+                            <div id="covers-stat" class="stat-label">Cover Letters</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" role="article" aria-labelledby="jobs-stat">
                             <div class="stat-icon purple">
-                                <i class="bi bi-briefcase"></i>
+                                <i class="bi bi-briefcase" aria-hidden="true"></i>
                             </div>
                             <div class="stat-number">{{ current_user.saved_jobs|length if current_user.saved_jobs else 0 }}</div>
-                            <div class="stat-label">Saved Jobs</div>
+                            <div id="jobs-stat" class="stat-label">Saved Jobs</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card" role="article" aria-labelledby="member-stat">
                             <div class="stat-icon amber">
-                                <i class="bi bi-calendar-check"></i>
+                                <i class="bi bi-calendar-check" aria-hidden="true"></i>
                             </div>
                             <div class="stat-number">{{ (current_user.created_at.strftime('%B %Y') if current_user.created_at else 'N/A') }}</div>
-                            <div class="stat-label">Member Since</div>
+                            <div id="member-stat" class="stat-label">Member Since</div>
                         </div>
                     </div>
-                </div>
+                </article>
 
                 <!-- Danger Zone -->
-                <div class="danger-zone">
-                    <h3 class="card-title">
-                        <i class="bi bi-exclamation-triangle"></i>
+                <article class="danger-zone" role="gridcell" aria-labelledby="danger-title">
+                    <h3 id="danger-title" class="card-title">
+                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
                         Danger Zone
                     </h3>
                     
-                    <p style="color: #B91C1C; margin-bottom: 1.5rem;">
+                    <p style="color: #B91C1C; margin-bottom: 1.5rem;" role="alert">
                         These actions are irreversible. Please proceed with caution.
                     </p>
                     
-                    <button type="button" class="btn-danger" onclick="confirmDeleteAccount()">
-                        <i class="bi bi-trash me-2"></i>
+                    <button type="button" class="btn-danger" onclick="confirmDeleteAccount()"
+                            aria-describedby="delete-account-help">
+                        <i class="bi bi-trash me-2" aria-hidden="true"></i>
                         Delete Account
                     </button>
-                </div>
+                    <div id="delete-account-help" class="sr-only">Permanently delete your account and all associated data</div>
+                </article>
             </div>
-        </div>
+        </section>
     </div>
-</div>
+</main>
 
+{% block scripts %}
 <script>
-// Fade wrapper animation
+// Enhanced page initialization with accessibility focus management
 window.addEventListener('DOMContentLoaded', function() {
     const fadeWrapper = document.getElementById('fade-wrapper');
     fadeWrapper.style.opacity = 0;
@@ -928,10 +1040,172 @@ window.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         fadeWrapper.style.transition = 'opacity 0.6s ease';
         fadeWrapper.style.opacity = 1;
+        
+        // Set focus to main heading for screen readers
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            pageTitle.focus();
+        }
     }, 100);
+    
+    // Initialize form validation
+    initializeFormValidation();
+    
+    // Initialize accessibility enhancements
+    initializeAccessibility();
 });
 
-// Navigation transitions
+// Enhanced form validation
+function initializeFormValidation() {
+    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
+    const passwordForm = document.querySelector('form input[name="change_password"]').closest('form');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            if (!validateProfileForm(this)) {
+                e.preventDefault();
+                return false;
+            }
+            showLoadingState(this);
+        });
+    }
+    
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            if (!validatePasswordForm(this)) {
+                e.preventDefault();
+                return false;
+            }
+            showLoadingState(this);
+        });
+    }
+}
+
+function validateProfileForm(form) {
+    const nameInput = form.querySelector('input[name="name"]');
+    const fileInput = form.querySelector('input[name="profile_pic"]');
+    let isValid = true;
+    
+    // Clear previous error states
+    clearFieldErrors(form);
+    
+    // Validate name if provided
+    if (nameInput && nameInput.value.trim()) {
+        if (nameInput.value.trim().length < 2) {
+            showFieldError(nameInput, 'Name must be at least 2 characters long');
+            isValid = false;
+        } else if (!/^[a-zA-Z\s'-]+$/.test(nameInput.value.trim())) {
+            showFieldError(nameInput, 'Name can only contain letters, spaces, hyphens, and apostrophes');
+            isValid = false;
+        }
+    }
+    
+    // Validate profile picture if uploaded
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        
+        if (file.size > maxSize) {
+            showFieldError(fileInput, 'Profile picture must be smaller than 5MB');
+            isValid = false;
+        } else if (!allowedTypes.includes(file.type)) {
+            showFieldError(fileInput, 'Profile picture must be a JPG, PNG, or GIF file');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+function validatePasswordForm(form) {
+    const currentPassword = form.querySelector('input[name="current_password"]');
+    const newPassword = form.querySelector('input[name="new_password"]');
+    const confirmPassword = form.querySelector('input[name="confirm_password"]');
+    let isValid = true;
+    
+    // Clear previous error states
+    clearFieldErrors(form);
+    
+    // Validate current password
+    if (!currentPassword.value.trim()) {
+        showFieldError(currentPassword, 'Current password is required');
+        isValid = false;
+    }
+    
+    // Validate new password
+    if (!newPassword.value) {
+        showFieldError(newPassword, 'New password is required');
+        isValid = false;
+    } else if (newPassword.value.length < 8) {
+        showFieldError(newPassword, 'New password must be at least 8 characters long');
+        isValid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword.value)) {
+        showFieldError(newPassword, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
+        isValid = false;
+    }
+    
+    // Validate password confirmation
+    if (!confirmPassword.value) {
+        showFieldError(confirmPassword, 'Please confirm your new password');
+        isValid = false;
+    } else if (newPassword.value !== confirmPassword.value) {
+        showFieldError(confirmPassword, 'Passwords do not match');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function showFieldError(field, message) {
+    field.classList.add('is-invalid');
+    field.setAttribute('aria-invalid', 'true');
+    
+    // Create or update error message
+    let errorElement = field.parentNode.querySelector('.error-message');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.setAttribute('role', 'alert');
+        errorElement.style.color = '#EF4444';
+        errorElement.style.fontSize = '0.875rem';
+        errorElement.style.marginTop = '0.25rem';
+        field.parentNode.appendChild(errorElement);
+    }
+    errorElement.textContent = message;
+    
+    // Set focus to first invalid field
+    if (!document.querySelector('.is-invalid:focus')) {
+        field.focus();
+    }
+}
+
+function clearFieldErrors(form) {
+    form.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+        field.removeAttribute('aria-invalid');
+    });
+    form.querySelectorAll('.error-message').forEach(error => error.remove());
+}
+
+function showLoadingState(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>Processing...';
+        submitBtn.setAttribute('aria-label', 'Processing your request, please wait');
+        
+        // Reset button after timeout as fallback
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            submitBtn.removeAttribute('aria-label');
+        }, 10000);
+    }
+}
+
+// Enhanced navigation transitions with accessibility
 document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
     link.addEventListener('click', function(e) {
         if (link.href && !link.classList.contains('text-danger')) {
@@ -941,101 +1215,310 @@ document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
             fadeWrapper.style.transition = 'opacity 0.4s ease';
             fadeWrapper.style.opacity = 0;
             
+            // Announce navigation to screen readers
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = `Navigating to ${link.textContent.trim()}`;
+            document.body.appendChild(announcement);
+            
             setTimeout(function() {
                 window.location = link.href;
             }, 400);
+            
+            setTimeout(() => document.body.removeChild(announcement), 1000);
         }
     });
 });
 
-// Profile picture preview
+// Enhanced profile picture preview with accessibility
 document.getElementById('profile_pic').addEventListener('change', function(e) {
     if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
         const reader = new FileReader();
+        
         reader.onload = function(e) {
-            document.getElementById('profilePicPreview').src = e.target.result;
+            const preview = document.getElementById('profilePicPreview');
+            preview.src = e.target.result;
+            preview.alt = `New profile picture preview: ${file.name}`;
+            
+            // Announce change to screen readers
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.className = 'sr-only';
+            announcement.textContent = 'Profile picture updated. Preview is now showing your selected image.';
+            document.body.appendChild(announcement);
+            setTimeout(() => document.body.removeChild(announcement), 3000);
         };
-        reader.readAsDataURL(e.target.files[0]);
+        
+        reader.onerror = function() {
+            showFieldError(e.target, 'Failed to load image. Please try a different file.');
+        };
+        
+        reader.readAsDataURL(file);
     }
 });
 
-// Plan upgrade/downgrade functions
+// Enhanced plan upgrade/downgrade functions with better UX
 function upgradePlan(plan) {
-    if (confirm(`Are you sure you want to upgrade to the ${plan} plan?`)) {
-        // Create form and submit to payment gateway
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("create_checkout_session") }}';
-        
-        const planInput = document.createElement('input');
-        planInput.type = 'hidden';
-        planInput.name = 'plan';
-        planInput.value = plan;
-        form.appendChild(planInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-function downgradePlan(plan) {
-    if (confirm(`Are you sure you want to downgrade to the ${plan} plan? You will lose access to premium features.`)) {
-        // Handle downgrade logic
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ url_for("my_account") }}';
-        
-        const planInput = document.createElement('input');
-        planInput.type = 'hidden';
-        planInput.name = 'change_subscription';
-        planInput.value = '1';
-        form.appendChild(planInput);
-        
-        const subscriptionInput = document.createElement('input');
-        subscriptionInput.type = 'hidden';
-        subscriptionInput.name = 'subscription';
-        subscriptionInput.value = plan;
-        form.appendChild(subscriptionInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-
-function confirmDeleteAccount() {
-    if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.')) {
-        if (confirm('This is your final warning. Are you sure you want to permanently delete your account?')) {
-            // Handle account deletion
+    const confirmMessage = `Are you sure you want to upgrade to the ${plan} plan?`;
+    const modal = createConfirmationModal(
+        'Upgrade Subscription',
+        confirmMessage,
+        'Upgrade',
+        'Cancel',
+        function() {
+            // Create form and submit to payment gateway
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ url_for("my_account") }}';
+            form.action = '{{ url_for("create_checkout_session") }}';
             
-            const deleteInput = document.createElement('input');
-            deleteInput.type = 'hidden';
-            deleteInput.name = 'delete_account';
-            deleteInput.value = '1';
-            form.appendChild(deleteInput);
+            const planInput = document.createElement('input');
+            planInput.type = 'hidden';
+            planInput.name = 'plan';
+            planInput.value = plan;
+            form.appendChild(planInput);
             
             document.body.appendChild(form);
             form.submit();
         }
-    }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
 }
 
-// Enhanced hover effects for cards
-document.querySelectorAll('.account-card, .plan-card, .stat-card').forEach(function(card) {
-    card.addEventListener('mouseenter', function() {
-        if (!this.classList.contains('recommended')) {
-            this.style.transform = 'translateY(-4px) scale(1.02)';
+function downgradePlan(plan) {
+    const confirmMessage = `Are you sure you want to downgrade to the ${plan} plan? You will lose access to premium features.`;
+    const modal = createConfirmationModal(
+        'Downgrade Subscription',
+        confirmMessage,
+        'Downgrade',
+        'Cancel',
+        function() {
+            // Handle downgrade logic
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ url_for("my_account") }}';
+            
+            const planInput = document.createElement('input');
+            planInput.type = 'hidden';
+            planInput.name = 'change_subscription';
+            planInput.value = '1';
+            form.appendChild(planInput);
+            
+            const subscriptionInput = document.createElement('input');
+            subscriptionInput.type = 'hidden';
+            subscriptionInput.name = 'subscription';
+            subscriptionInput.value = plan;
+            form.appendChild(subscriptionInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function confirmDeleteAccount() {
+    const modal = createConfirmationModal(
+        'Delete Account',
+        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
+        'Delete Account',
+        'Cancel',
+        function() {
+            // Show second confirmation
+            const finalModal = createConfirmationModal(
+                'Final Warning',
+                'This is your final warning. Are you sure you want to permanently delete your account?',
+                'Yes, Delete My Account',
+                'Cancel',
+                function() {
+                    // Handle account deletion
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ url_for("my_account") }}';
+                    
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_account';
+                    deleteInput.value = '1';
+                    form.appendChild(deleteInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            );
+            document.body.appendChild(finalModal);
+            finalModal.querySelector('.modal-confirm').focus();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+// Create accessible confirmation modal
+function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+        justify-content: center; z-index: 9999;
+    `;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'modal-title');
+    modal.setAttribute('aria-describedby', 'modal-description');
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white; padding: 2rem; border-radius: 16px; 
+        max-width: 400px; margin: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 id="modal-title" style="margin: 0 0 1rem 0; color: var(--gray-900);">${title}</h3>
+        <p id="modal-description" style="margin: 0 0 2rem 0; color: var(--gray-700); line-height: 1.6;">${message}</p>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button type="button" class="modal-cancel" style="padding: 0.75rem 1.5rem; border: 2px solid var(--gray-300); background: white; border-radius: 8px; cursor: pointer;">
+                ${cancelText}
+            </button>
+            <button type="button" class="modal-confirm" style="padding: 0.75rem 1.5rem; border: none; background: var(--red-500); color: white; border-radius: 8px; cursor: pointer;">
+                ${confirmText}
+            </button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    
+    // Event handlers
+    modal.querySelector('.modal-cancel').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+    });
+    
+    modal.querySelector('.modal-confirm').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+        if (onConfirm) onConfirm();
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+            document.body.style.overflow = '';
         }
     });
     
-    card.addEventListener('mouseleave', function() {
-        if (!this.classList.contains('recommended')) {
-            this.style.transform = 'translateY(0) scale(1)';
+    // Keyboard handling
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.body.removeChild(modal);
+            document.body.style.overflow = '';
         }
     });
+    
+    document.body.style.overflow = 'hidden';
+    return modal;
+}
+
+// Initialize accessibility enhancements
+function initializeAccessibility() {
+    // Add keyboard navigation for plan cards
+    document.querySelectorAll('.plan-card').forEach(card => {
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const button = this.querySelector('button:not([disabled])');
+                if (button) {
+                    e.preventDefault();
+                    button.click();
+                }
+            }
+        });
+    });
+    
+    // Add keyboard navigation for stat cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                // Could add click behavior here if needed
+            }
+        });
+    });
+    
+    // Enhance form field focus management
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('focus', function() {
+            this.closest('.form-group')?.classList.add('focused');
+        });
+        
+        field.addEventListener('blur', function() {
+            this.closest('.form-group')?.classList.remove('focused');
+        });
+    });
+}
+
+// Enhanced hover effects for cards with keyboard support
+document.querySelectorAll('.account-card, .plan-card, .stat-card').forEach(function(card) {
+    function addHoverEffect() {
+        if (!card.classList.contains('recommended')) {
+            card.style.transform = 'translateY(-4px) scale(1.02)';
+            card.style.transition = 'transform 0.2s ease';
+        }
+    }
+    
+    function removeHoverEffect() {
+        if (!card.classList.contains('recommended')) {
+            card.style.transform = 'translateY(0) scale(1)';
+        }
+    }
+    
+    card.addEventListener('mouseenter', addHoverEffect);
+    card.addEventListener('mouseleave', removeHoverEffect);
+    card.addEventListener('focus', addHoverEffect);
+    card.addEventListener('blur', removeHoverEffect);
 });
+
+// Add CSS for focused form groups
+const style = document.createElement('style');
+style.textContent = `
+    .form-group.focused .form-label {
+        color: var(--primary-blue);
+        font-weight: 600;
+    }
+    
+    .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+    
+    .is-invalid {
+        border-color: var(--red-500) !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .error-message {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
 </script>
-</body>
-</html>
+{% endblock %}

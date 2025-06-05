@@ -1,0 +1,564 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Resume Builder Pro{% endblock %}
+
+{% block meta_description %}Manage your resumes, cover letters, and job applications from your personalized dashboard. Track your career progress with Resume Builder Pro.{% endblock %}
+
+{% block head %}
+<!-- Dashboard-specific structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Dashboard - Resume Builder Pro",
+  "description": "Personal dashboard for managing resumes, cover letters, and job applications",
+  "url": "{{ request.url }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home", 
+        "item": "{{ url_for('index', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Dashboard",
+        "item": "{{ request.url }}"
+      }
+    ]
+  }
+}
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-blue-dark: #2563EB;
+        --gray-50: #F9FAFB;
+        --gray-100: #F3F4F6;
+        --gray-200: #E5E7EB;
+        --gray-300: #D1D5DB;
+        --gray-600: #4B5563;
+        --gray-700: #374151;
+        --gray-900: #111827;
+        --success-green: #10B981;
+        --warning-amber: #F59E0B;
+        --purple-500: #8B5CF6;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        line-height: 1.6;
+        color: var(--gray-700);
+    }
+
+    .sidebar {
+        min-height: 100vh;
+        background: #fff;
+        box-shadow: 0 0 30px rgba(0,0,0,0.08);
+        padding: 0;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        z-index: 100;
+        border-right: 1px solid var(--gray-200);
+    }
+
+    .sidebar-header {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid var(--gray-100);
+        background: linear-gradient(135deg, var(--gray-50) 0%, #fff 100%);
+    }
+
+    .sidebar-header img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+        border: 4px solid var(--primary-blue);
+        object-fit: cover;
+    }
+
+    .sidebar-header h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .sidebar-header .user-role {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        font-weight: 400;
+    }
+
+    .sidebar nav {
+        padding: 1.5rem 0;
+    }
+
+    .sidebar .nav-link {
+        color: var(--gray-600);
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 0.875rem 1.5rem;
+        margin: 0.25rem 1rem;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .sidebar .nav-link i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+        width: 20px;
+    }
+
+    .sidebar .nav-link:hover {
+        background: var(--gray-50);
+        color: var(--primary-blue);
+        transform: translateX(4px);
+    }
+
+    .sidebar .nav-link.active {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .sidebar .nav-link.text-danger:hover {
+        background: #FEF2F2;
+        color: #DC2626;
+    }
+
+    .main-content {
+        margin-left: 280px;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    .header-section {
+        background: #fff;
+        padding: 2rem 2.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .welcome-text {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+        font-weight: 400;
+    }
+
+    .dashboard-content {
+        padding: 2.5rem;
+    }
+
+    .quick-actions {
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .section-title i {
+        margin-right: 0.75rem;
+        color: var(--primary-blue);
+    }
+
+    .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .action-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--purple-500) 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: var(--primary-blue);
+    }
+
+    .action-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        color: #fff;
+    }
+
+    .action-icon.blue { background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%); }
+    .action-icon.green { background: linear-gradient(135deg, var(--success-green) 0%, #059669 100%); }
+    .action-icon.purple { background: linear-gradient(135deg, var(--purple-500) 0%, #7C3AED 100%); }
+    .action-icon.amber { background: linear-gradient(135deg, var(--warning-amber) 0%, #D97706 100%); }
+
+    .action-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+
+    .action-description {
+        font-size: 0.95rem;
+        color: var(--gray-600);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: var(--primary-blue);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-button:hover {
+        background: var(--primary-blue-dark);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .action-button i {
+        margin-right: 0.5rem;
+    }
+
+    .stats-section {
+        margin-top: 3rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-card {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--gray-200);
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    @media (max-width: 1024px) {
+        .sidebar {
+            width: 100%;
+            min-height: auto;
+            position: static;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+        .sidebar nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .sidebar .nav-link {
+            margin: 0.25rem;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .header-section {
+            padding: 1.5rem 1.25rem;
+        }
+        .dashboard-content {
+            padding: 1.5rem 1.25rem;
+        }
+        .welcome-text {
+            font-size: 1.5rem;
+        }
+        .action-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    #fade-wrapper { 
+        opacity: 1; 
+        transition: opacity 0.5s ease; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="fade-wrapper">
+    <div class="sidebar d-flex flex-column">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture of {{ current_user.name or current_user.email.split('@')[0] }}">
+            <h4>{{ current_user.name or current_user.email.split('@')[0] }}</h4>
+            <div class="user-role">Resume Builder User</div>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-house"></i> Dashboard
+            </a>
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}">
+                <i class="bi bi-file-earmark-person"></i> Resumes
+            </a>
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}">
+                <i class="bi bi-envelope-paper"></i> Cover Letters
+            </a>
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}">
+                <i class="bi bi-question-circle"></i> Interview Q&A
+            </a>
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}">
+                <i class="bi bi-briefcase"></i> Jobs
+            </a>
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}">
+                <i class="bi bi-person"></i> My Account
+            </a>
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <header class="header-section">
+            <h1 class="welcome-text">Good morning, {{ current_user.name or current_user.email.split('@')[0] }}! 👋</h1>
+            <p class="welcome-subtitle">Ready to build your career? Let's create something amazing together.</p>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Quick Actions Section -->
+            <section class="quick-actions">
+                <h2 class="section-title">
+                    <i class="bi bi-lightning-charge"></i>
+                    Quick Actions
+                </h2>
+                
+                <div class="action-grid">
+                    <article class="action-card">
+                        <div class="action-icon blue">
+                            <i class="bi bi-file-earmark-person"></i>
+                        </div>
+                        <h3 class="action-title">Create Resume</h3>
+                        <p class="action-description">Build a professional resume with our AI-powered tools and beautiful templates.</p>
+                        <a href="{{ url_for('resume_creation_menu') }}" class="action-button">
+                            <i class="bi bi-plus-circle"></i>
+                            Start Creating
+                        </a>
+                    </article>
+
+                    <article class="action-card">
+                        <div class="action-icon green">
+                            <i class="bi bi-envelope-paper"></i>
+                        </div>
+                        <h3 class="action-title">Write Cover Letter</h3>
+                        <p class="action-description">Craft compelling cover letters that get you noticed by employers.</p>
+                        <a href="{{ url_for('create_cover_letter') }}" class="action-button">
+                            <i class="bi bi-pencil"></i>
+                            Write Letter
+                        </a>
+                    </article>
+
+                    <article class="action-card">
+                        <div class="action-icon purple">
+                            <i class="bi bi-question-circle"></i>
+                        </div>
+                        <h3 class="action-title">Interview Prep</h3>
+                        <p class="action-description">Generate personalized interview questions and practice your responses.</p>
+                        <a href="{{ url_for('interview_qa') }}" class="action-button">
+                            <i class="bi bi-chat-dots"></i>
+                            Start Prep
+                        </a>
+                    </article>
+
+                    <article class="action-card">
+                        <div class="action-icon amber">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <h3 class="action-title">Find Jobs</h3>
+                        <p class="action-description">Discover job opportunities that match your skills and experience.</p>
+                        <a href="{{ url_for('jobs') }}" class="action-button">
+                            <i class="bi bi-search"></i>
+                            Browse Jobs
+                        </a>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Your Progress Section -->
+            <section class="stats-section">
+                <h2 class="section-title">
+                    <i class="bi bi-graph-up"></i>
+                    Your Progress
+                </h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ resumes|length }}</div>
+                        <div class="stat-label">Resume{{ 's' if resumes|length != 1 else '' }} Created</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ cover_letters|length }}</div>
+                        <div class="stat-label">Cover Letter{{ 's' if cover_letters|length != 1 else '' }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ interview_qa_list|length }}</div>
+                        <div class="stat-label">Interview Prep{{ 's' if interview_qa_list|length != 1 else '' }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ (resumes|length + cover_letters|length + interview_qa_list|length) }}</div>
+                        <div class="stat-label">Total Documents</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth fade transitions
+    window.addEventListener('DOMContentLoaded', function() {
+        const fadeWrapper = document.getElementById('fade-wrapper');
+        if (fadeWrapper) {
+            fadeWrapper.style.opacity = 0;
+            
+            setTimeout(function() {
+                fadeWrapper.style.transition = 'opacity 0.6s ease';
+                fadeWrapper.style.opacity = 1;
+            }, 100);
+        }
+    });
+
+    // Smooth navigation transitions
+    document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            if (link.href && !link.classList.contains('text-danger')) {
+                e.preventDefault();
+                
+                // Add loading state
+                const fadeWrapper = document.getElementById('fade-wrapper');
+                if (fadeWrapper) {
+                    fadeWrapper.style.transition = 'opacity 0.4s ease';
+                    fadeWrapper.style.opacity = 0;
+                    
+                    setTimeout(function() {
+                        window.location = link.href;
+                    }, 400);
+                }
+            }
+        });
+    });
+
+    // Add smooth hover effects for action cards
+    document.querySelectorAll('.action-card').forEach(function(card) {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+
+    // Dynamic greeting based on time
+    function updateGreeting() {
+        const hour = new Date().getHours();
+        const welcomeText = document.querySelector('.welcome-text');
+        if (welcomeText) {
+            const userName = welcomeText.textContent.split(',')[1].replace('!', '').replace(' 👋', '').trim();
+            
+            let greeting = 'Good morning';
+            if (hour >= 12 && hour < 17) {
+                greeting = 'Good afternoon';
+            } else if (hour >= 17) {
+                greeting = 'Good evening';
+            }
+            
+            welcomeText.textContent = `${greeting}, ${userName}! 👋`;
+        }
+    }
+
+    // Update greeting on load
+    updateGreeting();
+</script>
+{% endblock %}

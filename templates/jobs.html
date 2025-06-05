@@ -1,12 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Jobs</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% extends "base.html" %}
+
+{% block title %}Job Search - Find Your Dream Job | Professional Opportunities{% endblock %}
+
+{% block meta_description %}Discover thousands of job opportunities tailored to your skills and experience. Advanced job search with filters, salary insights, and direct application features.{% endblock %}
+
+{% block meta_keywords %}job search, career opportunities, job listings, employment, job board, find jobs, career search, job openings, professional jobs{% endblock %}
+
+{% block head %}
+<!-- Jobs Page Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Job Search - Professional Opportunities",
+  "description": "Advanced job search platform with personalized recommendations, salary insights, and direct application features",
+  "url": "{{ request.url }}",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ url_for('index', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Dashboard",
+        "item": "{{ url_for('dashboard', _external=True) }}"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Jobs",
+        "item": "{{ request.url }}"
+      }
+    ]
+  },
+  "mainEntity": {
+    "@type": "WebSite",
+    "@id": "job-search-platform",
+    "name": "Job Search Platform",
+    "description": "Professional job search with advanced filtering and application tools"
+  }
+}
+</script>
+
+<!-- Job Search Service Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Professional Job Search",
+  "description": "Comprehensive job search service with personalized recommendations and application tracking",
+  "provider": {
+    "@type": "Organization",
+    "name": "Resume Builder Platform"
+  },
+  "serviceType": "Job Search and Career Services"
+}
+</script>
+{% endblock %}
+
+{% block styles %}
     <style>
         :root {
             --primary-blue: #3B82F6;
@@ -489,173 +546,244 @@
                 width: 100%;
                 justify-content: center;
             }
-        }
-
-        #fade-wrapper { 
+        }        #fade-wrapper { 
             opacity: 1; 
             transition: opacity 0.5s ease; 
         }
     </style>
-</head>
-<body>
-<div id="fade-wrapper">
-    <div class="sidebar d-flex flex-column">
-        <div class="sidebar-header">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture">
-            <h4>{{ current_user.name or current_user.email.split('@')[0] }}</h4>
-            <div class="user-role">Resume Builder User</div>
-        </div>
-        <nav class="nav flex-column">
-            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                <i class="bi bi-house"></i> Dashboard
+{% endblock %}
+
+{% block content %}
+<main role="main" aria-labelledby="page-title">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
+        <header class="sidebar-header">
+            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
+                 alt="Profile picture of {{ current_user.name or current_user.email.split('@')[0] }}" 
+                 aria-describedby="user-info">
+            <div id="user-info">
+                <h4 class="user-name">{{ current_user.name or current_user.email.split('@')[0] }}</h4>
+                <div class="user-role" aria-label="User role">Resume Builder User</div>
+            </div>
+        </header>
+        <nav class="nav flex-column" aria-label="Main navigation">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" 
+               href="{{ url_for('dashboard') }}" 
+               aria-label="Go to Dashboard">
+                <i class="bi bi-house" aria-hidden="true"></i> Dashboard
             </a>
-            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}">
-                <i class="bi bi-file-earmark-person"></i> Resumes
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" 
+               href="{{ url_for('resumes') }}"
+               aria-label="Manage your resumes">
+                <i class="bi bi-file-earmark-person" aria-hidden="true"></i> Resumes
             </a>
-            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}">
-                <i class="bi bi-envelope-paper"></i> Cover Letters
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" 
+               href="{{ url_for('cover_letters') }}"
+               aria-label="Manage your cover letters">
+                <i class="bi bi-envelope-paper" aria-hidden="true"></i> Cover Letters
             </a>
-            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}">
-                <i class="bi bi-question-circle"></i> Interview Q&A
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" 
+               href="{{ url_for('interview_qa') }}"
+               aria-label="Interview questions and answers">
+                <i class="bi bi-question-circle" aria-hidden="true"></i> Interview Q&A
             </a>
-            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}">
-                <i class="bi bi-briefcase"></i> Jobs
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" 
+               href="{{ url_for('jobs') }}"
+               aria-current="page"
+               aria-label="Browse job opportunities - current page">
+                <i class="bi bi-briefcase" aria-hidden="true"></i> Jobs
             </a>
-            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}">
-                <i class="bi bi-person"></i> My Account
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" 
+               href="{{ url_for('my_account') }}"
+               aria-label="Manage your account settings">
+                <i class="bi bi-person" aria-hidden="true"></i> My Account
             </a>
-            <a class="nav-link text-danger" href="{{ url_for('logout') }}">
-                <i class="bi bi-box-arrow-right"></i> Logout
+            <a class="nav-link text-danger logout" 
+               href="{{ url_for('logout') }}"
+               aria-label="Sign out of your account">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
             </a>
         </nav>
-    </div>
+    </aside>
 
-    <div class="main-content">
-        <div class="header-section">
-            <h1 class="page-title">
-                <i class="bi bi-briefcase"></i>
+    <!-- Main Content Area -->
+    <section class="main-content" role="main">
+        <header class="header-section">
+            <h1 id="page-title" class="page-title">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
                 Job Opportunities
             </h1>
             <p class="page-subtitle">Discover career opportunities that match your skills and experience</p>
-        </div>
+        </header>
 
-        <!-- Search Section -->
-        <div class="search-section">
-            <h2 class="search-title">
-                <i class="bi bi-search"></i>
+        <!-- Job Search Section -->
+        <section class="search-section" aria-labelledby="search-title">
+            <h2 id="search-title" class="search-title">
+                <i class="bi bi-search" aria-hidden="true"></i>
                 Find Your Perfect Job
             </h2>
-            <form class="search-form" method="GET" action="{{ url_for('jobs') }}">
+            <form class="search-form" method="GET" action="{{ url_for('jobs') }}" role="search" aria-label="Job search form">
                 <div class="form-group">
-                    <label class="form-label">Job Type / Keywords</label>
-                    <input type="text" name="keyword" class="form-control" 
+                    <label for="keyword-input" class="form-label">Job Type / Keywords</label>
+                    <input type="text" 
+                           id="keyword-input"
+                           name="keyword" 
+                           class="form-control" 
                            placeholder="e.g. Software Developer, Marketing Manager" 
-                           value="{{ keyword }}">
+                           value="{{ keyword }}"
+                           aria-describedby="keyword-help">
+                    <small id="keyword-help" class="form-text text-muted">
+                        Enter job titles, skills, or company names
+                    </small>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Location</label>
-                    <input type="text" name="location" class="form-control" 
+                    <label for="location-input" class="form-label">Location</label>
+                    <input type="text" 
+                           id="location-input"
+                           name="location" 
+                           class="form-control" 
                            placeholder="e.g. New York, NY or Remote" 
-                           value="{{ location }}">
+                           value="{{ location }}"
+                           aria-describedby="location-help">
+                    <small id="location-help" class="form-text text-muted">
+                        City, state, or "Remote" for remote opportunities
+                    </small>
                 </div>
-                <button type="submit" class="search-btn">
-                    <i class="bi bi-search"></i>
+                <button type="submit" class="search-btn" aria-label="Search for jobs with specified criteria">
+                    <i class="bi bi-search" aria-hidden="true"></i>
                     Search Jobs
                 </button>
             </form>
-        </div>
+        </section>
 
-        <!-- Jobs Content -->
-        <div class="jobs-content">
+        <!-- Job Results Section -->
+        <section class="jobs-content" role="main" aria-labelledby="results-heading">
             {% if error_message %}
-                <div class="error-message">
-                    <i class="bi bi-exclamation-triangle"></i>
+                <div class="error-message" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
                     {{ error_message }}
                 </div>
             {% endif %}
 
             {% if jobs %}
-                <div class="jobs-header">
-                    <div class="results-count">
+                <header class="jobs-header">
+                    <h2 id="results-heading" class="results-count">
                         Found {{ jobs|length }} job{{ 's' if jobs|length != 1 else '' }}
                         {% if keyword or location %}
-                            for "{{ keyword }}"
-                            {% if location %} in "{{ location }}"{% endif %}
+                            for <strong>"{{ keyword }}"</strong>
+                            {% if location %} in <strong>"{{ location }}"</strong>{% endif %}
                         {% endif %}
-                    </div>
-                </div>
+                    </h2>
+                </header>
 
-                <div class="jobs-grid">
+                <div class="jobs-grid" role="list" aria-label="Job search results">
                     {% for job in jobs %}
-                    <div class="job-card">
-                        <div class="job-header">
-                            <div>
-                                <h3 class="job-title">{{ job.title }}</h3>
-                                <div class="job-company">{{ job.company }}</div>
-                                <div class="job-location">
-                                    <i class="bi bi-geo-alt"></i>
-                                    {{ job.location }}
+                    <article class="job-card" 
+                             role="listitem" 
+                             itemscope 
+                             itemtype="https://schema.org/JobPosting"
+                             aria-labelledby="job-title-{{ loop.index }}">
+                        <header class="job-header">
+                            <div class="job-main-info">
+                                <h3 id="job-title-{{ loop.index }}" class="job-title" itemprop="title">
+                                    {{ job.title }}
+                                </h3>
+                                <div class="job-company" itemprop="hiringOrganization" itemscope itemtype="https://schema.org/Organization">
+                                    <span itemprop="name">{{ job.company }}</span>
+                                </div>
+                                <div class="job-location" itemprop="jobLocation" itemscope itemtype="https://schema.org/Place">
+                                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                    <span itemprop="name">{{ job.location }}</span>
                                 </div>
                             </div>
                             {% if job.salary %}
-                            <div class="job-salary">
-                                ${{ "{:,}".format(job.salary|int) }}
-                                {% if job.salary_max %} - ${{ "{:,}".format(job.salary_max|int) }}{% endif %}
+                            <div class="job-salary" itemprop="baseSalary" itemscope itemtype="https://schema.org/MonetaryAmount">
+                                <span itemprop="currency" content="USD">$</span><span itemprop="value">{{ "{:,}".format(job.salary|int) }}</span>
+                                {% if job.salary_max %} - <span itemprop="maxValue">${{ "{:,}".format(job.salary_max|int) }}</span>{% endif %}
                             </div>
                             {% endif %}
-                        </div>
+                        </header>
                         
                         {% if job.description %}
-                        <div class="job-description">
+                        <div class="job-description" itemprop="description">
                             {{ job.description|striptags|truncate(200) }}
                         </div>
                         {% endif %}
                         
-                        <div class="job-actions">
-                            <a href="{{ job.url }}" target="_blank" class="apply-btn">
-                                <i class="bi bi-arrow-up-right"></i>
+                        <footer class="job-actions">
+                            <a href="{{ job.url }}" 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               class="apply-btn"
+                               itemprop="url"
+                               aria-label="Apply for {{ job.title }} at {{ job.company }} - opens in new tab">
+                                <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
                                 Apply Now
                             </a>
-                            <button class="save-btn" onclick="saveJob('{{ job.title }}', '{{ job.company }}', '{{ job.location }}', '{{ job.url }}')">
-                                <i class="bi bi-bookmark"></i>
+                            <button class="save-btn" 
+                                    onclick="saveJob('{{ job.title }}', '{{ job.company }}', '{{ job.location }}', '{{ job.url }}')"
+                                    aria-label="Save {{ job.title }} job for later">
+                                <i class="bi bi-bookmark" aria-hidden="true"></i>
                                 Save Job
                             </button>
-                        </div>
-                    </div>
+                        </footer>
+                    </article>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="no-jobs">
-                    <i class="bi bi-briefcase"></i>
+                <div class="no-jobs" role="status" aria-live="polite">
+                    <i class="bi bi-briefcase" aria-hidden="true"></i>
                     <h3>No Jobs Found</h3>
                     <p>Try adjusting your search criteria or check back later for new opportunities.</p>
                 </div>
             {% endif %}
-        </div>
-    </div>
-</div>
+        </section>
+    </section>
+</main>
+{% endblock %}
 
+{% block extra_js %}
+
+{% block extra_js %}
 <script>
-// Fade wrapper animation
-window.addEventListener('DOMContentLoaded', function() {
-    const fadeWrapper = document.getElementById('fade-wrapper');
-    fadeWrapper.style.opacity = 0;
-    
-    setTimeout(function() {
-        fadeWrapper.style.transition = 'opacity 0.6s ease';
-        fadeWrapper.style.opacity = 1;
-    }, 100);
+// Enhanced page transition effects
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth fade-in effect for page load
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'translateY(20px)';
+        
+        setTimeout(function() {
+            mainContent.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'translateY(0)';
+        }, 100);
+    }
+
+    // Auto-focus search input on page load for better UX
+    const keywordInput = document.querySelector('input[name="keyword"]');
+    if (keywordInput && !keywordInput.value) {
+        keywordInput.focus();
+    }
 });
 
-// Navigation transitions
+// Enhanced navigation with accessibility
 document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
     link.addEventListener('click', function(e) {
-        if (link.href && !link.classList.contains('text-danger')) {
+        if (link.href && !link.classList.contains('text-danger') && 
+            link.getAttribute('href').startsWith('/')) {
             e.preventDefault();
             
-            const fadeWrapper = document.getElementById('fade-wrapper');
-            fadeWrapper.style.transition = 'opacity 0.4s ease';
-            fadeWrapper.style.opacity = 0;
+            // Add loading state
+            link.setAttribute('aria-busy', 'true');
+            
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                mainContent.style.opacity = '0';
+                mainContent.style.transform = 'translateY(-20px)';
+            }
             
             setTimeout(function() {
                 window.location = link.href;
@@ -664,13 +792,25 @@ document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
     });
 });
 
-// Save job functionality
+// Save job functionality with proper CSRF handling
 function saveJob(title, company, location, url) {
-    // Create form and submit
+    // Create form with proper structure
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '{{ url_for("save_job") }}';
+    form.style.display = 'none';
     
+    // Add CSRF token if available
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken.getAttribute('content');
+        form.appendChild(csrfInput);
+    }
+    
+    // Add job data fields
     const fields = {
         'title': title,
         'company': company, 
@@ -683,32 +823,79 @@ function saveJob(title, company, location, url) {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = key;
-        input.value = fields[key];
+        input.value = fields[key] || '';
         form.appendChild(input);
     });
     
+    // Submit form
     document.body.appendChild(form);
     form.submit();
+    
+    // Clean up
+    setTimeout(() => {
+        if (form.parentNode) {
+            form.parentNode.removeChild(form);
+        }
+    }, 1000);
 }
 
-// Enhanced hover effects
+// Enhanced job card interactions
 document.querySelectorAll('.job-card').forEach(function(card) {
+    // Add smooth hover animations
     card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-8px) scale(1.01)';
+        this.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
+        this.style.transform = 'translateY(-8px) scale(1.02)';
+        this.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
     });
     
     card.addEventListener('mouseleave', function() {
         this.style.transform = 'translateY(0) scale(1)';
+        this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+    });
+    
+    // Keyboard navigation support
+    card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            const applyButton = this.querySelector('.apply-btn');
+            if (applyButton) {
+                e.preventDefault();
+                applyButton.click();
+            }
+        }
     });
 });
 
-// Auto-focus search input on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const keywordInput = document.querySelector('input[name="keyword"]');
-    if (keywordInput && !keywordInput.value) {
-        keywordInput.focus();
-    }
+// Enhance save buttons with feedback
+document.querySelectorAll('.save-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        // Visual feedback
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-check" aria-hidden="true"></i> Saved!';
+        this.style.background = '#10B981';
+        this.disabled = true;
+        
+        // Reset after delay
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.style.background = '';
+            this.disabled = false;
+        }, 2000);
+    });
 });
+
+// Form validation enhancement
+const searchForm = document.querySelector('.search-form');
+if (searchForm) {
+    searchForm.addEventListener('submit', function(e) {
+        const keyword = this.querySelector('input[name="keyword"]').value.trim();
+        const location = this.querySelector('input[name="location"]').value.trim();
+        
+        if (!keyword && !location) {
+            e.preventDefault();
+            alert('Please enter a job keyword or location to search.');
+            return false;
+        }
+    });
+}
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1,17 +1,120 @@
 <!DOCTYPE html>
-<html class="no-js" lang="">
+<html class="no-js" lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Jobi Resume Builder – Create Your Professional Resume Online</title>
-    <meta name="description" content="Build a standout resume and cover letter in minutes with Jobi Resume Builder. Modern templates, easy editing, and instant download." />
+    
+    <!-- SEO Meta Tags -->
+    <title>Jobi Resume Builder – Create Your Professional Resume Online | ATS-Friendly Templates</title>
+    <meta name="description" content="Build a standout resume and cover letter in minutes with Jobi Resume Builder. Choose from 25+ ATS-friendly templates, AI-powered content suggestions, and instant download. Start for free!" />
+    <meta name="keywords" content="resume builder, CV maker, professional resume, ATS resume, online resume builder, cover letter generator, job search tools, resume templates, career tools" />
+    <meta name="author" content="Jobi Resume Builder" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="shortcut icon"
-      type="image/x-icon"
-      href="{{ url_for('static', filename='img/favicon.png') }}"
-    />
-    <!-- Place favicon.ico in the root directory -->
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Professional Resume Builder - Create ATS-Friendly Resumes Online" />
+    <meta property="og:description" content="Build a standout resume and cover letter in minutes with Jobi Resume Builder. Modern templates, easy editing, and instant download." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ url_for('index', _external=True) }}" />
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}" />
+    <meta property="og:site_name" content="Jobi Resume Builder" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Professional Resume Builder - Create ATS-Friendly Resumes Online" />
+    <meta name="twitter:description" content="Build a standout resume and cover letter in minutes with Jobi Resume Builder. Modern templates, easy editing, and instant download." />
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ url_for('index', _external=True) }}" />
+    
+    <!-- Favicon and Icons -->
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.png') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" />
+    
+    <!-- Structured Data - WebSite Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Jobi Resume Builder",
+      "url": "{{ url_for('index', _external=True) }}",
+      "description": "Professional online resume builder with ATS-friendly templates and AI-powered content generation.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ url_for('jobs', _external=True) }}?keyword={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data - Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Jobi Resume Builder",
+      "url": "{{ url_for('index', _external=True) }}",
+      "logo": "{{ url_for('static', filename='img/logo/logo.svg', _external=True) }}",
+      "description": "Professional online resume builder with ATS-friendly templates and AI-powered content generation.",
+      "sameAs": [
+        "https://www.linkedin.com/company/jobi-resume-builder",
+        "https://twitter.com/jobiresume",
+        "https://www.facebook.com/jobiresume"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@jobi.com",
+        "contactType": "customer service"
+      }
+    }
+    </script>
+    
+    <!-- Structured Data - Service Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Professional Resume Building Service",
+      "description": "Create professional, ATS-friendly resumes and cover letters with our online builder. Features include AI-powered content, multiple templates, and instant download.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Jobi Resume Builder"
+      },
+      "serviceType": "Resume Building",
+      "areaServed": "Worldwide",
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Resume Builder Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Resume Builder",
+              "description": "Create professional resumes with ATS-friendly templates"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Cover Letter Generator",
+              "description": "Generate personalized cover letters for job applications"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Interview Q&A",
+              "description": "Prepare for interviews with AI-generated questions and answers"
+            }
+          }
+        ]
+      }
+    }
+    </script>
 
     <!-- ======== CSS here ======== -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
@@ -111,27 +214,25 @@
     <section id="home" class="hero-section">
       <div class="container">
         <div class="row align-items-center position-relative">
-          <div class="col-lg-6">
-            <div class="hero-content">
+          <div class="col-lg-6">            <div class="hero-content">
               <h1 class="wow fadeInUp" data-wow-delay=".4s">
-                Create Your Resume & Cover Letter Online
+                Create Your Professional Resume & Cover Letter Online
               </h1>
               <p class="wow fadeInUp" data-wow-delay=".6s">
-                Jobi Resume Builder helps you craft a professional resume and cover letter in minutes. Choose a template, fill in your details, and download instantly!
+                Jobi Resume Builder helps you craft a professional, ATS-friendly resume and cover letter in minutes. Choose from 25+ modern templates, get AI-powered content suggestions, and download instantly!
               </p>              <a
                 href="{{url_for('resume_creation_menu')}}"
                 class="main-btn border-btn btn-hover wow fadeInUp"
                 data-wow-delay=".6s"
-                >Get Started</a
+                >Get Started Free</a
               >
-              <a href="#features" class="scroll-bottom">
+              <a href="#features" class="scroll-bottom" aria-label="Scroll to features section">
                 <i class="lni lni-arrow-down"></i
               ></a>
             </div>
-          </div>
-          <div class="col-lg-6">
+          </div>          <div class="col-lg-6">
             <div class="hero-img wow fadeInUp" data-wow-delay=".5s">
-              <img src="{{ url_for('static', filename='img/hero/hero-img.png') }}" alt="" />
+              <img src="{{ url_for('static', filename='img/hero/hero-img.png') }}" alt="Professional Resume Builder Interface - Create ATS-friendly resumes online" />
             </div>
           </div>
         </div>

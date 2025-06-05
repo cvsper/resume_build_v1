@@ -3,19 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Resume Builder{% endblock %}</title>
+  
+  <!-- SEO Meta Tags -->
+  <title>{% block title %}Professional Resume Builder - Create ATS-Friendly Resumes Online{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Create professional, ATS-friendly resumes and cover letters with our online builder. Choose from 25+ templates, AI-powered content, and instant download.{% endblock %}" />
+  <meta name="keywords" content="{% block meta_keywords %}resume builder, CV maker, professional resume, ATS resume, online resume builder, cover letter generator, job search tools{% endblock %}" />
+  <meta name="author" content="Jobi Resume Builder" />
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{% block og_url %}{{ request.url }}{% endblock %}" />
+  <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='img/og-image.png', _external=True) }}{% endblock %}" />
+  <meta property="og:site_name" content="Jobi Resume Builder" />
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="{% block twitter_title %}{{ self.og_title() }}{% endblock %}" />
+  <meta name="twitter:description" content="{% block twitter_description %}{{ self.og_description() }}{% endblock %}" />
+  <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image() }}{% endblock %}" />
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="{% block canonical_url %}{{ request.url }}{% endblock %}" />
+  
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.png') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" />
+  
+  <!-- Robots Meta -->
+  <meta name="robots" content="{% block robots %}index, follow{% endblock %}" />
+  
+  <!-- Structured Data - Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Jobi Resume Builder",
+    "url": "{{ url_for('index', _external=True) }}",
+    "logo": "{{ url_for('static', filename='img/logo/logo.svg', _external=True) }}",
+    "description": "Professional online resume builder with ATS-friendly templates and AI-powered content generation.",
+    "sameAs": [
+      "https://www.linkedin.com/company/jobi-resume-builder",
+      "https://twitter.com/jobiresume",
+      "https://www.facebook.com/jobiresume"
+    ]
+  }
+  </script>
+  
+  {% block structured_data %}{% endblock %}
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  {% if current_user.is_authenticated %}
-    <a href="{{ url_for('my_account') }}">My Account</a>
-    <a href="{{ url_for('logout') }}">Logout</a>
-  {% else %}
-    <a href="{{ url_for('login') }}">Login</a>
-  {% endif %}
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
+  
+  <header>
+    {% if current_user.is_authenticated %}
+      <nav aria-label="User navigation">
+        <a href="{{ url_for('my_account') }}">My Account</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </nav>
+    {% else %}
+      <nav aria-label="Authentication navigation">
+        <a href="{{ url_for('login') }}">Login</a>
+      </nav>
+    {% endif %}
+  </header>
 
-  {% block content %}{% endblock %}
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
   <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.10.1/lottie.min.js"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

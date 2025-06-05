@@ -118,6 +118,87 @@ def load_user(user_id):
 def index():
     return render_template('index.html')
 
+@app.route('/robots.txt')
+def robots_txt():
+    """Generate robots.txt for SEO"""
+    content = """User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /preview-resume-content/
+Disallow: /download-pdf/
+Disallow: /delete-resume/
+Disallow: /process-payment
+Disallow: /create-checkout-session
+Disallow: /upload-resume
+Disallow: /logout
+
+# Sitemap location
+Sitemap: {sitemap_url}
+
+# Crawl delay
+Crawl-delay: 1""".format(sitemap_url=url_for('sitemap_xml', _external=True))
+    
+    response = make_response(content)
+    response.headers['Content-Type'] = 'text/plain'
+    return response
+
+@app.route('/sitemap.xml')
+def sitemap_xml():
+    """Generate XML sitemap for SEO"""
+    from datetime import datetime
+    import xml.etree.ElementTree as ET
+    
+    # Create the root element
+    urlset = ET.Element('urlset')
+    urlset.set('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9')
+    
+    # Define public pages to include in sitemap
+    pages = [
+        {
+            'url': url_for('index', _external=True),
+            'changefreq': 'weekly',
+            'priority': '1.0',
+            'lastmod': '2024-01-15'
+        },
+        {
+            'url': url_for('login', _external=True),
+            'changefreq': 'monthly',
+            'priority': '0.8',
+            'lastmod': '2024-01-15'
+        },
+        {
+            'url': url_for('register', _external=True),
+            'changefreq': 'monthly',
+            'priority': '0.8',
+            'lastmod': '2024-01-15'
+        }
+    ]
+    
+    # Add each page to the sitemap
+    for page in pages:
+        url_element = ET.SubElement(urlset, 'url')
+        
+        loc = ET.SubElement(url_element, 'loc')
+        loc.text = page['url']
+        
+        lastmod = ET.SubElement(url_element, 'lastmod')
+        lastmod.text = page['lastmod']
+        
+        changefreq = ET.SubElement(url_element, 'changefreq')
+        changefreq.text = page['changefreq']
+        
+        priority = ET.SubElement(url_element, 'priority')
+        priority.text = page['priority']
+    
+    # Convert to string
+    xml_str = ET.tostring(urlset, encoding='unicode')
+    xml_declaration = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    
+    response = make_response(xml_declaration + xml_str)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
+
 @app.route('/api/resumes', methods=['GET'])
 @login_required
 def get_resumes_api():
