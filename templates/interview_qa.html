@@ -76,6 +76,137 @@
 
 {% block styles %}
 <style>
+    /* Base layout styles for dashboard */
+    body { 
+        background-color: #f7fafd; 
+        font-family: 'Inter', Arial, sans-serif; 
+    }
+    
+    /* Sidebar Navigation Styles */
+    .sidebar { 
+        min-height: 100vh; 
+        background: #fff; 
+        box-shadow: 2px 0 16px rgba(0,0,0,0.04); 
+        padding: 32px 0 0 0; 
+        position: fixed; 
+        left: 0; 
+        top: 0; 
+        width: 240px; 
+        z-index: 100; 
+        transition: all 0.3s; 
+    }
+    
+    .sidebar .nav-link { 
+        color: #222; 
+        font-weight: 500; 
+        font-size: 1.1rem; 
+        padding: 16px 32px; 
+        border-radius: 0 24px 24px 0; 
+        margin-bottom: 8px; 
+        transition: background 0.2s, color 0.2s, opacity 0.4s; 
+        opacity: 1; 
+    }
+    
+    .sidebar .nav-link:hover { 
+        opacity: 0.6; 
+    }
+    
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { 
+        background: #e9f5ff; 
+        color: #1976d2; 
+    }
+    
+    .sidebar .sidebar-header { 
+        text-align: center; 
+        margin-bottom: 32px; 
+    }
+    
+    .sidebar .sidebar-header img { 
+        width: 60px; 
+        height: 60px; 
+        border-radius: 50%; 
+        margin-bottom: 10px; 
+    }
+    
+    .sidebar .sidebar-header h4 { 
+        font-size: 1.2rem; 
+        font-weight: 600; 
+    }
+    
+    /* Main content area */
+    .main-content { 
+        margin-left: 240px; 
+        padding: 48px 32px 32px 32px; 
+        transition: margin-left 0.3s; 
+    }
+    
+    /* Responsive design for sidebar */
+    @media (max-width: 991px) { 
+        .sidebar { 
+            width: 100%; 
+            min-height: auto; 
+            position: static; 
+            box-shadow: none; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: space-between; 
+        } 
+        
+        .sidebar .sidebar-header { 
+            margin-bottom: 0; 
+            padding: 8px 16px; 
+            display: flex; 
+            align-items: center; 
+        } 
+        
+        .sidebar .sidebar-header img { 
+            width: 40px; 
+            height: 40px; 
+            margin-bottom: 0; 
+            margin-right: 10px; 
+        } 
+        
+        .sidebar .sidebar-header h4 { 
+            font-size: 1rem; 
+            margin: 0; 
+        } 
+        
+        .sidebar nav { 
+            flex-direction: row !important; 
+            gap: 8px; 
+            padding: 0 8px; 
+        } 
+        
+        .sidebar .nav-link { 
+            font-size: 1rem; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            margin-bottom: 0; 
+        } 
+        
+        .main-content { 
+            margin-left: 0; 
+            padding: 24px 8px; 
+        } 
+    }
+    
+    @media (max-width: 575px) { 
+        .sidebar .sidebar-header img { 
+            width: 32px; 
+            height: 32px; 
+        } 
+        
+        .sidebar .sidebar-header h4 { 
+            font-size: 0.95rem; 
+        } 
+        
+        .main-content { 
+            padding: 12px 2px; 
+        } 
+    }
+
     /* Clean, modern styling for better UX */
     .page-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -324,6 +455,28 @@
         
         .qa-actions {
             justify-content: center;
+        }
+        
+        .generate-form {
+            padding: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 575px) {
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.75rem;
+        }
+        
+        .generate-form {
+            padding: 1rem;
+        }
+        
+        .main-content {
+            padding: 12px 8px;
         }
     }
 </style>
