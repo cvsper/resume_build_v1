@@ -61,6 +61,18 @@ google = oauth.register(
     client_kwargs={'scope': 'openid email profile'},
 )
 
+# LinkedIn OAuth configuration
+linkedin = oauth.register(
+    name='linkedin',
+    client_id=os.getenv('LINKEDIN_CLIENT_ID'),
+    client_secret=os.getenv('LINKEDIN_CLIENT_SECRET'),
+    authorize_url='https://www.linkedin.com/oauth/v2/authorization',
+    access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
+    api_base_url='https://api.linkedin.com/v2/',
+    client_kwargs={'scope': 'r_liteprofile r_emailaddress'}
+)
+
+
 class CoverLetter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -275,6 +287,111 @@ def register():
         db.session.commit()
         return redirect(url_for('login'))
     return render_template('register.html')
+
+# OAuth Authentication Routes
+@app.route('/auth/google')
+def google_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    redirect_uri = url_for('google_callback', _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route('/auth/apple')
+def apple_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    # Apple Sign In implementation would go here
+    flash('Apple Sign In is coming soon!', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/auth/linkedin')
+def linkedin_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    redirect_uri = url_for('linkedin_callback', _external=True)
+    return linkedin.authorize_redirect(redirect_uri)
+
+@app.route('/callback/google')
+def google_callback():
+    try:
+        token = google.authorize_access_token()
+        user_info = google.get('userinfo').json()
+        
+        if user_info:
+            user = User.query.filter_by(email=user_info['email']).first()
+            
+            if not user:
+                # Create new user
+                user = User(
+                    email=user_info['email'],
+                    name=user_info.get('name', ''),
+                    password=generate_password_hash('oauth_user'),  # Placeholder password
+                    oauth_provider='google'
+                )
+                db.session.add(user)
+                db.session.commit()
+                flash('Account created successfully!', 'success')
+            
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        app.logger.error(f"Google OAuth error: {str(e)}")
+        flash('Authentication failed. Please try again.', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/callback/linkedin')
+def linkedin_callback():
+    try:
+        token = linkedin.authorize_access_token()
+        
+        # Get user profile from LinkedIn
+        headers = {'Authorization': f'Bearer {token["access_token"]}'}
+        
+        # Get basic profile
+        profile_response = requests.get(
+            'https://api.linkedin.com/v2/people/~', 
+            headers=headers
+        )
+        
+        # Get email
+        email_response = requests.get(
+            'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
+            headers=headers
+        )
+        
+        if profile_response.status_code == 200 and email_response.status_code == 200:
+            profile_data = profile_response.json()
+            email_data = email_response.json()
+            
+            email = email_data['elements'][0]['handle~']['emailAddress']
+            first_name = profile_data.get('localizedFirstName', '')
+            last_name = profile_data.get('localizedLastName', '')
+            full_name = f"{first_name} {last_name}".strip()
+            
+            user = User.query.filter_by(email=email).first()
+            
+            if not user:
+                user = User(
+                    email=email,
+                    name=full_name,
+                    password=generate_password_hash('oauth_user'),  # Placeholder password
+                    oauth_provider='linkedin'
+                )
+                db.session.add(user)
+                db.session.commit()
+                flash('Account created successfully!', 'success')
+            
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        app.logger.error(f"LinkedIn OAuth error: {str(e)}")
+        flash('Authentication failed. Please try again.', 'error')
+        return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
