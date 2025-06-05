@@ -1294,26 +1294,40 @@ def upload_existing_resume():
         
         if file and file.filename.lower().endswith(('.pdf', '.doc', '.docx')):
             try:
-                # For now, create a basic resume entry and redirect to edit
-                title = f"Uploaded Resume - {current_user.name or current_user.email}"
-                content = "Please edit this resume with your information."
-                template = 'classic'
+                # Import the file parser
+                from resume.file_parser import parse_resume_file
+                
+                # Parse the uploaded file
+                logging.info(f"Parsing uploaded file: {file.filename}")
+                parsed_data = parse_resume_file(file, file.filename)
+                
+                # Create resume with parsed content
+                title = parsed_data['title']
+                content = parsed_data['content']
+                template = current_user.preferred_template or 'classic'
                 
                 new_resume = Resume(user_id=current_user.id, title=title, content=content, template=template)
                 db.session.add(new_resume)
                 db.session.commit()
                 
-                # Generate basic thumbnail
+                # Generate thumbnail
                 rendered_html = render_template(f"resume_templates/{template}.html", resume=new_resume)
                 try:
                     generate_resume_thumbnail(new_resume.id, rendered_html)
                 except Exception as e:
                     logging.error(f'Thumbnail generation failed: {e}')
                 
-                flash('Resume uploaded successfully! Please edit it with your information.', 'success')
+                # Provide appropriate feedback based on parsing success
+                if parsed_data['raw_text'] and len(parsed_data['raw_text']) > 50:
+                    flash(f'Resume uploaded and parsed successfully! We extracted {len(parsed_data["sections"])} sections. Please review and edit as needed.', 'success')
+                else:
+                    flash('Resume uploaded! We were unable to extract text content automatically. Please add your resume content in the editor.', 'warning')
+                
                 return redirect(url_for('edit_resume', resume_id=new_resume.id))
+                
             except Exception as e:
-                flash('Error processing uploaded file. Please try again.', 'danger')
+                logging.error(f'Error processing uploaded file: {e}')
+                flash('Error processing uploaded file. The file may be corrupted or in an unsupported format. Please try again or create a new resume.', 'danger')
                 return redirect(url_for('upload_existing_resume'))
         else:
             flash('Please upload a PDF, DOC, or DOCX file.', 'danger')
