@@ -746,21 +746,44 @@ def stripe_webhook():
     sig_header = request.headers.get('Stripe-Signature')
     
     try:
-        # In production, you would verify the webhook signature here
-        # event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        # Verify webhook signature for production security
+        webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        else:
+            # Development mode - parse payload without verification
+            import json
+            event = json.loads(payload)
         
-        # For now, we'll just log the webhook event
-        import json
-        event = json.loads(payload)
-        
+        # Handle different webhook events
         if event['type'] == 'checkout.session.completed':
-            # Handle successful payment
-            session_id = event['data']['object']['id']
-            print(f"Payment successful for session: {session_id}")
+            session = event['data']['object']
+            session_id = session['id']
+            print(f"✅ Payment successful for session: {session_id}")
+            
+            # Log payment details
+            amount = session.get('amount_total', 0) / 100  # Convert from cents
+            currency = session.get('currency', 'usd').upper()
+            print(f"   Amount: {currency} ${amount:.2f}")
+            
+        elif event['type'] == 'payment_intent.succeeded':
+            payment_intent = event['data']['object']
+            print(f"✅ Payment intent succeeded: {payment_intent['id']}")
+            
+        elif event['type'] == 'payment_intent.payment_failed':
+            payment_intent = event['data']['object']
+            print(f"❌ Payment failed: {payment_intent['id']}")
+            
+        else:
+            print(f"📋 Unhandled webhook event: {event['type']}")
             
         return '', 200
+        
+    except stripe.error.SignatureVerificationError as e:
+        print(f"⚠️  Webhook signature verification failed: {e}")
+        return '', 400
     except Exception as e:
-        print(f"Webhook error: {e}")
+        print(f"❌ Webhook error: {e}")
         return '', 400
 
 @app.route('/download-pdf/<int:resume_id>')
