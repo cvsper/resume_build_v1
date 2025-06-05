@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Upload Test</title>
+    <meta charset="UTF-8">
+    <style>
+        .upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .btn-submit {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .file-info {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Test</h1>
+        
+        <form method="POST" enctype="multipart/form-data" action="/upload-existing-resume">
+            <div class="upload-zone" id="uploadZone">
+                <div>Drag and drop your file here</div>
+                <div>or</div>
+                <button type="button" class="upload-button" onclick="document.getElementById('fileInput').click()">
+                    Choose File
+                </button>
+            </div>
+
+            <input type="file" id="fileInput" name="resume_file" class="file-input" accept=".pdf,.doc,.docx" required>
+
+            <div class="file-info" id="fileInfo">
+                <div id="fileName"></div>
+                <div id="fileSize"></div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                Upload & Continue
+            </button>
+        </form>
+    </div>
+
+    <script>
+        console.log('Script loaded');
+        
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+
+        console.log('Elements found:', {
+            uploadZone: !!uploadZone,
+            fileInput: !!fileInput,
+            fileInfo: !!fileInfo,
+            fileName: !!fileName,
+            fileSize: !!fileSize,
+            submitBtn: !!submitBtn
+        });
+
+        // Handle file input change
+        fileInput.addEventListener('change', function(e) {
+            console.log('File input change event triggered');
+            const file = e.target.files[0];
+            if (file) {
+                console.log('File selected:', file.name, file.type, file.size);
+                displayFileInfo(file);
+            } else {
+                console.log('No file selected');
+            }
+        });
+
+        // Handle drag and drop
+        uploadZone.addEventListener('click', function() {
+            console.log('Upload zone clicked - triggering file input');
+            fileInput.click();
+        });
+        
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            console.log('Drag over');
+            uploadZone.style.borderColor = '#007bff';
+        });
+        
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            console.log('Drag leave');
+            uploadZone.style.borderColor = '#ccc';
+        });
+        
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            console.log('File dropped');
+            uploadZone.style.borderColor = '#ccc';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                console.log('Dropped file:', file.name, file.type, file.size);
+                if (isValidFile(file)) {
+                    fileInput.files = files;
+                    displayFileInfo(file);
+                    // Trigger change event manually
+                    const changeEvent = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(changeEvent);
+                } else {
+                    alert('Please upload a PDF, DOC, or DOCX file.');
+                }
+            }
+        });
+
+        function isValidFile(file) {
+            const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const validExtensions = ['.pdf', '.doc', '.docx'];
+            const isValid = validTypes.includes(file.type) || validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+            console.log('File validation:', file.name, file.type, 'Valid:', isValid);
+            return isValid;
+        }
+
+        function displayFileInfo(file) {
+            console.log('Displaying file info for:', file.name);
+            fileName.textContent = file.name;
+            fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            fileInfo.style.display = 'block';
+            submitBtn.disabled = false;
+            console.log('Submit button enabled');
+        }
+
+        // Test button click handler
+        document.querySelector('.upload-button').addEventListener('click', function() {
+            console.log('Upload button clicked');
+        });
+
+        // Form submission handler
+        document.querySelector('form').addEventListener('submit', function(e) {
+            console.log('Form submit event triggered');
+            const file = fileInput.files[0];
+            if (!file) {
+                e.preventDefault();
+                console.log('No file selected - preventing submission');
+                alert('Please select a file first');
+            } else {
+                console.log('Submitting with file:', file.name);
+            }
+        });
+    </script>
+</body>
+</html>

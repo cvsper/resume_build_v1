@@ -283,7 +283,7 @@
                     <div class="upload-subtext">
                         or click to browse files (max 10MB)
                     </div>
-                    <button type="button" class="upload-button" onclick="document.getElementById('fileInput').click()">
+                    <button type="button" class="upload-button" id="uploadButton">
                         <i class="bi bi-folder2-open"></i> Choose File
                     </button>
                 </div>
@@ -315,15 +315,29 @@
         const fileName = document.getElementById('fileName');
         const fileSize = document.getElementById('fileSize');
         const submitBtn = document.getElementById('submitBtn');
+        const uploadButton = document.getElementById('uploadButton');
 
         // Handle file input change
         fileInput.addEventListener('change', handleFileSelect);
 
-        // Handle drag and drop
-        uploadZone.addEventListener('click', () => fileInput.click());
+        // Handle upload button click (prevent event bubbling)
+        uploadButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        // Handle drag and drop (but not regular clicks on upload zone)
         uploadZone.addEventListener('dragover', handleDragOver);
         uploadZone.addEventListener('dragleave', handleDragLeave);
         uploadZone.addEventListener('drop', handleDrop);
+
+        // Allow clicking on the zone (but not the button) to open file dialog
+        uploadZone.addEventListener('click', function(e) {
+            // Only trigger if the click wasn't on the upload button
+            if (e.target !== uploadButton && !uploadButton.contains(e.target)) {
+                fileInput.click();
+            }
+        });
 
         function handleFileSelect(e) {
             const file = e.target.files[0];
@@ -352,6 +366,9 @@
                 if (isValidFile(file)) {
                     fileInput.files = files;
                     displayFileInfo(file);
+                    // Trigger change event manually to ensure consistency
+                    const changeEvent = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(changeEvent);
                 } else {
                     alert('Please upload a PDF, DOC, or DOCX file.');
                 }
