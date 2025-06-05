@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- SEO Meta Tags -->
+  <title>{% block title %}Professional Resume Builder - Create ATS-Friendly Resumes Online{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Create professional, ATS-friendly resumes and cover letters with our online builder. Choose from 25+ templates, AI-powered content, and instant download.{% endblock %}" />
+  <meta name="keywords" content="{% block meta_keywords %}resume builder, CV maker, professional resume, ATS resume, online resume builder, cover letter generator, job search tools{% endblock %}" />
+  <meta name="author" content="Jobi Resume Builder" />
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{% block og_url %}{{ request.url }}{% endblock %}" />
+  <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='img/og-image.png', _external=True) }}{% endblock %}" />
+  <meta property="og:site_name" content="Jobi Resume Builder" />
+  
+  <!-- Favicon and Icons -->
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.png') }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}" />
+  
+  <!-- Robots Meta -->
+  <meta name="robots" content="{% block robots %}index, follow{% endblock %}" />
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/lineicons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/animate.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <!-- Font Awesome for social icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  
+  {% block structured_data %}{% endblock %}
+  {% block styles %}{% endblock %}
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="sr-only sr-only-focusable">Skip to main content</a>
+  
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/wow.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
