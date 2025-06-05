@@ -56,6 +56,14 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+# Configure session
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
 
 oauth = OAuth(app)
 google = oauth.register(
@@ -287,15 +295,34 @@ def generate_interview_qa_api():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
     if request.method == 'POST':
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'])
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        name = request.form.get('name', '').strip()
+        
+        if not email or not password:
+            flash('Please enter both email and password.', 'danger')
+            return render_template('register.html')
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters long.', 'danger')
+            return render_template('register.html')
+        
         if User.query.filter_by(email=email).first():
-            return 'Email already registered!'
-        new_user = User(email=email, password=password)
+            flash('Email already registered! Please use a different email or login.', 'danger')
+            return render_template('register.html')
+        
+        hashed_password = generate_password_hash(password)
+        new_user = User(email=email, password=hashed_password, name=name)
         db.session.add(new_user)
         db.session.commit()
+        
+        flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('login'))
+    
     return render_template('register.html')
 
 # OAuth Authentication Routes
@@ -405,20 +432,33 @@ def linkedin_callback():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        
+        if not email or not password:
+            flash('Please enter both email and password.', 'danger')
+            return render_template('login.html')
+        
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        return 'Invalid credentials'
+            login_user(user, remember=True)
+            flash(f'Welcome back, {user.name or user.email}!', 'success')
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('dashboard'))
+        else:
+            flash('Invalid email or password. Please try again.', 'danger')
+    
     return render_template('login.html')
 
 @app.route('/logout')
-@login_required
 def logout():
-    logout_user()
+    if current_user.is_authenticated:
+        logout_user()
+        flash('You have been logged out successfully.', 'success')
     return redirect(url_for('index'))
 
 @app.route('/dashboard')
@@ -1282,24 +1322,34 @@ def create_from_scratch():
 @app.route('/upload-existing-resume', methods=['GET', 'POST'])
 @login_required
 def upload_existing_resume():
+    logging.info(f"Upload route accessed by user: {current_user.email if current_user.is_authenticated else 'Anonymous'}")
+    
     if request.method == 'POST':
+        logging.info("POST request received for file upload")
+        
         if 'resume_file' not in request.files:
+            logging.warning("No file in request")
             flash('No file selected', 'danger')
             return redirect(url_for('upload_existing_resume'))
         
         file = request.files['resume_file']
+        logging.info(f"File received: {file.filename}")
+        
         if file.filename == '':
+            logging.warning("Empty filename")
             flash('No file selected', 'danger')
             return redirect(url_for('upload_existing_resume'))
         
         if file and file.filename.lower().endswith(('.pdf', '.doc', '.docx')):
             try:
+                logging.info(f"Processing file: {file.filename}")
                 # Import the file parser
                 from resume.file_parser import parse_resume_file
                 
                 # Parse the uploaded file
                 logging.info(f"Parsing uploaded file: {file.filename}")
                 parsed_data = parse_resume_file(file, file.filename)
+                logging.info(f"Parsing completed. Title: {parsed_data['title']}, Content length: {len(parsed_data['content'])}")
                 
                 # Create resume with parsed content
                 title = parsed_data['title']
@@ -1309,29 +1359,38 @@ def upload_existing_resume():
                 new_resume = Resume(user_id=current_user.id, title=title, content=content, template=template)
                 db.session.add(new_resume)
                 db.session.commit()
+                logging.info(f"Resume created with ID: {new_resume.id}")
                 
                 # Generate thumbnail
                 rendered_html = render_template(f"resume_templates/{template}.html", resume=new_resume)
                 try:
                     generate_resume_thumbnail(new_resume.id, rendered_html)
+                    logging.info("Thumbnail generated successfully")
                 except Exception as e:
                     logging.error(f'Thumbnail generation failed: {e}')
                 
                 # Provide appropriate feedback based on parsing success
                 if parsed_data['raw_text'] and len(parsed_data['raw_text']) > 50:
                     flash(f'Resume uploaded and parsed successfully! We extracted {len(parsed_data["sections"])} sections. Please review and edit as needed.', 'success')
+                    logging.info("Success message set for good parsing")
                 else:
                     flash('Resume uploaded! We were unable to extract text content automatically. Please add your resume content in the editor.', 'warning')
+                    logging.info("Warning message set for poor parsing")
                 
+                logging.info(f"Redirecting to edit_resume with resume_id: {new_resume.id}")
                 return redirect(url_for('edit_resume', resume_id=new_resume.id))
                 
             except Exception as e:
                 logging.error(f'Error processing uploaded file: {e}')
+                import traceback
+                logging.error(f'Full traceback: {traceback.format_exc()}')
                 flash('Error processing uploaded file. The file may be corrupted or in an unsupported format. Please try again or create a new resume.', 'danger')
                 return redirect(url_for('upload_existing_resume'))
         else:
+            logging.warning(f"Invalid file type: {file.filename}")
             flash('Please upload a PDF, DOC, or DOCX file.', 'danger')
     
+    logging.info("Rendering upload template")
     return render_template('upload_existing_resume.html', current_user=current_user, active_page='resumes')
 
 @app.route('/clear-prefill-job-title', methods=['POST'])
