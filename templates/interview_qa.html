@@ -75,88 +75,258 @@
 {% endblock %}
 
 {% block styles %}
-    <style>
-        body { background-color: #f7fafd; font-family: 'Inter', Arial, sans-serif; }
-        .sidebar { min-height: 100vh; background: #fff; box-shadow: 2px 0 16px rgba(0,0,0,0.04); padding: 32px 0 0 0; position: fixed; left: 0; top: 0; width: 240px; z-index: 100; transition: all 0.3s; }
-        .sidebar .nav-link { color: #222; font-weight: 500; font-size: 1.1rem; padding: 16px 32px; border-radius: 0 24px 24px 0; margin-bottom: 8px; transition: background 0.2s, color 0.2s, opacity 0.4s; opacity: 1; }
-        .sidebar .nav-link:hover { opacity: 0.6; }
-        .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #e9f5ff; color: #1976d2; }
-        .sidebar .sidebar-header { text-align: center; margin-bottom: 32px; }
-        .sidebar .sidebar-header img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; }
-        .sidebar .sidebar-header h4 { font-size: 1.2rem; font-weight: 600; }
-        .main-content { margin-left: 240px; padding: 48px 32px 32px 32px; transition: margin-left 0.3s; }
-        .dashboard-container { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; padding: 32px; }
-        .dashboard-card { flex: 1 1 calc(33.333% - 24px); max-width: calc(33.333% - 24px); background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 24px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
-        .dashboard-card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); }
-        .dashboard-card h5 { font-size: 1.25rem; margin-bottom: 16px; color: #1976d2; }
-        .dashboard-card p { font-size: 0.95rem; color: #555; margin-bottom: 16px; }
-        .dashboard-card a { display: inline-block; margin-top: 8px; padding: 10px 20px; font-size: 0.9rem; color: #fff; background: #1976d2; border-radius: 6px; text-decoration: none; transition: background 0.2s; }
-        .dashboard-card a:hover { background: #145a9e; }
-        @media (max-width: 991px) { .sidebar { width: 100%; min-height: auto; position: static; box-shadow: none; padding: 0; display: flex; flex-direction: row; align-items: center; justify-content: space-between; } .sidebar .sidebar-header { margin-bottom: 0; padding: 8px 16px; display: flex; align-items: center; } .sidebar .sidebar-header img { width: 40px; height: 40px; margin-bottom: 0; margin-right: 10px; } .sidebar .sidebar-header h4 { font-size: 1rem; margin: 0; } .sidebar nav { flex-direction: row !important; gap: 8px; padding: 0 8px; } .sidebar .nav-link { font-size: 1rem; padding: 8px 12px; border-radius: 8px; margin-bottom: 0; } .main-content { margin-left: 0; padding: 24px 8px; } }
-        @media (max-width: 768px) { .dashboard-container { flex-direction: column; gap: 16px; padding: 8px; } .dashboard-card { flex: 1 1 100%; max-width: 100%; padding: 16px; } }
-        @media (max-width: 575px) { .sidebar .sidebar-header img { width: 32px; height: 32px; } .sidebar .sidebar-header h4 { font-size: 0.95rem; } .main-content { padding: 12px 2px; } }
-        #fade-wrapper { opacity: 1; transition: opacity 0.5s; }
-        .create-first-section {
-            display: flex;
+<style>
+    /* Clean, modern styling for better UX */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    /* Generate Q&A Form */
+    .generate-form {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-generate {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    /* Q&A Cards */
+    .qa-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .qa-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #667eea;
+    }
+    
+    .qa-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    
+    .qa-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .qa-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+    }
+    
+    .qa-date {
+        font-size: 0.85rem;
+        color: #666;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+    
+    .qa-preview {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+    
+    .qa-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-expand {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+    
+    .btn-expand:hover {
+        background: #1976d2;
+        color: white;
+    }
+    
+    .btn-delete {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+    
+    .btn-delete:hover {
+        background: #d32f2f;
+        color: white;
+    }
+    
+    /* Expanded Q&A Content */
+    .qa-full-content {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 3px solid #667eea;
+    }
+    
+    .qa-full-content.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .qa-full-content pre {
+        white-space: pre-wrap;
+        font-family: inherit;
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-subtitle {
+        color: #666;
+        margin-bottom: 2rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Section Title */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .qa-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+        }
+        
+        .qa-card-header {
             flex-direction: column;
-            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .qa-actions {
             justify-content: center;
-            min-height: 400px;
-            text-align: center;
-            padding: 60px 40px;
         }
-        .create-first-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 20px 40px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        .create-first-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-        .create-first-btn:hover::before {
-            left: 100%;
-        }
-        .create-first-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-            color: white;
-            text-decoration: none;
-        }
-        .create-first-icon {
-            font-size: 4rem;
-            color: #667eea;
-            margin-bottom: 20px;
-            opacity: 0.8;
-        }
-        .create-first-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .create-first-subtitle {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 30px;
-            max-width: 500px;
-        }
-    </style>
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -221,109 +391,88 @@
 
     <!-- Main Content Area -->
     <section class="main-content" role="main">
+        <!-- Page Header -->
         <header class="page-header">
-            <h1 id="page-title">Interview Q&amp;A</h1>
-            {% if interview_qa_list|length > 0 %}
-            <div class="header-actions">
-                <form method="POST" 
-                      action="{{ url_for('interview_qa') }}" 
-                      class="d-inline-flex align-items-center gap-3"
-                      aria-label="Generate interview questions for a job title">
-                    <label for="job-title-input" class="visually-hidden">Job Title</label>
+            <h1 id="page-title">🎯 Interview Q&A Preparation</h1>
+            <p class="page-subtitle">Generate personalized interview questions and practice your responses for any job role</p>
+        </header>
+
+        <!-- Generate Q&A Form -->
+        <div class="generate-form">
+            <form method="POST" action="{{ url_for('interview_qa') }}" aria-label="Generate interview questions">
+                <div class="form-group">
+                    <label for="job-title-input" class="form-label">
+                        <i class="bi bi-briefcase me-2"></i>Job Title
+                    </label>
                     <input type="text" 
                            id="job-title-input"
                            name="job_title" 
                            class="form-control" 
-                           placeholder="Enter job title" 
+                           placeholder="e.g., Software Engineer, Product Manager, Data Scientist..." 
                            required 
-                           style="width: 250px;"
                            aria-describedby="job-title-help">
-                    <small id="job-title-help" class="visually-hidden">
-                        Enter a specific job title to generate relevant interview questions
+                    <small id="job-title-help" class="form-text text-muted">
+                        Enter a specific job title to generate relevant interview questions and sample answers
                     </small>
-                    <button type="submit" 
-                            class="btn btn-primary"
-                            aria-label="Generate interview questions and answers for this job title">
-                        <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Generate Q&A
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-        </header>
+                </div>
+                <button type="submit" class="btn-generate">
+                    <i class="bi bi-plus-circle me-2"></i>Generate Q&A
+                </button>
+            </form>
+        </div>
 
         {% if interview_qa_list|length > 0 %}
         <!-- Interview Q&A Collection -->
-        <section class="interview-qa-collection" aria-labelledby="qa-heading">
-            <h2 id="qa-heading" class="visually-hidden">Interview Q&A Collection</h2>
-            <div class="dashboard-container" role="grid" aria-label="Interview preparation materials">
+        <section class="interview-qa-collection" aria-labelledby="qa-collection-title">
+            <h2 id="qa-collection-title" class="section-title">
+                <i class="bi bi-collection me-2"></i>Your Interview Preparations
+            </h2>
+            
+            <div class="qa-grid">
                 {% for qa in interview_qa_list %}
-                <article class="dashboard-card" 
-                         role="gridcell" 
-                         itemscope 
-                         itemtype="https://schema.org/Question"
-                         aria-labelledby="qa-title-{{ loop.index }}">
-                    <header>
-                        <h3 id="qa-title-{{ loop.index }}" itemprop="name">{{ qa.job_title }}</h3>
-                    </header>
-                    <div class="card-content">
-                        <p itemprop="text" aria-label="Preview of interview questions and answers">
-                            {{ qa.qa|truncate(120) }}
-                        </p>
-                        <small class="text-muted" aria-label="Content type">
-                            Interview Questions &amp; Answers
-                        </small>
+                <article class="qa-card" data-qa-id="{{ loop.index }}">
+                    <div class="qa-card-header">
+                        <h3 class="qa-title">{{ qa.job_title }}</h3>
                         {% if qa.created_at %}
-                        <time datetime="{{ qa.created_at.isoformat() }}" 
-                              itemprop="dateCreated"
-                              aria-label="Created on {{ qa.created_at.strftime('%B %d, %Y') }}">
+                        <span class="qa-date">
                             {{ qa.created_at.strftime('%b %d, %Y') }}
-                        </time>
+                        </span>
                         {% endif %}
                     </div>
-                    <footer class="card-actions">
-                        <a href="{{ url_for('view_interview_qa', qa_id=qa.id) if qa.id else '#' }}"
-                           class="btn btn-outline-primary"
-                           aria-label="View full interview Q&A for {{ qa.job_title }}">
-                            <i class="bi bi-eye" aria-hidden="true"></i> View Details
-                        </a>
-                    </footer>
+                    
+                    <div class="qa-preview">
+                        {{ qa.qa|truncate(150, True, '...') }}
+                    </div>
+                    
+                    <div class="qa-actions">
+                        <button class="btn-action btn-expand" onclick="toggleQAContent({{ loop.index }})">
+                            <i class="bi bi-eye me-1"></i>View Full Content
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deleteQA({{ loop.index }}, '{{ qa.job_title }}')">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                    
+                    <div class="qa-full-content" id="qa-content-{{ loop.index }}">
+                        <h4>📝 Complete Q&A for {{ qa.job_title }}</h4>
+                        <pre>{{ qa.qa }}</pre>
+                    </div>
                 </article>
                 {% endfor %}
             </div>
         </section>
         {% else %}
         <!-- Empty State -->
-        <section class="create-first-section" aria-labelledby="empty-state-title">
-            <div class="create-first-icon" aria-hidden="true">
+        <div class="empty-state">
+            <div class="empty-icon">
                 <i class="bi bi-question-circle"></i>
             </div>
-            <h2 id="empty-state-title" class="create-first-title">Create Your First Interview Q&amp;A</h2>
-            <p class="create-first-subtitle">
-                Generate personalized interview questions and answers for specific job roles to help you prepare and excel in your interviews.
+            <h2 class="empty-title">Ready to ace your next interview?</h2>
+            <p class="empty-subtitle">
+                Generate personalized interview questions and answers tailored to specific job roles. 
+                Practice your responses and boost your confidence for any interview scenario.
             </p>
-            <form method="POST" 
-                  action="{{ url_for('interview_qa') }}" 
-                  class="d-flex flex-column align-items-center gap-3"
-                  aria-label="Generate your first interview Q&A">
-                <label for="first-job-title" class="visually-hidden">Job Title</label>
-                <input type="text" 
-                       id="first-job-title"
-                       name="job_title" 
-                       class="form-control text-center" 
-                       placeholder="Enter job title (e.g., Software Engineer)" 
-                       required 
-                       style="max-width: 350px; border-radius: 15px; padding: 12px 20px;"
-                       aria-describedby="first-job-help">
-                <small id="first-job-help" class="form-text text-muted">
-                    Enter a specific job title to get relevant interview questions
-                </small>
-                <button type="submit" 
-                        class="create-first-btn"
-                        aria-label="Generate interview questions and answers for this job title">
-                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>Generate Interview Q&amp;A
-                </button>
-            </form>
-        </section>
+        </div>
         {% endif %}
     </section>
 </main>
@@ -331,164 +480,250 @@
 
 {% block extra_js %}
 <script>
-// Enhanced page transition effects
+// Clean, functional JavaScript for better UX
 document.addEventListener('DOMContentLoaded', function() {
-    // Smooth fade-in effect for page load
-    const mainContent = document.querySelector('main');
-    if (mainContent) {
-        mainContent.style.opacity = '0';
-        mainContent.style.transform = 'translateY(20px)';
-        
-        setTimeout(function() {
-            mainContent.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            mainContent.style.opacity = '1';
-            mainContent.style.transform = 'translateY(0)';
-        }, 100);
+    // Focus job title input for better UX
+    const jobTitleInput = document.querySelector('input[name="job_title"]');
+    if (jobTitleInput) {
+        jobTitleInput.focus();
     }
-
-    // Focus first input for better UX
-    const firstInput = document.querySelector('input[name="job_title"]');
-    if (firstInput) {
-        firstInput.focus();
-    }
-});
-
-// Enhanced navigation with accessibility
-const navLinks = document.querySelectorAll('.nav-link:not(.active)');
-navLinks.forEach(function(link) {
-    link.addEventListener('click', function(e) {
-        if (link.href && !link.classList.contains('active') && 
-            link.getAttribute('href').startsWith('/')) {
-            e.preventDefault();
-            
-            // Add loading state
-            link.setAttribute('aria-busy', 'true');
-            
-            // Fade out effect
-            const mainContent = document.querySelector('main');
-            if (mainContent) {
-                mainContent.style.opacity = '0';
-                mainContent.style.transform = 'translateY(-20px)';
-            }
-            
-            setTimeout(function() {
-                window.location = link.href;
-            }, 300);
-        }
-    });
-});
-
-// Enhance card interactions for better UX
-const cards = document.querySelectorAll('.dashboard-card');
-cards.forEach(function(card) {
-    card.addEventListener('mouseenter', function() {
-        this.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-        this.style.transform = 'translateY(-5px)';
-        this.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
-    });
     
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-    });
-    
-    // Keyboard navigation support
-    card.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            const viewButton = this.querySelector('.btn');
-            if (viewButton) {
-                e.preventDefault();
-                viewButton.click();
-            }
-        }
-    });
-});
-
-// Form validation and enhancement
-const forms = document.querySelectorAll('form');
-forms.forEach(function(form) {
-    form.addEventListener('submit', function(e) {
-        const jobTitleInput = this.querySelector('input[name="job_title"]');
-        if (jobTitleInput) {
-            const value = jobTitleInput.value.trim();
+    // Form validation with user-friendly feedback
+    const form = document.querySelector('form[method="POST"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const input = this.querySelector('input[name="job_title"]');
+            const value = input.value.trim();
+            
             if (!value) {
                 e.preventDefault();
-                jobTitleInput.focus();
-                jobTitleInput.setAttribute('aria-describedby', 'error-message');
-                
-                // Show error message
-                let errorEl = document.getElementById('error-message');
-                if (!errorEl) {
-                    errorEl = document.createElement('div');
-                    errorEl.id = 'error-message';
-                    errorEl.className = 'text-danger small mt-1';
-                    errorEl.setAttribute('role', 'alert');
-                    jobTitleInput.parentNode.appendChild(errorEl);
-                }
-                errorEl.textContent = 'Please enter a job title to generate interview questions.';
-                
-                // Remove error after delay
-                setTimeout(() => {
-                    if (errorEl.parentNode) {
-                        errorEl.parentNode.removeChild(errorEl);
-                    }
-                    jobTitleInput.removeAttribute('aria-describedby');
-                }, 3000);
-                
+                showErrorMessage(input, 'Please enter a job title to generate interview questions.');
                 return false;
             }
             
-            // Add loading state to submit button
+            // Show loading state
             const submitBtn = this.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="bi bi-clock-history me-2" aria-hidden="true"></i>Generating...';
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating Q&A...';
+                
+                // Add visual feedback
+                submitBtn.style.opacity = '0.7';
+                submitBtn.style.cursor = 'not-allowed';
             }
-        }
-    });
+        });
+    }
+    
+    // Enhanced autocomplete for job titles
+    if (jobTitleInput) {
+        const commonJobs = [
+            'Software Engineer', 'Product Manager', 'Data Scientist', 'Marketing Manager',
+            'Sales Representative', 'Business Analyst', 'UX/UI Designer', 'Project Manager',
+            'Customer Service Representative', 'Accountant', 'HR Manager', 'DevOps Engineer',
+            'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Data Analyst',
+            'Digital Marketing Specialist', 'Content Writer', 'Graphic Designer', 'Operations Manager'
+        ];
+        
+        // Create autocomplete dropdown
+        const dropdown = document.createElement('div');
+        dropdown.className = 'autocomplete-dropdown';
+        dropdown.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        `;
+        
+        jobTitleInput.parentNode.style.position = 'relative';
+        jobTitleInput.parentNode.appendChild(dropdown);
+        
+        jobTitleInput.addEventListener('input', function() {
+            const value = this.value.toLowerCase();
+            dropdown.innerHTML = '';
+            
+            if (value.length > 1) {
+                const matches = commonJobs.filter(job => 
+                    job.toLowerCase().includes(value)
+                ).slice(0, 5);
+                
+                if (matches.length > 0) {
+                    matches.forEach(job => {
+                        const item = document.createElement('div');
+                        item.textContent = job;
+                        item.style.cssText = `
+                            padding: 10px;
+                            cursor: pointer;
+                            border-bottom: 1px solid #eee;
+                        `;
+                        item.addEventListener('mouseenter', () => item.style.background = '#f0f0f0');
+                        item.addEventListener('mouseleave', () => item.style.background = 'white');
+                        item.addEventListener('click', () => {
+                            jobTitleInput.value = job;
+                            dropdown.style.display = 'none';
+                        });
+                        dropdown.appendChild(item);
+                    });
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            } else {
+                dropdown.style.display = 'none';
+            }
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!jobTitleInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
 });
 
-// Input enhancement for better UX
-const jobTitleInputs = document.querySelectorAll('input[name="job_title"]');
-jobTitleInputs.forEach(function(input) {
-    // Add auto-complete suggestions (basic implementation)
-    const commonJobs = [
-        'Software Engineer', 'Product Manager', 'Data Scientist', 'Marketing Manager',
-        'Sales Representative', 'Business Analyst', 'UX Designer', 'Project Manager',
-        'Customer Service Representative', 'Accountant', 'HR Manager', 'DevOps Engineer'
-    ];
+// Toggle Q&A content visibility
+function toggleQAContent(qaId) {
+    const content = document.getElementById(`qa-content-${qaId}`);
+    const button = event.target.closest('.btn-expand');
     
-    input.addEventListener('input', function() {
-        const value = this.value.toLowerCase();
-        if (value.length > 2) {
-            // Simple autocomplete suggestion
-            const suggestion = commonJobs.find(job => 
-                job.toLowerCase().startsWith(value)
-            );
-            if (suggestion && suggestion.toLowerCase() !== value) {
-                this.setAttribute('aria-describedby', 'suggestion-hint');
-                let hintEl = document.getElementById('suggestion-hint');
-                if (!hintEl) {
-                    hintEl = document.createElement('div');
-                    hintEl.id = 'suggestion-hint';
-                    hintEl.className = 'text-muted small mt-1';
-                    this.parentNode.appendChild(hintEl);
-                }
-                hintEl.textContent = `Suggestion: ${suggestion}`;
+    if (content.classList.contains('show')) {
+        content.classList.remove('show');
+        button.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
+    } else {
+        // Hide all other open contents
+        document.querySelectorAll('.qa-full-content.show').forEach(el => {
+            el.classList.remove('show');
+        });
+        document.querySelectorAll('.btn-expand').forEach(btn => {
+            btn.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
+        });
+        
+        // Show this content
+        content.classList.add('show');
+        button.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Hide Content';
+        
+        // Scroll to content
+        content.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// Delete Q&A item (client-side only for now)
+function deleteQA(qaId, jobTitle) {
+    if (confirm(`Are you sure you want to delete the interview Q&A for "${jobTitle}"?`)) {
+        const card = document.querySelector(`[data-qa-id="${qaId}"]`);
+        if (card) {
+            // Add fade out animation
+            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                card.remove();
                 
-                // Auto-complete on Tab key
-                this.addEventListener('keydown', function(e) {
-                    if (e.key === 'Tab' && suggestion) {
-                        e.preventDefault();
-                        this.value = suggestion;
-                        if (hintEl.parentNode) {
-                            hintEl.parentNode.removeChild(hintEl);
-                        }
-                    }
-                });
-            }
+                // Check if this was the last item
+                const remainingCards = document.querySelectorAll('.qa-card');
+                if (remainingCards.length === 0) {
+                    // Reload page to show empty state
+                    window.location.reload();
+                }
+            }, 300);
+            
+            // Show success message
+            showSuccessMessage(`Interview Q&A for "${jobTitle}" has been deleted.`);
         }
-    });
-});
+    }
+}
+
+// Show error message
+function showErrorMessage(input, message) {
+    // Remove existing error
+    const existingError = input.parentNode.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // Add error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.cssText = `
+        color: #d32f2f;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #ffebee;
+        border-radius: 4px;
+        border-left: 3px solid #d32f2f;
+    `;
+    errorDiv.textContent = message;
+    
+    input.parentNode.appendChild(errorDiv);
+    input.focus();
+    
+    // Add error styling to input
+    input.style.borderColor = '#d32f2f';
+    
+    // Remove error after 5 seconds
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
+            input.style.borderColor = '';
+        }
+    }, 5000);
+}
+
+// Show success message
+function showSuccessMessage(message) {
+    const successDiv = document.createElement('div');
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        font-weight: 500;
+        animation: slideIn 0.3s ease;
+    `;
+    successDiv.textContent = message;
+    
+    // Add slide in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(successDiv);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        successDiv.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => {
+            if (successDiv.parentNode) {
+                successDiv.remove();
+            }
+            if (style.parentNode) {
+                style.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Add smooth scroll behavior for better UX
+document.documentElement.style.scrollBehavior = 'smooth';
 </script>
 {% endblock %}
