@@ -459,7 +459,10 @@ def logout():
     if current_user.is_authenticated:
         logout_user()
         flash('You have been logged out successfully.', 'success')
-    return redirect(url_for('index'))
+        return redirect(url_for('index'))
+    else:
+        # User wasn't logged in, redirect silently without any message
+        return redirect(url_for('index'))
 
 @app.route('/dashboard')
 @login_required
