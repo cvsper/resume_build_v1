@@ -905,6 +905,13 @@
                aria-label="Manage your account settings - current page">
                 <i class="bi bi-person" aria-hidden="true"></i> My Account
             </a>
+            <a class="nav-link" 
+               href="javascript:void(0)" 
+               onclick="openCustomerPortal()" 
+               title="Manage your subscription, payment methods, and billing"
+               aria-label="Manage your subscription">
+                <i class="bi bi-credit-card" aria-hidden="true"></i> Subscription
+            </a>
             <a class="nav-link text-danger logout" 
                href="{{ url_for('logout') }}"
                aria-label="Sign out of your account">
