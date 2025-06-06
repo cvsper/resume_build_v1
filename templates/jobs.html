@@ -517,44 +517,126 @@
         }
 
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 6rem 1rem 2rem;
+            }
+            
             .header-section {
                 padding: 1.5rem 1.25rem;
             }
+            
             .search-section {
                 margin: 1rem 1.25rem;
                 padding: 1.5rem;
             }
+            
             .jobs-content {
                 padding: 0 1.25rem 2rem;
-            }
-            .page-title {
-                font-size: 1.5rem;
-            }
-            .job-card {
-                padding: 1.5rem;
-            }
-            .job-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-            .job-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-            .apply-btn, .save-btn {
-                width: 100%;
-                justify-content: center;
             }
         }        #fade-wrapper { 
             opacity: 1; 
             transition: opacity 0.5s ease; 
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--primary-blue-dark);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 6rem 1rem 2rem;
+            }
+            
+            .header-section {
+                padding: 1.5rem 1.25rem;
+            }
+            
+            .search-section {
+                margin: 1rem 1.25rem;
+                padding: 1.5rem;
+            }
+            
+            .jobs-content {
+                padding: 0 1.25rem 2rem;
+            }
         }
     </style>
 {% endblock %}
 
 {% block content %}
 <main role="main" aria-labelledby="page-title">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
         <header class="sidebar-header">
@@ -910,5 +992,25 @@ function openCustomerPortal() {
 
 // Make the function globally accessible
 window.openCustomerPortal = openCustomerPortal;
+
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
+// Close mobile menu when clicking on nav links
+document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+    link.addEventListener('click', closeMobileMenu);
+});
 </script>
 {% endblock %}

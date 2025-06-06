@@ -779,46 +779,73 @@
             filter: brightness(0) invert(1);
         }
 
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 100%;
-                min-height: auto;
-                position: static;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .sidebar nav {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                padding: 1rem;
-            }
-            .sidebar .nav-link {
-                margin: 0.25rem;
-                flex: 1;
-                min-width: 120px;
-                justify-content: center;
-            }
-            .account-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
+        .mobile-menu-toggle:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        /* Mobile Styles */
         @media (max-width: 768px) {
-            .header-section {
-                padding: 1.5rem 1.25rem;
+            .mobile-menu-toggle {
+                display: block;
             }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 6rem 1rem 2rem;
+            }
+
             .account-content {
                 padding: 1.5rem 1.25rem;
             }
+
             .page-title {
                 font-size: 1.5rem;
             }
+
             .plan-cards {
                 grid-template-columns: 1fr;
             }
+
             .plan-card.recommended {
                 transform: none;
             }
@@ -862,6 +889,14 @@
 
 {% block content %}
 <main role="main" aria-labelledby="page-title">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
         <header class="sidebar-header">
@@ -1311,875 +1346,6 @@ function upgradePlan(plan) {
         'Cancel',
         function() {
             console.log('User confirmed upgrade, submitting form...');
-            submitSubscriptionForm('upgrade', plan);
-        }
-    );
-    modal.show();
-}
-
-function downgradePlan(plan) {
-    console.log('Attempting to downgrade to ' + plan + ' plan');
-    
-    const confirmMessage = 'Are you sure you want to downgrade to the ' + plan + ' plan? You will lose access to premium features.';
-    const modal = createConfirmationModal(
-        'Downgrade Subscription',
-        confirmMessage,
-        'Downgrade',
-        'Cancel',
-        function() {
-            console.log('User confirmed downgrade, submitting form...');
-            submitSubscriptionForm('downgrade', plan);
-        }
-    );
-    modal.show();
-}
-
-function cancelSubscription() {
-    console.log('Attempting to cancel subscription');
-    
-    const confirmMessage = 'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.';
-    const modal = createConfirmationModal(
-        'Cancel Subscription',
-        confirmMessage,
-        'Cancel Subscription',
-        'Keep Subscription',
-        function() {
-            console.log('User confirmed cancellation, submitting form...');
-            submitSubscriptionForm('cancel', 'Free');
-        }
-    );
-    modal.show();
-}
-
-// Make functions globally accessible immediately
-window.upgradePlan = upgradePlan;
-window.downgradePlan = downgradePlan;
-window.cancelSubscription = cancelSubscription;
-
-console.log('✅ Subscription functions defined and made globally accessible');
-
-// Helper function to create confirmation modals
-function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
-    return {
-        show: function() {
-            if (confirm(message)) {
-                if (onConfirm) onConfirm();
-            }
-        }
-    };
-}
-
-// Helper function to submit subscription forms
-function submitSubscriptionForm(action, plan) {
-    console.log('Submitting subscription form:', action, plan);
-    
-    // Create and submit form
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/subscription';
-    
-    const actionInput = document.createElement('input');
-    actionInput.type = 'hidden';
-    actionInput.name = 'action';
-    actionInput.value = action;
-    form.appendChild(actionInput);
-    
-    const planInput = document.createElement('input');
-    planInput.type = 'hidden';
-    planInput.name = 'plan';
-    planInput.value = plan;
-    form.appendChild(planInput);
-    
-    // Add CSRF token if available
-    const csrfToken = document.querySelector('meta[name="csrf-token"]');
-    if (csrfToken) {
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrf_token';
-        csrfInput.value = csrfToken.getAttribute('content');
-        form.appendChild(csrfInput);
-    }
-    
-    document.body.appendChild(form);
-    form.submit();
-}
-
-// Make helper functions globally accessible too
-window.createConfirmationModal = createConfirmationModal;
-window.submitSubscriptionForm = submitSubscriptionForm;
-
-// Enhanced page initialization with accessibility focus management
-window.addEventListener('DOMContentLoaded', function() {
-    const fadeWrapper = document.getElementById('fade-wrapper');
-    fadeWrapper.style.opacity = 0;
-    
-    setTimeout(function() {
-        fadeWrapper.style.transition = 'opacity 0.6s ease';
-        fadeWrapper.style.opacity = 1;
-        
-        // Set focus to main heading for screen readers
-        const pageTitle = document.getElementById('page-title');
-        if (pageTitle) {
-            pageTitle.focus();
-        }
-    }, 100);
-    
-    // Initialize form validation
-    initializeFormValidation();
-    
-    // Initialize accessibility enhancements
-    initializeAccessibility();
-});
-
-// Enhanced form validation
-function initializeFormValidation() {
-    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
-    const passwordForm = document.querySelector('form input[name="change_password"]').closest('form');
-    
-    if (profileForm) {
-        profileForm.addEventListener('submit', function(e) {
-            if (!validateProfileForm(this)) {
-                e.preventDefault();
-                return false;
-            }
-            showLoadingState(this);
-        });
-    }
-    
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', function(e) {
-            if (!validatePasswordForm(this)) {
-                e.preventDefault();
-                return false;
-            }
-            showLoadingState(this);
-        });
-    }
-}
-
-function validateProfileForm(form) {
-    const nameInput = form.querySelector('input[name="name"]');
-    const fileInput = form.querySelector('input[name="profile_pic"]');
-    let isValid = true;
-    
-    // Clear previous error states
-    clearFieldErrors(form);
-    
-    // Validate name if provided
-    if (nameInput && nameInput.value.trim()) {
-        if (nameInput.value.trim().length < 2) {
-            showFieldError(nameInput, 'Name must be at least 2 characters long');
-            isValid = false;
-        } else if (!/^[a-zA-Z\s'-]+$/.test(nameInput.value.trim())) {
-            showFieldError(nameInput, 'Name can only contain letters, spaces, hyphens, and apostrophes');
-            isValid = false;
-        }
-    }
-    
-    // Validate profile picture if uploaded
-    if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-        
-        if (file.size > maxSize) {
-            showFieldError(fileInput, 'Profile picture must be smaller than 5MB');
-            isValid = false;
-        } else if (!allowedTypes.includes(file.type)) {
-            showFieldError(fileInput, 'Profile picture must be a JPG, PNG, or GIF file');
-            isValid = false;
-        }
-    }
-    
-    return isValid;
-}
-
-function validatePasswordForm(form) {
-    const currentPassword = form.querySelector('input[name="current_password"]');
-    const newPassword = form.querySelector('input[name="new_password"]');
-    const confirmPassword = form.querySelector('input[name="confirm_password"]');
-    let isValid = true;
-    
-    // Clear previous error states
-    clearFieldErrors(form);
-    
-    // Validate current password
-    if (!currentPassword.value.trim()) {
-        showFieldError(currentPassword, 'Current password is required');
-        isValid = false;
-    }
-    
-    // Validate new password
-    if (!newPassword.value) {
-        showFieldError(newPassword, 'New password is required');
-        isValid = false;
-    } else if (newPassword.value.length < 8) {
-        showFieldError(newPassword, 'New password must be at least 8 characters long');
-        isValid = false;
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword.value)) {
-        showFieldError(newPassword, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
-        isValid = false;
-    }
-    
-    // Validate password confirmation
-    if (!confirmPassword.value) {
-        showFieldError(confirmPassword, 'Please confirm your new password');
-        isValid = false;
-    } else if (newPassword.value !== confirmPassword.value) {
-        showFieldError(confirmPassword, 'Passwords do not match');
-        isValid = false;
-    }
-    
-    return isValid;
-}
-
-function showFieldError(field, message) {
-    field.classList.add('is-invalid');
-    field.setAttribute('aria-invalid', 'true');
-    
-    // Create or update error message
-    let errorElement = field.parentNode.querySelector('.error-message');
-    if (!errorElement) {
-        errorElement = document.createElement('div');
-        errorElement.className = 'error-message';
-        errorElement.setAttribute('role', 'alert');
-        errorElement.style.color = '#EF4444';
-        errorElement.style.fontSize = '0.875rem';
-        errorElement.style.marginTop = '0.25rem';
-        field.parentNode.appendChild(errorElement);
-    }
-    errorElement.textContent = message;
-    
-    // Set focus to first invalid field
-    if (!document.querySelector('.is-invalid:focus')) {
-        field.focus();
-    }
-}
-
-function clearFieldErrors(form) {
-    form.querySelectorAll('.is-invalid').forEach(field => {
-        field.classList.remove('is-invalid');
-        field.removeAttribute('aria-invalid');
-    });
-    form.querySelectorAll('.error-message').forEach(error => error.remove());
-}
-
-function showLoadingState(form) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>Processing...';
-        submitBtn.setAttribute('aria-label', 'Processing your request, please wait');
-        
-        // Reset button after timeout as fallback
-        setTimeout(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            submitBtn.removeAttribute('aria-label');
-        }, 10000);
-    }
-}
-
-// Enhanced navigation transitions with accessibility
-document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
-    link.addEventListener('click', function(e) {
-        if (link.href && !link.classList.contains('text-danger')) {
-            e.preventDefault();
-            
-            const fadeWrapper = document.getElementById('fade-wrapper');
-            fadeWrapper.style.transition = 'opacity 0.4s ease';
-            fadeWrapper.style.opacity = 0;
-            
-            // Announce navigation to screen readers
-            const announcement = document.createElement('div');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('aria-atomic', 'true');
-            announcement.className = 'sr-only';
-            announcement.textContent = `Navigating to ${link.textContent.trim()}`;
-            document.body.appendChild(announcement);
-            
-            setTimeout(function() {
-                window.location = link.href;
-            }, 400);
-            
-            setTimeout(() => document.body.removeChild(announcement), 1000);
-        }
-    });
-});
-
-// Enhanced profile picture preview with accessibility
-document.getElementById('profile_pic').addEventListener('change', function(e) {
-    if (e.target.files && e.target.files[0]) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const preview = document.getElementById('profilePicPreview');
-            preview.src = e.target.result;
-            preview.alt = `New profile picture preview: ${file.name}`;
-            
-            // Announce change to screen readers
-            const announcement = document.createElement('div');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.className = 'sr-only';
-            announcement.textContent = 'Profile picture updated. Preview is now showing your selected image.';
-            document.body.appendChild(announcement);
-            setTimeout(() => document.body.removeChild(announcement), 3000);
-        };
-        
-        reader.onerror = function() {
-            showFieldError(e.target, 'Failed to load image. Please try a different file.');
-        };
-        
-        reader.readAsDataURL(file);
-    }
-});
-
-// Enhanced page initialization with accessibility focus management
-window.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Profile page DOM loaded, initializing...');
-    
-    // Initialize page fade-in effect
-    const fadeWrapper = document.getElementById('fade-wrapper');
-    if (fadeWrapper) {
-        fadeWrapper.style.opacity = 0;
-        setTimeout(function() {
-            fadeWrapper.style.transition = 'opacity 0.6s ease';
-            fadeWrapper.style.opacity = 1;
-        }, 100);
-    }
-    
-    // Initialize form validation
-    initializeFormValidation();
-    
-    // Initialize accessibility enhancements
-    initializeAccessibility();
-});
-
-// Enhanced form validation functions
-function initializeFormValidation() {
-    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
-    
-    if (profileForm) {
-        profileForm.addEventListener('submit', function(e) {
-            console.log('Profile form submitted');
-        });
-    }
-}
-
-// Initialize accessibility enhancements
-function initializeAccessibility() {
-    console.log('✅ Accessibility features initialized');
-}
-
-// Enhanced modal creation function
-function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
-    const modal = document.createElement('div');
-    modal.className = 'modal fade show';
-    modal.style.display = 'flex';
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-    modal.style.zIndex = '1055';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
-    
-    modal.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">${title}</h5>
-                    <button type="button" class="btn-close" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>${message}</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary">${cancelText}</button>
-                    <button type="button" class="btn btn-primary confirm-action">${confirmText}</button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Add event listeners
-    const closeBtn = modal.querySelector('.btn-close');
-    const cancelBtn = modal.querySelector('.btn-secondary');
-    const confirmBtn = modal.querySelector('.confirm-action');
-    
-    const closeModal = () => {
-        modal.remove();
-    };
-    
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-    confirmBtn.addEventListener('click', () => {
-        onConfirm();
-        closeModal();
-    });
-    
-    // Close on outside click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-    
-    return modal;
-}
-
-// Additional utility functions for subscription management
-function openCustomerPortal() {
-    const modal = createConfirmationModal(
-        'Manage Billing',
-        'You will be redirected to Stripe Customer Portal where you can manage your subscription.',
-        'Open Portal',
-        'Cancel',
-        function() {
-            // Create form to open customer portal
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/create-customer-portal';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-}
-
-function loadBillingHistory() {
-    console.log('Loading billing history...');
-    // Implementation for billing history
-}
-
-function hideBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    if (historySection) {
-        historySection.style.display = 'none';
-    }
-}
-
-function confirmDeleteAccount() {
-    const modal = createConfirmationModal(
-        'Downgrade Subscription',
-        confirmMessage,
-        'Downgrade',
-        'Cancel',
-        function() {
-            // Handle downgrade logic
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ url_for("my_account") }}';
-            
-            const planInput = document.createElement('input');
-            planInput.type = 'hidden';
-            planInput.name = 'change_subscription';
-            planInput.value = '1';
-            form.appendChild(planInput);
-            
-            const subscriptionInput = document.createElement('input');
-            subscriptionInput.type = 'hidden';
-            subscriptionInput.name = 'subscription';
-            subscriptionInput.value = plan;
-            form.appendChild(subscriptionInput);
-            
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
-}
-
-function confirmDeleteAccount() {
-    const modal = createConfirmationModal(
-        'Delete Account',
-        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
-        'Delete Account',
-        'Cancel',
-        function() {
-            // Show second confirmation
-            const finalModal = createConfirmationModal(
-                'Final Warning',
-                'This is your final warning. Are you sure you want to permanently delete your account?',
-                'Yes, Delete My Account',
-                'Cancel',
-                function() {
-                    // Handle account deletion
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '{{ url_for("my_account") }}';
-                    
-                    const deleteInput = document.createElement('input');
-                    deleteInput.type = 'hidden';
-                    deleteInput.name = 'delete_account';
-                    deleteInput.value = '1';
-                    form.appendChild(deleteInput);
-                    
-                    document.body.appendChild(form);
-                    form.submit();
-                }
-            );
-            document.body.appendChild(finalModal);
-            finalModal.querySelector('.modal-confirm').focus();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
-}
-
-// Enhanced subscription management functions
-function openCustomerPortal() {
-    const modal = createConfirmationModal(
-        'Manage Billing',
-        'You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history.',
-        'Open Portal',
-        'Cancel',
-        function() {
-            // Show loading state
-            const portalBtn = document.querySelector('button[onclick="openCustomerPortal()"]');
-            if (portalBtn) {
-                portalBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Opening Portal...';
-                portalBtn.disabled = true;
-            }
-            
-            try {
-                // Create form and submit to Customer Portal
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/create-customer-portal';
-                document.body.appendChild(form);
-                form.submit();
-            } catch (error) {
-                console.error('Customer Portal error:', error);
-                // Reset button state
-                if (portalBtn) {
-                    portalBtn.innerHTML = '<i class="bi bi-gear-fill me-2"></i>Manage Billing';
-                    portalBtn.disabled = false;
-                }
-                alert('Error opening Customer Portal. Please try again.');
-            }
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
-}
-
-function loadBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    const loadingState = document.getElementById('billing-history-loading');
-    const historyContent = document.getElementById('billing-history-content');
-    
-    // Show the section and loading state
-    historySection.style.display = 'block';
-    loadingState.style.display = 'block';
-    historyContent.innerHTML = '';
-    
-    // Scroll to the billing history section
-    historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    // Fetch billing history from API
-    fetch('/subscription-billing-history')
-        .then(response => response.json())
-        .then(data => {
-            loadingState.style.display = 'none';
-            
-            if (data.error) {
-                historyContent.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        ${data.error}
-                    </div>
-                `;
-                return;
-            }
-            
-            if (data.invoices.length === 0) {
-                historyContent.innerHTML = `
-                    <div class="text-center" style="padding: 2rem; color: var(--gray-600);">
-                        <i class="bi bi-receipt" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                        No billing history found.
-                    </div>
-                `;
-                return;
-            }
-            
-            // Create billing history table
-            const table = document.createElement('table');
-            table.className = 'billing-table';
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Invoice</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.invoices.map(invoice => `
-                        <tr>
-                            <td>${invoice.created}</td>
-                            <td>${invoice.description}</td>
-                            <td>$${invoice.amount.toFixed(2)} ${invoice.currency}</td>
-                            <td>
-                                <span class="status-badge status-${invoice.status}">
-                                    ${invoice.status}
-                                </span>
-                            </td>
-                            <td>
-                                ${invoice.hosted_invoice_url ? 
-                                    `<a href="${invoice.hosted_invoice_url}" target="_blank" class="invoice-link">
-                                        <i class="bi bi-download me-1"></i>View
-                                    </a>` : 
-                                    'N/A'
-                                }
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            `;
-            
-            historyContent.appendChild(table);
-        })
-        .catch(error => {
-            console.error('Billing history error:', error);
-            loadingState.style.display = 'none';
-            historyContent.innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Failed to load billing history. Please try again later.
-                </div>
-            `;
-            
-            // Show user-friendly error message
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'alert alert-warning';
-            errorMsg.innerHTML = `
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Network Error:</strong> Unable to connect to billing service. 
-                Please check your internet connection and try again.
-            `;
-            historyContent.appendChild(errorMsg);
-        });
-}
-
-function hideBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    historySection.style.display = 'none';
-}
-
-function cancelSubscription() {
-    const modal = createConfirmationModal(
-        'Cancel Subscription',
-        'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.',
-        'Cancel Subscription',
-        'Keep Subscription',
-        function() {
-            // Show loading state
-            const cancelBtn = document.querySelector('button[onclick="cancelSubscription()"]');
-            if (cancelBtn) {
-                cancelBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Cancelling...';
-                cancelBtn.disabled = true;
-            }
-            
-            // Create form and submit cancellation
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/cancel-subscription';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
-}
-
-// Create accessible confirmation modal
-function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.cssText = `
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
-        justify-content: center; z-index: 9999;
-    `;
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-labelledby', 'modal-title');
-    modal.setAttribute('aria-describedby', 'modal-description');
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: white; padding: 2rem; border-radius: 16px; 
-        max-width: 400px; margin: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    `;
-    
-    modalContent.innerHTML = `
-        <h3 id="modal-title" style="margin: 0 0 1rem 0; color: var(--gray-900);">${title}</h3>
-        <p id="modal-description" style="margin: 0 0 2rem 0; color: var(--gray-700); line-height: 1.6;">${message}</p>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <button type="button" class="modal-cancel" style="padding: 0.75rem 1.5rem; border: 2px solid var(--gray-300); background: white; border-radius: 8px; cursor: pointer;">
-                ${cancelText}
-            </button>
-            <button type="button" class="modal-confirm" style="padding: 0.75rem 1.5rem; border: none; background: var(--red-500); color: white; border-radius: 8px; cursor: pointer;">
-                ${confirmText}
-            </button>
-        </div>
-    `;
-    
-    modal.appendChild(modalContent);
-    
-    // Event handlers
-    modal.querySelector('.modal-cancel').addEventListener('click', () => {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-    });
-    
-    modal.querySelector('.modal-confirm').addEventListener('click', () => {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-        if (onConfirm) onConfirm();
-    });
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            document.body.removeChild(modal);
-            document.body.style.overflow = '';
-        }
-    });
-    
-    // Keyboard handling
-    modal.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            document.body.removeChild(modal);
-            document.body.style.overflow = '';
-        }
-    });
-    
-    document.body.style.overflow = 'hidden';
-    return modal;
-}
-
-// Initialize accessibility enhancements
-function initializeAccessibility() {
-    // Add keyboard navigation for plan cards
-    document.querySelectorAll('.plan-card').forEach(card => {
-        card.setAttribute('tabindex', '0');
-        card.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                const button = this.querySelector('button:not([disabled])');
-                if (button) {
-                    e.preventDefault();
-                    button.click();
-                }
-            }
-        });
-    });
-    
-    // Add keyboard navigation for stat cards
-    document.querySelectorAll('.stat-card').forEach(card => {
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('role', 'button');
-        card.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                // Could add click behavior here if needed
-            }
-        });
-    });
-    
-    // Enhance form field focus management
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.addEventListener('focus', function() {
-            this.closest('.form-group')?.classList.add('focused');
-        });
-        
-        field.addEventListener('blur', function() {
-            this.closest('.form-group')?.classList.remove('focused');
-        });
-    });
-}
-
-// Enhanced hover effects for cards with keyboard support
-document.querySelectorAll('.account-card, .plan-card, .stat-card').forEach(function(card) {
-    function addHoverEffect() {
-        if (!card.classList.contains('recommended')) {
-            card.style.transform = 'translateY(-4px) scale(1.02)';
-            card.style.transition = 'transform 0.2s ease';
-        }
-    }
-    
-    function removeHoverEffect() {
-        if (!card.classList.contains('recommended')) {
-            card.style.transform = 'translateY(0) scale(1)';
-        }
-    }
-    
-    card.addEventListener('mouseenter', addHoverEffect);
-    card.addEventListener('mouseleave', removeHoverEffect);
-    card.addEventListener('focus', addHoverEffect);
-    card.addEventListener('blur', removeHoverEffect);
-});
-
-// Add CSS for focused form groups
-const style = document.createElement('style');
-style.textContent = `
-    .form-group.focused .form-label {
-        color: var(--primary-blue);
-        font-weight: 600;
-    }
-    
-    .sr-only {
-        position: absolute !important;
-        width: 1px !important;
-        height: 1px !important;
-        padding: 0 !important;
-        margin: -1px !important;
-        overflow: hidden !important;
-        clip: rect(0, 0, 0, 0) !important;
-        white-space: nowrap !important;
-        border: 0 !important;
-    }
-    
-    .is-invalid {
-        border-color: var(--red-500) !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-    
-    .error-message {
-        animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-4px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);
-
-// All other utility functions and event handlers continue here...
-// Additional functions can be added here as needed
-
-});
-    if (!plan || !['Pro', 'Premium'].includes(plan)) {
-        alert('Invalid plan selected. Please try again.');
-        return;
-    }
-    
-    const confirmMessage = 'Are you sure you want to upgrade to the ' + plan + ' plan?';
-    const modal = createConfirmationModal(
-        'Upgrade Subscription',
-        confirmMessage,
-        'Upgrade',
-        'Cancel',
-        function() {
-            console.log('User confirmed upgrade, submitting form...');
             
             // Show loading state
             const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
@@ -2298,13 +1464,6 @@ function downgradePlan(plan) {
         const confirmBtn = modal.querySelector('.btn-primary');
         if (confirmBtn) confirmBtn.focus();
     }, 100);
-}
-
-function hideBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    if (historySection) {
-        historySection.style.display = 'none';
-    }
 }
 
 function cancelSubscription() {
@@ -2478,6 +1637,21 @@ function createConfirmationModal(title, message, confirmText, cancelText, onConf
     return modal;
 }
 
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+}
+
+function closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+}
+
 // Add CSS for loading animation
 const style = document.createElement('style');
 style.textContent = `
@@ -2529,4 +1703,4 @@ document.head.appendChild(style);
     console.error('Error details:', error.message, error.stack);
 }
 </script>
-{% endblock %}
+{% endblock %

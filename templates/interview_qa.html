@@ -76,10 +76,57 @@
 
 {% block styles %}
 <style>
+    /* CSS Variables */
+    :root {
+        --primary-blue: #667eea;
+    }
+    
     /* Base layout styles for dashboard */
     body { 
         background-color: #f7fafd; 
         font-family: 'Inter', Arial, sans-serif; 
+    }
+    
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 200;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-menu-toggle:hover {
+        background: #1976d2;
+        transform: translateY(-2px);
+    }
+    
+    /* Sidebar Overlay */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
     }
     
     /* Sidebar Navigation Styles */
@@ -440,6 +487,18 @@
     
     /* Responsive Design */
     @media (max-width: 768px) {
+        .mobile-menu-toggle { display: block; }
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        .main-content {
+            margin-left: 0;
+            padding: 6rem 1rem 2rem;
+        }
         .qa-grid {
             grid-template-columns: 1fr;
         }
@@ -484,6 +543,14 @@
 
 {% block content %}
 <main role="main" aria-labelledby="page-title">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+    
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
         <header class="sidebar-header">
@@ -634,6 +701,27 @@
 
 {% block extra_js %}
 <script>
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+}
+
 // Clean, functional JavaScript for better UX
 document.addEventListener('DOMContentLoaded', function() {
     // Focus job title input for better UX

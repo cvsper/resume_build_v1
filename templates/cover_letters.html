@@ -78,8 +78,55 @@
 
 {% block styles %}
     <style>
+        /* CSS Variables */
+        :root {
+            --primary-blue: #667eea;
+        }
+        
         /* Enhanced Cover Letters Page Styles */
         body { background-color: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 200;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: #1976d2;
+            transform: translateY(-2px);
+        }
+        
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
         
         /* Sidebar Styles */
         .sidebar { min-height: 100vh; background: #fff; box-shadow: 2px 0 16px rgba(0,0,0,0.04); padding: 32px 0 0 0; position: fixed; left: 0; top: 0; width: 240px; z-index: 100; transition: all 0.3s; }
@@ -505,11 +552,23 @@
             .letters-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) { 
+            .mobile-menu-toggle { display: block; }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
             .controls-bar { flex-direction: column; align-items: stretch; }
             .search-input { min-width: 100%; }
             .header-actions { flex-direction: column; align-items: flex-start; }
             .letters-grid { gap: 16px; }
             .cover-letter-card { margin-bottom: 0; }
+            .main-content {
+                margin-left: 0;
+                padding: 6rem 1rem 2rem;
+            }
         }
         @media (max-width: 575px) { 
             .sidebar .sidebar-header img { width: 32px; height: 32px; } 
@@ -524,6 +583,14 @@
 
 {% block content %}
 <main role="main" aria-labelledby="page-title">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+    
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
         <header class="sidebar-header">
@@ -592,31 +659,7 @@
 
     <!-- Main Content Area -->
     <section class="main-content" role="main">
-        <!-- Enhanced Page Header -->
-        <header class="page-header">
-            <h1 id="page-title">Your Cover Letters</h1>
-            <p class="subtitle">Create compelling cover letters that showcase your expertise and land you interviews</p>
-            {% if cover_letters|length > 0 %}
-            <div class="header-actions">
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number">{{ cover_letters|length }}</div>
-                        <div class="stat-label">Cover Letters</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">{{ cover_letters|length }}</div>
-                        <div class="stat-label">Ready to Send</div>
-                    </div>
-                </div>
-                <a href="{{ url_for('create_cover_letter') }}" 
-                   class="primary-btn"
-                   data-tooltip="Create new cover letter (Ctrl+N)"
-                   aria-label="Create a new cover letter">
-                    <i class="bi bi-plus-circle" aria-hidden="true"></i>Create New Cover Letter
-                </a>
-            </div>
-            {% endif %}
-        </header>
+
 
         {% if cover_letters|length > 0 %}
         <!-- Search and Filter Controls -->
@@ -733,6 +776,27 @@
 
 {% block extra_js %}
 <script>
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+}
+
 // Enhanced Cover Letters Page JavaScript
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize page
