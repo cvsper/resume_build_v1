@@ -100,13 +100,6 @@
             padding: 0.75rem;
             font-size: 1.25rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .mobile-menu-toggle:hover {
-            background: #1976d2;
-            transform: translateY(-2px);
         }
         
         /* Sidebar Overlay */
@@ -584,7 +577,7 @@
 {% block content %}
 <main role="main" aria-labelledby="page-title">
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
         <i class="bi bi-list"></i>
     </button>
     
@@ -1075,7 +1068,7 @@ function addErrorHandling() {
             // Global error handler for JavaScript errors
             window.addEventListener('error', function(e) {
                 console.error('JavaScript error:', e.error);
-                showNotification('An error occurred. Please refresh the page.', 'error');
+                // Error notification removed per user request
             });
             
             // Handle failed image loads for profile pictures
