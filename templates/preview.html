@@ -137,7 +137,6 @@
                     
                     <form id="payment-form" action="{{ url_for('create_checkout_session') }}" method="POST" enctype="application/x-www-form-urlencoded">
                         <input type="hidden" name="resume_id" value="{{ resume_id }}" id="resume_id_field">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" id="csrf_token_field">
                         <button type="submit" class="pay-button" id="checkout-button">
                             Secure Checkout - $4.99
                         </button>
