@@ -925,6 +925,22 @@
 
         <section class="account-content" role="main" aria-labelledby="page-title">
             <!-- Success/Error Messages -->
+            {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
+                    {{ success_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            
+            {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            
             {% if error %}
                 <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
                     <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
@@ -1949,6 +1965,12 @@ document.head.appendChild(style);
 function upgradePlan(plan) {
     console.log(`Attempting to upgrade to ${plan} plan`);
     
+    // Validate plan
+    if (!plan || !['Pro', 'Premium'].includes(plan)) {
+        alert('Invalid plan selected. Please try again.');
+        return;
+    }
+    
     const confirmMessage = `Are you sure you want to upgrade to the ${plan} plan?`;
     const modal = createConfirmationModal(
         'Upgrade Subscription',
@@ -1965,19 +1987,35 @@ function upgradePlan(plan) {
                 btn.disabled = true;
             });
             
-            // Create and submit form
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/create-checkout-session';
-            
-            const planInput = document.createElement('input');
-            planInput.type = 'hidden';
-            planInput.name = 'plan';
-            planInput.value = plan;
-            
-            form.appendChild(planInput);
-            document.body.appendChild(form);
-            form.submit();
+            // Create and submit form with error handling
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-checkout-session';
+                
+                const planInput = document.createElement('input');
+                planInput.type = 'hidden';
+                planInput.name = 'plan';
+                planInput.value = plan;
+                
+                form.appendChild(planInput);
+                document.body.appendChild(form);
+                
+                // Add form submit listener for debugging
+                form.addEventListener('submit', function() {
+                    console.log('Form submitted for plan:', plan);
+                });
+                
+                form.submit();
+            } catch (error) {
+                console.error('Error creating upgrade form:', error);
+                alert('An error occurred. Please refresh the page and try again.');
+                // Reset button state
+                upgradeButtons.forEach(btn => {
+                    btn.innerHTML = `Upgrade to ${plan}`;
+                    btn.disabled = false;
+                });
+            }
         }
     );
     
@@ -1994,9 +2032,15 @@ function upgradePlan(plan) {
 function downgradePlan(plan) {
     console.log(`Attempting to downgrade to ${plan} plan`);
     
-    const confirmMessage = plan === 'free' 
-        ? 'Are you sure you want to cancel your subscription and downgrade to the free plan?'
-        : `Are you sure you want to downgrade to the ${plan} plan?`;
+    // Validate plan
+    if (!plan) {
+        alert('Invalid plan selected. Please try again.');
+        return;
+    }
+    
+    const confirmMessage = plan === 'Free' 
+        ? 'Are you sure you want to cancel your subscription and downgrade to the free plan? You will lose access to premium features at the end of your billing period.'
+        : `Are you sure you want to change to the ${plan} plan?`;
     
     const modal = createConfirmationModal(
         'Change Subscription',
@@ -2014,18 +2058,34 @@ function downgradePlan(plan) {
             });
             
             // Create and submit form for downgrade
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/downgrade-subscription';
-            
-            const planInput = document.createElement('input');
-            planInput.type = 'hidden';
-            planInput.name = 'plan';
-            planInput.value = plan;
-            
-            form.appendChild(planInput);
-            document.body.appendChild(form);
-            form.submit();
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/downgrade-subscription';
+                
+                const planInput = document.createElement('input');
+                planInput.type = 'hidden';
+                planInput.name = 'plan';
+                planInput.value = plan;
+                
+                form.appendChild(planInput);
+                document.body.appendChild(form);
+                
+                // Add form submit listener for debugging
+                form.addEventListener('submit', function() {
+                    console.log('Downgrade form submitted for plan:', plan);
+                });
+                
+                form.submit();
+            } catch (error) {
+                console.error('Error creating downgrade form:', error);
+                alert('An error occurred. Please refresh the page and try again.');
+                // Reset button state
+                downgradeButtons.forEach(btn => {
+                    btn.innerHTML = plan === 'Free' ? 'Cancel Subscription' : `Switch to ${plan}`;
+                    btn.disabled = false;
+                });
+            }
         }
     );
     
@@ -2037,6 +2097,126 @@ function downgradePlan(plan) {
         const confirmBtn = modal.querySelector('.btn-primary');
         if (confirmBtn) confirmBtn.focus();
     }, 100);
+}
+
+function hideBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    if (historySection) {
+        historySection.style.display = 'none';
+    }
+}
+
+function cancelSubscription() {
+    const modal = createConfirmationModal(
+        'Cancel Subscription',
+        'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.',
+        'Cancel Subscription',
+        'Keep Subscription',
+        function() {
+            // Create form to cancel subscription
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/cancel-subscription';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.confirm-action').focus();
+}
+
+function confirmDeleteAccount() {
+    const modal = createConfirmationModal(
+        'Delete Account',
+        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
+        'Delete Account',
+        'Cancel',
+        function() {
+            // Create form to delete account
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/delete-account';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.confirm-action').focus();
+}
+
+// Customer portal and billing history functions
+function openCustomerPortal() {
+    const modal = createConfirmationModal(
+        'Manage Billing',
+        'You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history.',
+        'Open Portal',
+        'Cancel',
+        function() {
+            // Create form to open customer portal
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/create-customer-portal';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function loadBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    const loadingState = document.getElementById('billing-history-loading');
+    const historyContent = document.getElementById('billing-history-content');
+    
+    // Show the section and loading state
+    if (historySection) {
+        historySection.style.display = 'block';
+        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    if (loadingState) loadingState.style.display = 'block';
+    if (historyContent) historyContent.innerHTML = '';
+    
+    // Fetch billing history from API
+    fetch('/subscription-billing-history')
+        .then(response => response.json())
+        .then(data => {
+            if (loadingState) loadingState.style.display = 'none';
+            if (historyContent && data.invoices) {
+                // Create billing history table
+                const table = document.createElement('table');
+                table.className = 'billing-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.invoices.map(invoice => `
+                            <tr>
+                                <td>${new Date(invoice.created * 1000).toLocaleDateString()}</td>
+                                <td>$${(invoice.amount_due / 100).toFixed(2)}</td>
+                                <td><span class="status-badge status-${invoice.status}">${invoice.status}</span></td>
+                                <td><a href="${invoice.hosted_invoice_url}" target="_blank" class="invoice-link">View</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                historyContent.appendChild(table);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading billing history:', error);
+            if (loadingState) loadingState.style.display = 'none';
+            if (historyContent) {
+                historyContent.innerHTML = '<p class="text-danger">Error loading billing history. Please try again.</p>';
+            }
+        });
 }
 
 function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {

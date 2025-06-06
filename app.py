@@ -1204,6 +1204,26 @@ def jobs():
 @app.route('/my-account', methods=['GET', 'POST'])
 @login_required
 def my_account():
+    # Handle success messages from URL parameters
+    success_message = None
+    error_message = None
+    
+    payment_status = request.args.get('payment')
+    plan = request.args.get('plan')
+    change_type = request.args.get('type')
+    
+    if payment_status == 'success' and plan:
+        if change_type == 'upgrade':
+            success_message = f"🎉 Welcome to {plan}! Your subscription has been successfully activated."
+        elif change_type == 'change':
+            success_message = f"✅ Your subscription has been changed to {plan}."
+        elif change_type == 'reactivate':
+            success_message = f"🔄 Your {plan} subscription has been reactivated."
+        else:
+            success_message = f"✅ Subscription updated to {plan} plan."
+    elif payment_status == 'failed':
+        error_message = "❌ Payment failed. Please try again or contact support."
+    
     if request.method == 'POST':
         # Handle profile updates
         name = request.form.get('name')
@@ -1264,13 +1284,16 @@ def my_account():
                         return redirect(url_for('my_account'))
                     else:
                         return render_template('profile.html', user=current_user, active_page='my_account', 
-                                             error="Password must be at least 6 characters long")
+                                             error="Password must be at least 6 characters long",
+                                             success_message=success_message)
                 else:
                     return render_template('profile.html', user=current_user, active_page='my_account', 
-                                         error="New passwords do not match")
+                                         error="New passwords do not match",
+                                         success_message=success_message)
             else:
                 return render_template('profile.html', user=current_user, active_page='my_account', 
-                                     error="Current password is incorrect")
+                                     error="Current password is incorrect",
+                                     success_message=success_message)
         
         # Handle profile information updates
         if name:
@@ -1280,7 +1303,8 @@ def my_account():
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 return render_template('profile.html', user=current_user, active_page='my_account', 
-                                     error="Email already exists")
+                                     error="Email already exists",
+                                     success_message=success_message)
             current_user.email = email
         if preferred_template:
             current_user.preferred_template = preferred_template
@@ -1293,7 +1317,11 @@ def my_account():
         db.session.commit()
         return redirect(url_for('my_account'))
     
-    return render_template('profile.html', user=current_user, active_page='my_account')
+    return render_template('profile.html', 
+                         user=current_user, 
+                         active_page='my_account',
+                         success_message=success_message,
+                         error_message=error_message)
 
 def generate_resume_thumbnail(resume_id, html_content):
     """Generate a PNG thumbnail for the given resume HTML and save it to static/resume_thumbnails/{resume_id}.png"""
@@ -1535,17 +1563,32 @@ def preview_template(template_name):
 @login_required
 def subscription_success(plan):
     """Handle successful subscription payments"""
-    # Update user subscription in database
-    if plan in ['Pro', 'Premium']:
-        current_user.subscription = plan
-        db.session.commit()
-        
-        # Log successful subscription
-        print(f"✅ User {current_user.email} successfully subscribed to {plan}")
-        
-        # Redirect to account page with success message
-        return redirect(url_for('my_account') + '?payment=success&plan=' + plan)
-    else:
+    try:
+        # Update user subscription in database
+        if plan in ['Pro', 'Premium']:
+            old_plan = current_user.subscription or 'Free'
+            current_user.subscription = plan
+            db.session.commit()
+            
+            # Log successful subscription
+            print(f"✅ User {current_user.email} successfully changed subscription: {old_plan} → {plan}")
+            
+            # Determine success message based on change type
+            if old_plan == 'Free':
+                message_type = 'upgrade'
+            elif old_plan != plan:
+                message_type = 'change'
+            else:
+                message_type = 'reactivate'
+            
+            # Redirect to account page with success message
+            return redirect(url_for('my_account') + f'?payment=success&plan={plan}&type={message_type}')
+        else:
+            print(f"❌ Invalid plan in subscription success: {plan}")
+            return redirect(url_for('my_account') + '?payment=failed')
+            
+    except Exception as e:
+        print(f"Error in subscription success handler: {e}")
         return redirect(url_for('my_account') + '?payment=failed')
 
 # Add new Stripe webhook endpoints and enhanced subscription management
@@ -1679,6 +1722,104 @@ def reactivate_subscription():
     except Exception as e:
         print(f"Subscription reactivation error: {e}")
         flash('Unable to reactivate subscription. Please try again.', 'error')
+        return redirect(url_for('my_account'))
+
+@app.route('/downgrade-subscription', methods=['POST'])
+@login_required
+def downgrade_subscription():
+    """Handle subscription downgrades and cancellations"""
+    try:
+        plan = request.form.get('plan', '').strip()
+        print(f"Downgrade request: User {current_user.email} -> {plan}")
+        
+        if plan == 'Free':
+            # Cancel subscription and downgrade to free
+            if current_user.stripe_customer_id:
+                try:
+                    # Get active subscriptions
+                    subscriptions = stripe.Subscription.list(
+                        customer=current_user.stripe_customer_id,
+                        status='active'
+                    )
+                    
+                    # Cancel all active subscriptions
+                    for subscription in subscriptions.data:
+                        stripe.Subscription.modify(
+                            subscription.id,
+                            cancel_at_period_end=True
+                        )
+                        print(f"Scheduled cancellation for subscription: {subscription.id}")
+                    
+                    # Update user in database
+                    current_user.subscription = 'Free'
+                    db.session.commit()
+                    
+                    flash('Your subscription will be cancelled at the end of the current billing period. You will then be on the Free plan.', 'success')
+                    
+                except stripe.error.StripeError as e:
+                    print(f"Stripe error during cancellation: {e}")
+                    flash('Unable to cancel subscription. Please try again or contact support.', 'error')
+                    
+            else:
+                # User already on free plan
+                current_user.subscription = 'Free'
+                db.session.commit()
+                flash('You are now on the Free plan.', 'info')
+                
+        elif plan in ['Pro', 'Premium']:
+            # Handle plan changes (upgrade/downgrade between paid plans)
+            if current_user.stripe_customer_id:
+                try:
+                    # Create new checkout session for plan change
+                    plan_prices = {
+                        'Pro': 999,      # $9.99
+                        'Premium': 1999  # $19.99
+                    }
+                    
+                    checkout_session = stripe.checkout.Session.create(
+                        payment_method_types=['card'],
+                        line_items=[{
+                            'price_data': {
+                                'currency': 'usd',
+                                'unit_amount': plan_prices[plan],
+                                'product_data': {
+                                    'name': f'{plan} Subscription',
+                                    'description': f'Monthly {plan} subscription with unlimited features'
+                                },
+                                'recurring': {
+                                    'interval': 'month'
+                                }
+                            },
+                            'quantity': 1,
+                        }],
+                        mode='subscription',
+                        customer=current_user.stripe_customer_id,
+                        success_url=url_for('subscription_success', plan=plan, _external=True),
+                        cancel_url=url_for('my_account', _external=True),
+                        metadata={
+                            'user_id': current_user.id,
+                            'plan': plan,
+                            'change_type': 'plan_change'
+                        }
+                    )
+                    
+                    return redirect(checkout_session.url, code=303)
+                    
+                except stripe.error.StripeError as e:
+                    print(f"Stripe error during plan change: {e}")
+                    flash('Unable to change plan. Please try again.', 'error')
+                    
+            else:
+                # Redirect to regular upgrade flow
+                return redirect(url_for('create_checkout_session') + f'?plan={plan}')
+        else:
+            flash('Invalid plan selected.', 'error')
+            
+        return redirect(url_for('my_account'))
+        
+    except Exception as e:
+        print(f"Downgrade subscription error: {e}")
+        flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('my_account'))
 
 if __name__ == '__main__':
