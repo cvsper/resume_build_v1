@@ -135,8 +135,9 @@
                         <li>Lifetime ownership</li>
                     </ul>
                     
-                    <form id="payment-form" action="{{ url_for('create_checkout_session') }}" method="POST">
-                        <input type="hidden" name="resume_id" value="{{ resume_id }}">
+                    <form id="payment-form" action="{{ url_for('create_checkout_session') }}" method="POST" enctype="application/x-www-form-urlencoded">
+                        <input type="hidden" name="resume_id" value="{{ resume_id }}" id="resume_id_field">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" id="csrf_token_field">
                         <button type="submit" class="pay-button" id="checkout-button">
                             Secure Checkout - $4.99
                         </button>
@@ -151,10 +152,100 @@
     </div>
 
     <script>
-        document.getElementById('payment-form').addEventListener('submit', function(e) {
+        // Mobile-friendly form submission with enhanced error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Preview page loaded');
+            console.log('Resume ID from template:', '{{ resume_id }}');
+            
+            const form = document.getElementById('payment-form');
             const button = document.getElementById('checkout-button');
-            button.disabled = true;
-            button.textContent = 'Processing...';
+            const resumeIdField = document.getElementById('resume_id_field');
+            
+            // Validate form data before submission
+            function validateForm() {
+                const resumeId = resumeIdField.value;
+                console.log('Validating form - Resume ID:', resumeId);
+                
+                if (!resumeId || resumeId.trim() === '') {
+                    console.error('Resume ID is missing or empty');
+                    alert('Error: Resume ID is missing. Please refresh the page and try again.');
+                    return false;
+                }
+                
+                if (isNaN(parseInt(resumeId))) {
+                    console.error('Resume ID is not a valid number:', resumeId);
+                    alert('Error: Invalid resume ID. Please refresh the page and try again.');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Handle form submission with mobile-specific considerations
+            form.addEventListener('submit', function(e) {
+                console.log('Form submission started');
+                
+                // Validate form data
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Prevent double submission
+                if (button.disabled) {
+                    console.log('Button already disabled, preventing double submission');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                console.log('Form data being submitted:');
+                console.log('- Resume ID:', resumeIdField.value);
+                console.log('- Action URL:', form.action);
+                console.log('- Method:', form.method);
+                
+                // Update button state
+                button.disabled = true;
+                button.innerHTML = '<span>🔄</span> Processing...';
+                button.style.backgroundColor = '#ccc';
+                
+                // Add a longer timeout for mobile networks
+                setTimeout(() => {
+                    if (button.disabled) {
+                        console.log('Timeout reached, re-enabling button');
+                        button.disabled = false;
+                        button.innerHTML = 'Secure Checkout - $4.99';
+                        button.style.backgroundColor = '#635bff';
+                        alert('Request timed out. Please check your connection and try again.');
+                    }
+                }, 15000); // 15 seconds for mobile networks
+                
+                // Allow form to proceed
+                return true;
+            });
+            
+            // Add touch event handling for better mobile experience
+            button.addEventListener('touchstart', function(e) {
+                console.log('Touch start detected');
+                // Prevent iOS double-tap zoom
+                e.preventDefault();
+                this.click();
+            }, { passive: false });
+            
+            // Add error handling for network issues
+            window.addEventListener('beforeunload', function(e) {
+                if (button.disabled) {
+                    console.log('Page unloading while form is processing');
+                    // Don't show confirmation dialog on mobile as it's annoying
+                    // e.returnValue = 'Payment is being processed...';
+                }
+            });
+            
+            // Debug: Check if all required elements exist
+            console.log('Form elements check:');
+            console.log('- Form found:', !!form);
+            console.log('- Button found:', !!button);
+            console.log('- Resume ID field found:', !!resumeIdField);
+            console.log('- Resume ID value:', resumeIdField ? resumeIdField.value : 'N/A');
         });
     </script>
 </body>

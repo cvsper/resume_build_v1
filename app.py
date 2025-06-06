@@ -942,70 +942,115 @@ def download_pdf(resume_id):
 @app.route('/create-checkout-session', methods=['POST'])
 @login_required
 def create_checkout_session():
-    resume_id = request.form.get('resume_id')
-    plan = request.form.get('plan')
-    
-    # Handle subscription upgrade
-    if plan:
-        # Plan pricing (in cents for Stripe)
-        plan_prices = {
-            'Pro': 999,  # $9.99
-            'Premium': 1999  # $19.99
-        }
+    try:
+        # Log request data for debugging
+        print(f"POST data: {request.form}")
+        print(f"Headers: {dict(request.headers)}")
         
-        if plan not in plan_prices:
-            return redirect(url_for('my_account'))
+        resume_id = request.form.get('resume_id')
+        plan = request.form.get('plan')
+        
+        print(f"Received resume_id: {resume_id}, plan: {plan}")
+        
+        # Handle subscription upgrade
+        if plan:
+            # Plan pricing (in cents for Stripe)
+            plan_prices = {
+                'Pro': 999,  # $9.99
+                'Premium': 1999  # $19.99
+            }
+            
+            if plan not in plan_prices:
+                print(f"Invalid plan: {plan}")
+                return redirect(url_for('my_account'))
+            
+            try:
+                # Create Stripe Checkout Session for subscription
+                checkout_session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[{
+                        'price_data': {
+                            'currency': 'usd',
+                            'unit_amount': plan_prices[plan],
+                            'product_data': {
+                                'name': f'{plan} Subscription',
+                                'description': f'Monthly {plan} subscription with unlimited features'
+                            },
+                            'recurring': {
+                                'interval': 'month'
+                            }
+                        },
+                        'quantity': 1,
+                    }],
+                    mode='subscription',
+                    success_url=url_for('subscription_success', plan=plan, _external=True),
+                    cancel_url=url_for('my_account', _external=True),
+                    customer_email=current_user.email,
+                    metadata={
+                        'user_id': current_user.id,
+                        'plan': plan
+                    }
+                )
+                print(f"Subscription checkout session created: {checkout_session.id}")
+                return redirect(checkout_session.url, code=303)
+                
+            except Exception as e:
+                print(f"Stripe subscription error: {e}")
+                return redirect(url_for('my_account') + '?payment=failed')
+        
+        # Handle resume download payment
+        if not resume_id:
+            print("Missing resume_id in request")
+            return "Missing resume_id", 400
+            
+        # Validate resume_id and ownership
+        try:
+            resume = Resume.query.get(resume_id)
+            if not resume:
+                print(f"Resume not found: {resume_id}")
+                return "Resume not found", 404
+                
+            if resume.user_id != current_user.id:
+                print(f"Unauthorized access to resume {resume_id} by user {current_user.id}")
+                return "Unauthorized", 403
+        except Exception as e:
+            print(f"Database error checking resume: {e}")
+            return "Database error", 500
         
         try:
-            # Create Stripe Checkout Session for subscription
+            print(f"Creating checkout session for resume {resume_id}")
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
                     'price_data': {
-                        'currency': 'usd',
-                        'unit_amount': plan_prices[plan],
+                        'currency': 'usd', 
+                        'unit_amount': 499, 
                         'product_data': {
-                            'name': f'{plan} Subscription',
-                            'description': f'Monthly {plan} subscription with unlimited features'
-                        },
-                        'recurring': {
-                            'interval': 'month'
+                            'name': 'Resume PDF Download',
+                            'description': f'Download for Resume #{resume_id}'
                         }
                     },
                     'quantity': 1,
                 }],
-                mode='subscription',
-                success_url=url_for('subscription_success', plan=plan, _external=True),
-                cancel_url=url_for('my_account', _external=True),
-                customer_email=current_user.email,
+                mode='payment',
+                success_url=url_for('payment_success', resume_id=resume_id, _external=True),
+                cancel_url=url_for('preview_resume_payment', resume_id=resume_id, _external=True),
                 metadata={
                     'user_id': current_user.id,
-                    'plan': plan
+                    'resume_id': resume_id,
+                    'type': 'resume_download'
                 }
             )
+            print(f"Resume checkout session created: {checkout_session.id}")
             return redirect(checkout_session.url, code=303)
             
         except Exception as e:
-            print(f"Stripe error: {e}")
-            return redirect(url_for('my_account') + '?payment=failed')
-    
-    # Handle resume download payment
-    if not resume_id:
-        return "Missing resume_id", 400
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {'currency': 'usd', 'unit_amount': 499, 'product_data': {'name': 'Resume PDF Download'}},
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url=url_for('payment_success', resume_id=resume_id, _external=True),
-            cancel_url=url_for('preview_resume_payment', resume_id=resume_id, _external=True),
-        )
-        return redirect(checkout_session.url, code=303)
+            print(f"Stripe resume payment error: {e}")
+            return f"Payment error: {str(e)}", 400
+            
     except Exception as e:
-        return str(e), 400
+        print(f"Unexpected error in create_checkout_session: {e}")
+        return f"Server error: {str(e)}", 500
 
 @app.route('/resumes')
 @login_required
