@@ -1798,179 +1798,12 @@ function cancelSubscription() {
     modal.querySelector('.modal-confirm').focus();
 }
 
-// Create accessible confirmation modal
-function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.style.cssText = `
-        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
-        justify-content: center; z-index: 9999;
-    `;
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-labelledby', 'modal-title');
-    modal.setAttribute('aria-describedby', 'modal-description');
-    
-    const modalContent = document.createElement('div');
-    modalContent.style.cssText = `
-        background: white; padding: 2rem; border-radius: 16px; 
-        max-width: 400px; margin: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    `;
-    
-    modalContent.innerHTML = `
-        <h3 id="modal-title" style="margin: 0 0 1rem 0; color: var(--gray-900);">${title}</h3>
-        <p id="modal-description" style="margin: 0 0 2rem 0; color: var(--gray-700); line-height: 1.6;">${message}</p>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <button type="button" class="modal-cancel" style="padding: 0.75rem 1.5rem; border: 2px solid var(--gray-300); background: white; border-radius: 8px; cursor: pointer;">
-                ${cancelText}
-            </button>
-            <button type="button" class="modal-confirm" style="padding: 0.75rem 1.5rem; border: none; background: var(--red-500); color: white; border-radius: 8px; cursor: pointer;">
-                ${confirmText}
-            </button>
-        </div>
-    `;
-    
-    modal.appendChild(modalContent);
-    
-    // Event handlers
-    modal.querySelector('.modal-cancel').addEventListener('click', () => {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-    });
-    
-    modal.querySelector('.modal-confirm').addEventListener('click', () => {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-        if (onConfirm) onConfirm();
-    });
-    
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            document.body.removeChild(modal);
-            document.body.style.overflow = '';
-        }
-    });
-    
-    // Keyboard handling
-    modal.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            document.body.removeChild(modal);
-            document.body.style.overflow = '';
-        }
-    });
-    
-    document.body.style.overflow = 'hidden';
-    return modal;
-}
-
-// Initialize accessibility enhancements
-function initializeAccessibility() {
-    // Add keyboard navigation for plan cards
-    document.querySelectorAll('.plan-card').forEach(card => {
-        card.setAttribute('tabindex', '0');
-        card.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                const button = this.querySelector('button:not([disabled])');
-                if (button) {
-                    e.preventDefault();
-                    button.click();
-                }
-            }
-        });
-    });
-    
-    // Add keyboard navigation for stat cards
-    document.querySelectorAll('.stat-card').forEach(card => {
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('role', 'button');
-        card.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                // Could add click behavior here if needed
-            }
-        });
-    });
-    
-    // Enhance form field focus management
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.addEventListener('focus', function() {
-            this.closest('.form-group')?.classList.add('focused');
-        });
-        
-        field.addEventListener('blur', function() {
-            this.closest('.form-group')?.classList.remove('focused');
-        });
-    });
-}
-
-// Enhanced hover effects for cards with keyboard support
-document.querySelectorAll('.account-card, .plan-card, .stat-card').forEach(function(card) {
-    function addHoverEffect() {
-        if (!card.classList.contains('recommended')) {
-            card.style.transform = 'translateY(-4px) scale(1.02)';
-            card.style.transition = 'transform 0.2s ease';
-        }
-    }
-    
-    function removeHoverEffect() {
-        if (!card.classList.contains('recommended')) {
-            card.style.transform = 'translateY(0) scale(1)';
-        }
-    }
-    
-    card.addEventListener('mouseenter', addHoverEffect);
-    card.addEventListener('mouseleave', removeHoverEffect);
-    card.addEventListener('focus', addHoverEffect);
-    card.addEventListener('blur', removeHoverEffect);
-});
-
-// Add CSS for focused form groups
-const style = document.createElement('style');
-style.textContent = `
-    .form-group.focused .form-label {
-        color: var(--primary-blue);
-        font-weight: 600;
-    }
-    
-    .sr-only {
-        position: absolute !important;
-        width: 1px !important;
-        height: 1px !important;
-        padding: 0 !important;
-        margin: -1px !important;
-        overflow: hidden !important;
-        clip: rect(0, 0, 0, 0) !important;
-        white-space: nowrap !important;
-        border: 0 !important;
-    }
-    
-    .is-invalid {
-        border-color: var(--red-500) !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-    
-    .error-message {
-        animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-4px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);
-
-// Enhanced plan upgrade/downgrade functions with better UX
+// Subscription management JS functions (restored)
 function upgradePlan(plan) {
-    console.log(`Attempting to upgrade to ${plan} plan`);
-    
-    // Validate plan
     if (!plan || !['Pro', 'Premium'].includes(plan)) {
         alert('Invalid plan selected. Please try again.');
         return;
     }
-    
     const confirmMessage = `Are you sure you want to upgrade to the ${plan} plan?`;
     const modal = createConfirmationModal(
         'Upgrade Subscription',
@@ -1978,39 +1811,24 @@ function upgradePlan(plan) {
         'Upgrade',
         'Cancel',
         function() {
-            console.log('User confirmed upgrade, submitting form...');
-            
-            // Show loading state
             const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
             upgradeButtons.forEach(btn => {
                 btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
                 btn.disabled = true;
             });
-            
-            // Create and submit form with error handling
             try {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/create-checkout-session';
-                
                 const planInput = document.createElement('input');
                 planInput.type = 'hidden';
                 planInput.name = 'plan';
                 planInput.value = plan;
-                
                 form.appendChild(planInput);
                 document.body.appendChild(form);
-                
-                // Add form submit listener for debugging
-                form.addEventListener('submit', function() {
-                    console.log('Form submitted for plan:', plan);
-                });
-                
                 form.submit();
             } catch (error) {
-                console.error('Error creating upgrade form:', error);
                 alert('An error occurred. Please refresh the page and try again.');
-                // Reset button state
                 upgradeButtons.forEach(btn => {
                     btn.innerHTML = `Upgrade to ${plan}`;
                     btn.disabled = false;
@@ -2018,11 +1836,8 @@ function upgradePlan(plan) {
             }
         }
     );
-    
     document.body.appendChild(modal);
     modal.style.display = 'flex';
-    
-    // Focus the modal for accessibility
     setTimeout(() => {
         const confirmBtn = modal.querySelector('.btn-primary');
         if (confirmBtn) confirmBtn.focus();
@@ -2030,57 +1845,37 @@ function upgradePlan(plan) {
 }
 
 function downgradePlan(plan) {
-    console.log(`Attempting to downgrade to ${plan} plan`);
-    
-    // Validate plan
     if (!plan) {
         alert('Invalid plan selected. Please try again.');
         return;
     }
-    
-    const confirmMessage = plan === 'Free' 
+    const confirmMessage = plan === 'Free'
         ? 'Are you sure you want to cancel your subscription and downgrade to the free plan? You will lose access to premium features at the end of your billing period.'
         : `Are you sure you want to change to the ${plan} plan?`;
-    
     const modal = createConfirmationModal(
         'Change Subscription',
         confirmMessage,
         'Confirm',
         'Cancel',
         function() {
-            console.log('User confirmed downgrade, submitting form...');
-            
-            // Show loading state
             const downgradeButtons = document.querySelectorAll('.select-plan-btn.downgrade, .select-plan-btn.cancel');
             downgradeButtons.forEach(btn => {
                 btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
                 btn.disabled = true;
             });
-            
-            // Create and submit form for downgrade
             try {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/downgrade-subscription';
-                
                 const planInput = document.createElement('input');
                 planInput.type = 'hidden';
                 planInput.name = 'plan';
                 planInput.value = plan;
-                
                 form.appendChild(planInput);
                 document.body.appendChild(form);
-                
-                // Add form submit listener for debugging
-                form.addEventListener('submit', function() {
-                    console.log('Downgrade form submitted for plan:', plan);
-                });
-                
                 form.submit();
             } catch (error) {
-                console.error('Error creating downgrade form:', error);
                 alert('An error occurred. Please refresh the page and try again.');
-                // Reset button state
                 downgradeButtons.forEach(btn => {
                     btn.innerHTML = plan === 'Free' ? 'Cancel Subscription' : `Switch to ${plan}`;
                     btn.disabled = false;
@@ -2088,135 +1883,12 @@ function downgradePlan(plan) {
             }
         }
     );
-    
     document.body.appendChild(modal);
     modal.style.display = 'flex';
-    
-    // Focus the modal for accessibility
     setTimeout(() => {
         const confirmBtn = modal.querySelector('.btn-primary');
         if (confirmBtn) confirmBtn.focus();
     }, 100);
-}
-
-function hideBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    if (historySection) {
-        historySection.style.display = 'none';
-    }
-}
-
-function cancelSubscription() {
-    const modal = createConfirmationModal(
-        'Cancel Subscription',
-        'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.',
-        'Cancel Subscription',
-        'Keep Subscription',
-        function() {
-            // Create form to cancel subscription
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/cancel-subscription';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.confirm-action').focus();
-}
-
-function confirmDeleteAccount() {
-    const modal = createConfirmationModal(
-        'Delete Account',
-        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
-        'Delete Account',
-        'Cancel',
-        function() {
-            // Create form to delete account
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/delete-account';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.confirm-action').focus();
-}
-
-// Customer portal and billing history functions
-function openCustomerPortal() {
-    const modal = createConfirmationModal(
-        'Manage Billing',
-        'You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history.',
-        'Open Portal',
-        'Cancel',
-        function() {
-            // Create form to open customer portal
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/create-customer-portal';
-            document.body.appendChild(form);
-            form.submit();
-        }
-    );
-    document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
-}
-
-function loadBillingHistory() {
-    const historySection = document.getElementById('billing-history-section');
-    const loadingState = document.getElementById('billing-history-loading');
-    const historyContent = document.getElementById('billing-history-content');
-    
-    // Show the section and loading state
-    if (historySection) {
-        historySection.style.display = 'block';
-        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    
-    if (loadingState) loadingState.style.display = 'block';
-    if (historyContent) historyContent.innerHTML = '';
-    
-    // Fetch billing history from API
-    fetch('/subscription-billing-history')
-        .then(response => response.json())
-        .then(data => {
-            if (loadingState) loadingState.style.display = 'none';
-            if (historyContent && data.invoices) {
-                // Create billing history table
-                const table = document.createElement('table');
-                table.className = 'billing-table';
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Invoice</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.invoices.map(invoice => `
-                            <tr>
-                                <td>${new Date(invoice.created * 1000).toLocaleDateString()}</td>
-                                <td>$${(invoice.amount_due / 100).toFixed(2)}</td>
-                                <td><span class="status-badge status-${invoice.status}">${invoice.status}</span></td>
-                                <td><a href="${invoice.hosted_invoice_url}" target="_blank" class="invoice-link">View</a></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                historyContent.appendChild(table);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading billing history:', error);
-            if (loadingState) loadingState.style.display = 'none';
-            if (historyContent) {
-                historyContent.innerHTML = '<p class="text-danger">Error loading billing history. Please try again.</p>';
-            }
-        });
 }
 
 function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
@@ -2232,7 +1904,6 @@ function createConfirmationModal(title, message, confirmText, cancelText, onConf
     modal.style.height = '100%';
     modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
     modal.style.zIndex = '1055';
-    
     modal.innerHTML = `
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -2250,54 +1921,15 @@ function createConfirmationModal(title, message, confirmText, cancelText, onConf
             </div>
         </div>
     `;
-    
-    // Add event listeners
     const closeBtn = modal.querySelector('.btn-close');
     const cancelBtn = modal.querySelector('.btn-secondary');
     const confirmBtn = modal.querySelector('.confirm-action');
-    
-    const closeModal = () => {
-        modal.remove();
-    };
-    
+    const closeModal = () => { modal.remove(); };
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
-    confirmBtn.addEventListener('click', () => {
-        onConfirm();
-        closeModal();
-    });
-    
-    // Close on outside click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-    
+    confirmBtn.addEventListener('click', () => { onConfirm(); closeModal(); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) { closeModal(); } });
     return modal;
 }
-
-// Add CSS for loading animation
-const style = document.createElement('style');
-style.textContent = `
-    .spin {
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    
-    .modal {
-        animation: fadeIn 0.15s ease-out;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-4px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);
 </script>
 {% endblock %}
