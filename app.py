@@ -2,6 +2,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
+import json
+import xml.etree.ElementTree as ET
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash
 from resume.resume_generator import generate_resume, generate_cover_letter, generate_interview_qa
 import tempfile
@@ -808,9 +810,13 @@ def stripe_webhook():
         print(f"📨 Processing webhook: {event_type} (ID: {event_id})")
         
         # Handle different webhook events
-        if event['type'] == 'checkout.session.completed':
+        if event.get('type') == 'checkout.session.completed':
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid checkout.session.completed event structure")
+                return '', 200
+                
             session_data = event['data']['object']
-            session_id = session_data['id']
+            session_id = session_data.get('id', 'unknown')
             
             # Check if it's a subscription or one-time payment
             if session_data.get('mode') == 'subscription':
@@ -842,8 +848,12 @@ def stripe_webhook():
             currency = session_data.get('currency', 'usd').upper()
             print(f"   Amount: {currency} ${amount:.2f}")
             
-        elif event['type'] == 'invoice.payment_succeeded':
+        elif event.get('type') == 'invoice.payment_succeeded':
             # Handle successful recurring subscription payments
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid invoice.payment_succeeded event structure")
+                return '', 200
+                
             invoice = event['data']['object']
             customer_id = invoice.get('customer')
             subscription_id = invoice.get('subscription')
@@ -852,8 +862,12 @@ def stripe_webhook():
             print(f"✅ Recurring payment successful: {subscription_id}")
             print(f"   Customer: {customer_id}, Amount: {currency} ${amount:.2f}")
             
-        elif event['type'] == 'invoice.payment_failed':
+        elif event.get('type') == 'invoice.payment_failed':
             # Handle failed subscription payments
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid invoice.payment_failed event structure")
+                return '', 200
+                
             invoice = event['data']['object']
             customer_id = invoice.get('customer')
             subscription_id = invoice.get('subscription')
@@ -868,8 +882,12 @@ def stripe_webhook():
                     print(f"   Associated user: {user.email}")
                     # Note: Don't immediately downgrade - Stripe handles retries
             
-        elif event['type'] == 'customer.subscription.deleted':
+        elif event.get('type') == 'customer.subscription.deleted':
             # Handle subscription cancellation
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid customer.subscription.deleted event structure")
+                return '', 200
+                
             subscription = event['data']['object']
             customer_id = subscription.get('customer')
             subscription_id = subscription.get('id')
@@ -883,28 +901,40 @@ def stripe_webhook():
                     db.session.commit()
                     print(f"   User {user.email} downgraded to Free plan")
             
-        elif event['type'] == 'customer.subscription.updated':
+        elif event.get('type') == 'customer.subscription.updated':
             # Handle subscription updates (plan changes, etc.)
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid customer.subscription.updated event structure")
+                return '', 200
+                
             subscription = event['data']['object']
             customer_id = subscription.get('customer')
             status = subscription.get('status')
             print(f"🔄 Subscription updated: {subscription.get('id')} → Status: {status}")
             
-        elif event['type'] == 'payment_intent.succeeded':
+        elif event.get('type') == 'payment_intent.succeeded':
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid payment_intent.succeeded event structure")
+                return '', 200
+                
             payment_intent = event['data']['object']
             amount = payment_intent.get('amount', 0) / 100
             currency = payment_intent.get('currency', 'usd').upper()
             print(f"✅ Payment intent succeeded: {payment_intent['id']}")
             print(f"   Amount: {currency} ${amount:.2f}")
             
-        elif event['type'] == 'payment_intent.payment_failed':
+        elif event.get('type') == 'payment_intent.payment_failed':
+            if 'data' not in event or 'object' not in event['data']:
+                print("⚠️  Invalid payment_intent.payment_failed event structure")
+                return '', 200
+                
             payment_intent = event['data']['object']
             failure_reason = payment_intent.get('last_payment_error', {}).get('message', 'Unknown')
             print(f"❌ Payment failed: {payment_intent['id']}")
             print(f"   Reason: {failure_reason}")
             
         else:
-            print(f"📋 Unhandled webhook event: {event['type']}")
+            print(f"📋 Unhandled webhook event: {event.get('type', 'unknown')}")
             
         return '', 200
         
