@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Subscription Button Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .step { margin: 10px 0; padding: 10px; border-left: 3px solid #007bff; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Debug: Subscription Button Flow</h1>
+    
+    <div class="debug-info">
+        <h3>Current Implementation Test</h3>
+        <p>This page will help debug why the subscription button might be going to My Account instead of Stripe Customer Portal.</p>
+    </div>
+    
+    <div class="step">
+        <h4>Step 1: Test Direct Route Access</h4>
+        <button onclick="testDirectRoute()">Test /create-customer-portal Route</button>
+        <div id="route-result"></div>
+    </div>
+    
+    <div class="step">
+        <h4>Step 2: Test JavaScript Function</h4>
+        <button onclick="openCustomerPortal()">Test openCustomerPortal() Function</button>
+        <div id="js-result"></div>
+    </div>
+    
+    <div class="step">
+        <h4>Step 3: Debug Information</h4>
+        <div id="debug-info">
+            <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+            <p><strong>Browser:</strong> <span id="browser-info"></span></p>
+            <p><strong>Cookies:</strong> <span id="cookie-info"></span></p>
+        </div>
+    </div>
+    
+    <script>
+        // Fill debug information
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('browser-info').textContent = navigator.userAgent;
+        document.getElementById('cookie-info').textContent = document.cookie || 'None';
+        
+        // Test direct route access
+        function testDirectRoute() {
+            const resultDiv = document.getElementById('route-result');
+            resultDiv.innerHTML = '<p class="warning">Testing route access...</p>';
+            
+            fetch('/create-customer-portal', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Route returned redirect</p>
+                        <p><strong>Redirect URL:</strong> ${response.url}</p>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                    `;
+                    
+                    if (response.url.includes('billing.stripe.com')) {
+                        resultDiv.innerHTML += '<p class="success">🎉 Successfully redirected to Stripe!</p>';
+                    } else {
+                        resultDiv.innerHTML += '<p class="warning">⚠️ Redirected somewhere else (possibly login)</p>';
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ No redirect occurred</p>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                    `;
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            });
+        }
+        
+        // Customer portal function (same as in dashboard)
+        function openCustomerPortal() {
+            const resultDiv = document.getElementById('js-result');
+            
+            if (confirm('You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history. Continue?')) {
+                resultDiv.innerHTML = '<p class="warning">Creating form and submitting...</p>';
+                
+                // Create form to open customer portal
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-customer-portal';
+                
+                // Add some debug logging
+                console.log('Form created:', form);
+                console.log('Form action:', form.action);
+                console.log('Form method:', form.method);
+                
+                document.body.appendChild(form);
+                form.submit();
+                
+                resultDiv.innerHTML += '<p class="success">✅ Form submitted</p>';
+            } else {
+                resultDiv.innerHTML = '<p class="warning">User cancelled</p>';
+            }
+        }
+        
+        // Log any errors
+        window.addEventListener('error', function(e) {
+            console.error('JavaScript error:', e.error);
+        });
+        
+        console.log('Debug page loaded successfully');
+    </script>
+</body>
+</html>

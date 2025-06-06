@@ -1131,7 +1131,7 @@
                             {% if user.subscription == 'Pro' %}
                                 <button class="select-plan-btn current" disabled aria-label="Currently on Pro plan">Current Plan</button>
                             {% else %}
-                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Pro')"
+                                <button class="select-plan-btn upgrade" onclick="try { console.log('Pro button clicked'); upgradePlan('Pro'); } catch(e) { console.error('Error calling upgradePlan:', e); alert('Error: ' + e.message); }"
                                         aria-label="{% if not user.subscription or user.subscription == 'Free' %}Upgrade to Pro plan{% else %}Switch to Pro plan{% endif %}">
                                     {% if not user.subscription or user.subscription == 'Free' %}Upgrade to Pro{% else %}Switch to Pro{% endif %}
                                 </button>
@@ -1155,7 +1155,7 @@
                             {% if user.subscription == 'Premium' %}
                                 <button class="select-plan-btn current" disabled aria-label="Currently on Premium plan">Current Plan</button>
                             {% else %}
-                                <button class="select-plan-btn upgrade" onclick="upgradePlan('Premium')"
+                                <button class="select-plan-btn upgrade" onclick="try { console.log('Premium button clicked'); upgradePlan('Premium'); } catch(e) { console.error('Error calling upgradePlan:', e); alert('Error: ' + e.message); }"
                                         aria-label="Upgrade to Premium plan">
                                     Upgrade to Premium
                                 </button>
@@ -1283,6 +1283,124 @@
 
 {% block extra_js %}
 <script>
+// CRITICAL: Define subscription functions FIRST before any DOM events
+// This ensures onclick handlers can access these functions immediately
+
+// Enhanced plan upgrade/downgrade functions with better UX
+function upgradePlan(plan) {
+    console.log('Attempting to upgrade to ' + plan + ' plan');
+    
+    // Validate plan
+    if (!plan || !['Pro', 'Premium'].includes(plan)) {
+        alert('Invalid plan selected. Please try again.');
+        return;
+    }
+    
+    const confirmMessage = 'Are you sure you want to upgrade to the ' + plan + ' plan?';
+    const modal = createConfirmationModal(
+        'Upgrade Subscription',
+        confirmMessage,
+        'Upgrade',
+        'Cancel',
+        function() {
+            console.log('User confirmed upgrade, submitting form...');
+            submitSubscriptionForm('upgrade', plan);
+        }
+    );
+    modal.show();
+}
+
+function downgradePlan(plan) {
+    console.log('Attempting to downgrade to ' + plan + ' plan');
+    
+    const confirmMessage = 'Are you sure you want to downgrade to the ' + plan + ' plan? You will lose access to premium features.';
+    const modal = createConfirmationModal(
+        'Downgrade Subscription',
+        confirmMessage,
+        'Downgrade',
+        'Cancel',
+        function() {
+            console.log('User confirmed downgrade, submitting form...');
+            submitSubscriptionForm('downgrade', plan);
+        }
+    );
+    modal.show();
+}
+
+function cancelSubscription() {
+    console.log('Attempting to cancel subscription');
+    
+    const confirmMessage = 'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.';
+    const modal = createConfirmationModal(
+        'Cancel Subscription',
+        confirmMessage,
+        'Cancel Subscription',
+        'Keep Subscription',
+        function() {
+            console.log('User confirmed cancellation, submitting form...');
+            submitSubscriptionForm('cancel', 'Free');
+        }
+    );
+    modal.show();
+}
+
+// Make functions globally accessible immediately
+window.upgradePlan = upgradePlan;
+window.downgradePlan = downgradePlan;
+window.cancelSubscription = cancelSubscription;
+
+console.log('✅ Subscription functions defined and made globally accessible');
+
+// Helper function to create confirmation modals
+function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
+    return {
+        show: function() {
+            if (confirm(message)) {
+                if (onConfirm) onConfirm();
+            }
+        }
+    };
+}
+
+// Helper function to submit subscription forms
+function submitSubscriptionForm(action, plan) {
+    console.log('Submitting subscription form:', action, plan);
+    
+    // Create and submit form
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/subscription';
+    
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = action;
+    form.appendChild(actionInput);
+    
+    const planInput = document.createElement('input');
+    planInput.type = 'hidden';
+    planInput.name = 'plan';
+    planInput.value = plan;
+    form.appendChild(planInput);
+    
+    // Add CSRF token if available
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = csrfToken.getAttribute('content');
+        form.appendChild(csrfInput);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Make helper functions globally accessible too
+window.createConfirmationModal = createConfirmationModal;
+window.submitSubscriptionForm = submitSubscriptionForm;
+
 // Enhanced page initialization with accessibility focus management
 window.addEventListener('DOMContentLoaded', function() {
     const fadeWrapper = document.getElementById('fade-wrapper');
@@ -1510,58 +1628,135 @@ document.getElementById('profile_pic').addEventListener('change', function(e) {
         reader.readAsDataURL(file);
     }
 });
+
+// Enhanced page initialization with accessibility focus management
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Profile page DOM loaded, initializing...');
+    
+    // Initialize page fade-in effect
+    const fadeWrapper = document.getElementById('fade-wrapper');
+    if (fadeWrapper) {
+        fadeWrapper.style.opacity = 0;
+        setTimeout(function() {
+            fadeWrapper.style.transition = 'opacity 0.6s ease';
+            fadeWrapper.style.opacity = 1;
+        }, 100);
+    }
+    
+    // Initialize form validation
+    initializeFormValidation();
+    
+    // Initialize accessibility enhancements
+    initializeAccessibility();
+});
+
+// Enhanced form validation functions
+function initializeFormValidation() {
+    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            console.log('Profile form submitted');
+        });
+    }
+}
+
+// Initialize accessibility enhancements
+function initializeAccessibility() {
+    console.log('✅ Accessibility features initialized');
+}
+
+// Enhanced modal creation function
+function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade show';
+    modal.style.display = 'flex';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.zIndex = '1055';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${title}</h5>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>${message}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary">${cancelText}</button>
+                    <button type="button" class="btn btn-primary confirm-action">${confirmText}</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    const closeBtn = modal.querySelector('.btn-close');
+    const cancelBtn = modal.querySelector('.btn-secondary');
+    const confirmBtn = modal.querySelector('.confirm-action');
+    
+    const closeModal = () => {
+        modal.remove();
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    confirmBtn.addEventListener('click', () => {
+        onConfirm();
+        closeModal();
+    });
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    return modal;
+}
+
+// Additional utility functions for subscription management
+function openCustomerPortal() {
     const modal = createConfirmationModal(
-        'Upgrade Subscription',
-        confirmMessage,
-        'Upgrade',
+        'Manage Billing',
+        'You will be redirected to Stripe Customer Portal where you can manage your subscription.',
+        'Open Portal',
         'Cancel',
         function() {
-            console.log('User confirmed upgrade, submitting form...');
-            
-            // Show loading state
-            const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
-            upgradeButtons.forEach(btn => {
-                btn.disabled = true;
-                btn.textContent = 'Processing...';
-            });
-            
-            // Create form and submit to payment gateway
+            // Create form to open customer portal
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ url_for("create_checkout_session") }}';
-            
-            const planInput = document.createElement('input');
-            planInput.type = 'hidden';
-            planInput.name = 'plan';
-            planInput.value = plan;
-            form.appendChild(planInput);
-            
-            // Add CSRF token if available
-            const csrfToken = document.querySelector('meta[name=csrf-token]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = 'csrf_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-            
+            form.action = '/create-customer-portal';
             document.body.appendChild(form);
-            
-            // Add error handling
-            form.addEventListener('submit', function(e) {
-                console.log('Form submitted, redirecting to Stripe...');
-            });
-            
             form.submit();
         }
     );
     document.body.appendChild(modal);
-    modal.querySelector('.modal-confirm').focus();
 }
 
-function downgradePlan(plan) {
-    const confirmMessage = `Are you sure you want to downgrade to the ${plan} plan? You will lose access to premium features.`;
+function loadBillingHistory() {
+    console.log('Loading billing history...');
+    // Implementation for billing history
+}
+
+function hideBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    if (historySection) {
+        historySection.style.display = 'none';
+    }
+}
+
+function confirmDeleteAccount() {
     const modal = createConfirmationModal(
         'Downgrade Subscription',
         confirmMessage,
@@ -1961,11 +2156,10 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Enhanced plan upgrade/downgrade functions with better UX
-function upgradePlan(plan) {
-    console.log('Attempting to upgrade to ' + plan + ' plan');
-    
-    // Validate plan
+// All other utility functions and event handlers continue here...
+// Additional functions can be added here as needed
+
+});
     if (!plan || !['Pro', 'Premium'].includes(plan)) {
         alert('Invalid plan selected. Please try again.');
         return;
@@ -2300,16 +2494,32 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Ensure functions are globally accessible for onclick handlers
-window.upgradePlan = upgradePlan;
-window.downgradePlan = downgradePlan;
-window.createConfirmationModal = createConfirmationModal;
-window.cancelSubscription = cancelSubscription;
-window.confirmDeleteAccount = confirmDeleteAccount;
-window.openCustomerPortal = openCustomerPortal;
-window.loadBillingHistory = loadBillingHistory;
-window.hideBillingHistory = hideBillingHistory;
+});
+    window.confirmDeleteAccount = confirmDeleteAccount;
+    window.openCustomerPortal = openCustomerPortal;
+    window.loadBillingHistory = loadBillingHistory;
+    window.hideBillingHistory = hideBillingHistory;
 
-console.log('✅ Subscription functions loaded and made globally accessible');
+    console.log('✅ Subscription functions loaded and made globally accessible');
+    console.log('✅ window.upgradePlan type:', typeof window.upgradePlan);
+    
+    // Test the function immediately
+    console.log('🧪 Testing upgradePlan function availability...');
+    if (typeof window.upgradePlan === 'function') {
+        console.log('✅ upgradePlan is accessible as window function');
+    } else {
+        console.error('❌ upgradePlan is not accessible');
+    }
+    
+    // Add a global test function for debugging
+    window.testUpgrade = function() {
+        console.log('Test function called - calling upgradePlan...');
+        upgradePlan('Pro');
+    };
+    
+} catch (error) {
+    console.error('❌ Error setting up global functions:', error);
+    console.error('Error details:', error.message, error.stack);
+}
 </script>
 {% endblock %}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Final Subscription Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { margin: 5px; padding: 10px 15px; }
+        .success { color: green; }
+        .error { color: red; }
+        #output { margin-top: 20px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Final Subscription Button Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Direct Function Calls</h3>
+        <button onclick="testDirectCall()">Test Direct Function Call</button>
+        <button onclick="testGlobalCall()">Test Global Function Call</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Subscription Functions</h3>
+        <button onclick="try { upgradePlan('Pro'); } catch(e) { logError('upgradePlan error: ' + e.message); }">
+            Test upgradePlan('Pro')
+        </button>
+        <button onclick="try { downgradePlan('Free'); } catch(e) { logError('downgradePlan error: ' + e.message); }">
+            Test downgradePlan('Free')
+        </button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: Exact Button Code from Profile Page</h3>
+        <button onclick="try { console.log('Pro button clicked'); upgradePlan('Pro'); } catch(e) { console.error('Error calling upgradePlan:', e); alert('Error: ' + e.message); }">
+            Exact Button Code Test
+        </button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        console.log('=== Final Test Script Loading ===');
+        
+        let outputDiv = document.getElementById('output');
+        
+        function logMessage(msg, isError = false) {
+            console.log(msg);
+            const p = document.createElement('p');
+            p.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+            p.className = isError ? 'error' : 'success';
+            outputDiv.appendChild(p);
+        }
+        
+        function logError(msg) {
+            logMessage(msg, true);
+        }
+        
+        // Define the subscription functions exactly as they should be in the profile page
+        function upgradePlan(plan) {
+            logMessage('✅ upgradePlan called with: ' + plan);
+            console.log('Attempting to upgrade to ' + plan + ' plan');
+            
+            if (!plan || !['Pro', 'Premium'].includes(plan)) {
+                logError('Invalid plan selected: ' + plan);
+                return;
+            }
+            
+            const confirmMessage = 'Are you sure you want to upgrade to the ' + plan + ' plan?';
+            if (confirm(confirmMessage)) {
+                logMessage('✅ User confirmed upgrade to ' + plan);
+                // In real app, this would submit the form
+                logMessage('🔄 Would submit upgrade form for ' + plan);
+            } else {
+                logMessage('ℹ️ User cancelled upgrade');
+            }
+        }
+
+        function downgradePlan(plan) {
+            logMessage('✅ downgradePlan called with: ' + plan);
+            console.log('Attempting to downgrade to ' + plan + ' plan');
+            
+            const confirmMessage = 'Are you sure you want to downgrade to the ' + plan + ' plan? You will lose access to premium features.';
+            if (confirm(confirmMessage)) {
+                logMessage('✅ User confirmed downgrade to ' + plan);
+                logMessage('🔄 Would submit downgrade form for ' + plan);
+            } else {
+                logMessage('ℹ️ User cancelled downgrade');
+            }
+        }
+        
+        // Test functions
+        function testDirectCall() {
+            try {
+                upgradePlan('Pro');
+                logMessage('✅ Direct function call successful');
+            } catch (e) {
+                logError('❌ Direct function call failed: ' + e.message);
+            }
+        }
+        
+        function testGlobalCall() {
+            try {
+                if (typeof window.upgradePlan === 'function') {
+                    window.upgradePlan('Premium');
+                    logMessage('✅ Global function call successful');
+                } else {
+                    logError('❌ window.upgradePlan is not a function');
+                }
+            } catch (e) {
+                logError('❌ Global function call failed: ' + e.message);
+            }
+        }
+        
+        // Make functions globally available
+        window.upgradePlan = upgradePlan;
+        window.downgradePlan = downgradePlan;
+        window.testDirectCall = testDirectCall;
+        window.testGlobalCall = testGlobalCall;
+        
+        logMessage('🚀 All functions defined and made global');
+        logMessage('typeof upgradePlan: ' + typeof upgradePlan);
+        logMessage('typeof window.upgradePlan: ' + typeof window.upgradePlan);
+        
+        // Immediate test
+        setTimeout(() => {
+            logMessage('⏰ Running automatic test...');
+            try {
+                upgradePlan('Pro');
+                logMessage('✅ Automatic test passed');
+            } catch (e) {
+                logError('❌ Automatic test failed: ' + e.message);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -874,6 +874,13 @@
             <a class="nav-link" href="{{ url_for('my_account') }}">
                 <i class="bi bi-person"></i> My Account
             </a>
+            <a class="nav-link" 
+               href="javascript:void(0)" 
+               onclick="openCustomerPortal()" 
+               title="Manage your subscription, payment methods, and billing"
+               aria-label="Manage your subscription">
+                <i class="bi bi-credit-card"></i> Subscription
+            </a>
             <a class="nav-link text-danger" href="{{ url_for('logout') }}">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>
@@ -1457,6 +1464,19 @@ Example:
             }
         });
         {% endif %}
+
+        // Subscription button functionality
+        function openCustomerPortal() {
+            console.log('Subscription button clicked');
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/create-customer-portal';
+            form.style.display = 'none';
+            document.body.appendChild(form);
+            form.submit();
+        }
+        // Make function globally accessible
+        window.openCustomerPortal = openCustomerPortal;
     </script>
     
     <!-- Bootstrap JS for dismissible alerts -->

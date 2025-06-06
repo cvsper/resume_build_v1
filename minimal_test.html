@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Minimal Subscription Test</title>
+</head>
+<body>
+    <h1>Minimal Test</h1>
+    <button onclick="testFunction()" id="testBtn1">Test 1: Call testFunction</button>
+    <button onclick="window.testFunction()" id="testBtn2">Test 2: Call window.testFunction</button>
+    <button onclick="upgradePlan('Pro')" id="testBtn3">Test 3: Call upgradePlan</button>
+    <button onclick="console.log('Button clicked'); window.upgradePlan ? window.upgradePlan('Pro') : alert('Function not found')" id="testBtn4">Test 4: Safe Call</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        console.log('=== Script starting ===');
+        
+        // Simple test function
+        function testFunction() {
+            console.log('testFunction called');
+            alert('testFunction works!');
+        }
+        
+        // Make it global
+        window.testFunction = testFunction;
+        
+        // Define upgradePlan function (simplified version)
+        function upgradePlan(plan) {
+            console.log('upgradePlan called with:', plan);
+            alert('upgradePlan called with: ' + plan);
+        }
+        
+        // Make upgradePlan global
+        window.upgradePlan = upgradePlan;
+        
+        console.log('=== Functions defined ===');
+        console.log('typeof testFunction:', typeof testFunction);
+        console.log('typeof window.testFunction:', typeof window.testFunction);
+        console.log('typeof upgradePlan:', typeof upgradePlan);
+        console.log('typeof window.upgradePlan:', typeof window.upgradePlan);
+        
+        // Test immediately
+        setTimeout(function() {
+            console.log('=== Testing after timeout ===');
+            try {
+                testFunction();
+                console.log('✅ testFunction works');
+            } catch (e) {
+                console.error('❌ testFunction failed:', e);
+            }
+            
+            try {
+                upgradePlan('TestPlan');
+                console.log('✅ upgradePlan works');
+            } catch (e) {
+                console.error('❌ upgradePlan failed:', e);
+            }
+        }, 100);
+        
+        console.log('=== Script complete ===');
+    </script>
+</body>
+</html>

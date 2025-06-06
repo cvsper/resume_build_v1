@@ -573,6 +573,14 @@
                 <i class="bi bi-person" aria-hidden="true"></i> 
                 <span>My Account</span>
             </a>
+            <a class="nav-link" 
+               href="javascript:void(0)" 
+               onclick="openCustomerPortal()" 
+               title="Manage your subscription, payment methods, and billing"
+               aria-label="Manage your subscription">
+                <i class="bi bi-credit-card" aria-hidden="true"></i> 
+                <span>Subscription</span>
+            </a>
             <a class="nav-link text-danger logout" 
                href="{{ url_for('logout') }}"
                aria-label="Sign out of your account">
@@ -1119,5 +1127,19 @@ function addErrorHandling() {
             console.error('Error initializing enhancements:', error);
         }
     });
+
+    // Subscription portal functionality
+    function openCustomerPortal() {
+        console.log('Subscription button clicked');
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/create-customer-portal';
+        form.style.display = 'none';
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Make the function globally accessible
+    window.openCustomerPortal = openCustomerPortal;
 </script>
 {% endblock %}

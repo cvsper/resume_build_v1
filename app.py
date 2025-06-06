@@ -4,7 +4,7 @@ load_dotenv()
 import os
 import json
 import xml.etree.ElementTree as ET
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash, send_from_directory
 from resume.resume_generator import generate_resume, generate_cover_letter, generate_interview_qa
 import tempfile
 from weasyprint import HTML
@@ -1596,11 +1596,20 @@ def subscription_success(plan):
 @login_required
 def create_customer_portal():
     """Create a Stripe Customer Portal session for subscription management"""
+    print("=== CUSTOMER PORTAL REQUEST RECEIVED ===")
+    print(f"Request method: {request.method}")
+    print(f"Request form data: {request.form}")
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"User: {current_user.email}")
+    print("==========================================")
+    
     try:
         # Get or create Stripe customer for the user
         customer_id = current_user.stripe_customer_id
+        print(f"Current customer_id: {customer_id}")
         
         if not customer_id:
+            print("Creating new Stripe customer...")
             # Create new Stripe customer
             customer = stripe.Customer.create(
                 email=current_user.email,
@@ -1610,19 +1619,23 @@ def create_customer_portal():
             current_user.stripe_customer_id = customer.id
             db.session.commit()
             customer_id = customer.id
+            print(f"Created new customer: {customer_id}")
         
+        print("Creating Customer Portal session...")
         # Create Customer Portal session
         portal_session = stripe.billing_portal.Session.create(
             customer=customer_id,
-            return_url=url_for('my_account', _external=True)
+            return_url=url_for('dashboard', _external=True)
         )
         
+        print(f"Portal session created: {portal_session.url}")
+        print("Redirecting to Stripe Customer Portal...")
         return redirect(portal_session.url, code=303)
         
     except Exception as e:
         print(f"Customer Portal error: {e}")
         flash('Unable to access billing portal. Please try again.', 'error')
-        return redirect(url_for('my_account'))
+        return redirect(url_for('dashboard'))
 
 @app.route('/subscription-billing-history')
 @login_required
@@ -1821,6 +1834,49 @@ def downgrade_subscription():
         print(f"Downgrade subscription error: {e}")
         flash('An error occurred. Please try again.', 'error')
         return redirect(url_for('my_account'))
+
+@app.route('/debug-subscription')
+def debug_subscription():
+    """Debug page for testing subscription button flow"""
+    return send_from_directory('.', 'debug_subscription_flow.html')
+
+@app.route('/debug-subscription-detailed')
+def debug_subscription_detailed():
+    """Serve the detailed debug page for subscription testing"""
+    return send_from_directory('.', 'debug_subscription_detailed.html')
+
+@app.route('/test-subscription-button')
+def test_subscription_button():
+    """Simple test page for subscription button"""
+    return send_from_directory('.', 'test_subscription_button.html')
+
+@app.route('/test-subscription-simple')
+def test_subscription_simple():
+    """Serve the simple subscription test page"""
+    return send_from_directory('.', 'test_subscription_simple.html')
+
+# Test route without authentication for subscription button testing
+@app.route('/test-dashboard-no-auth')
+def test_dashboard_no_auth():
+    """Test dashboard template rendering without authentication requirement"""
+    # Create mock data for testing
+    mock_resumes = []
+    mock_cover_letters = []
+    mock_interview_qa_list = []
+    
+    # Create mock user context
+    from types import SimpleNamespace
+    mock_user = SimpleNamespace()
+    mock_user.name = "Test User"
+    mock_user.email = "test@example.com"
+    mock_user.profile_pic = None
+    mock_user.subscription = "Free"
+    
+    return render_template('dashboard.html', 
+                           resumes=mock_resumes, 
+                           cover_letters=mock_cover_letters, 
+                           interview_qa_list=mock_interview_qa_list,
+                           current_user=mock_user)
 
 if __name__ == '__main__':
     with app.app_context():

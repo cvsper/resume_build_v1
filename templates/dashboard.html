@@ -391,6 +391,9 @@
             <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}">
                 <i class="bi bi-person"></i> My Account
             </a>
+            <a class="nav-link" href="javascript:void(0)" onclick="openCustomerPortal()" title="Manage your subscription, payment methods, and billing">
+                <i class="bi bi-credit-card"></i> Subscription
+            </a>
             <a class="nav-link text-danger" href="{{ url_for('logout') }}">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>
@@ -559,5 +562,22 @@
 
     // Update greeting on load
     updateGreeting();
+
+    // Simplified customer portal functionality
+    function openCustomerPortal() {
+        console.log('Subscription button clicked');
+        
+        // Create and submit form immediately
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/create-customer-portal';
+        form.style.display = 'none';
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // Make the function globally accessible
+    window.openCustomerPortal = openCustomerPortal;
 </script>
 {% endblock %}

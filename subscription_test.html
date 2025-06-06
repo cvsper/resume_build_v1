@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Button Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .select-plan-btn {
+            padding: 10px 20px;
+            margin: 10px;
+            border: 2px solid #007bff;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .select-plan-btn:hover {
+            background: #0056b3;
+        }
+        .test-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Subscription Button Test</h1>
+        <p>This page tests the subscription JavaScript functions isolated from the main application.</p>
+        
+        <div class="mb-3">
+            <h3>Test Buttons:</h3>
+            <button class="select-plan-btn upgrade" onclick="try { console.log('Pro button clicked'); upgradePlan('Pro'); } catch(e) { console.error('Error calling upgradePlan:', e); alert('Error: ' + e.message); }">
+                Upgrade to Pro
+            </button>
+            
+            <button class="select-plan-btn upgrade" onclick="try { console.log('Premium button clicked'); upgradePlan('Premium'); } catch(e) { console.error('Error calling upgradePlan:', e); alert('Error: ' + e.message); }">
+                Upgrade to Premium
+            </button>
+        </div>
+        
+        <div class="mb-3">
+            <h3>Direct Function Tests:</h3>
+            <button onclick="testFunctionAvailability()" class="btn btn-info">Check Function Availability</button>
+            <button onclick="testDirectCall()" class="btn btn-success">Test Direct Call</button>
+        </div>
+        
+        <div class="test-output" id="testOutput">
+            <strong>Test Output:</strong><br>
+            <span id="outputText">Click buttons to test functionality...</span>
+        </div>
+    </div>
+
+    <script>
+        // Add test helper functions
+        function logOutput(message) {
+            console.log(message);
+            const output = document.getElementById('outputText');
+            output.innerHTML += '<br>' + message;
+        }
+        
+        function testFunctionAvailability() {
+            logOutput('=== Testing Function Availability ===');
+            logOutput('typeof window.upgradePlan: ' + typeof window.upgradePlan);
+            logOutput('typeof window.downgradePlan: ' + typeof window.downgradePlan);
+            logOutput('typeof window.createConfirmationModal: ' + typeof window.createConfirmationModal);
+            
+            if (typeof window.upgradePlan === 'function') {
+                logOutput('✅ upgradePlan is available');
+            } else {
+                logOutput('❌ upgradePlan is NOT available');
+            }
+        }
+        
+        function testDirectCall() {
+            logOutput('=== Testing Direct Function Call ===');
+            try {
+                if (typeof window.upgradePlan === 'function') {
+                    logOutput('Calling upgradePlan("Test")...');
+                    window.upgradePlan('Test');
+                    logOutput('✅ Function call completed');
+                } else {
+                    logOutput('❌ Function not available for direct call');
+                }
+            } catch (error) {
+                logOutput('❌ Error in direct call: ' + error.message);
+                console.error('Direct call error:', error);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logOutput('Page loaded. Initializing...');
+            
+            // Test immediately after a short delay
+            setTimeout(function() {
+                testFunctionAvailability();
+            }, 500);
+        });
+        
+        
+// Enhanced page initialization with accessibility focus management
+window.addEventListener('DOMContentLoaded', function() {
+    const fadeWrapper = document.getElementById('fade-wrapper');
+    fadeWrapper.style.opacity = 0;
+    
+    setTimeout(function() {
+        fadeWrapper.style.transition = 'opacity 0.6s ease';
+        fadeWrapper.style.opacity = 1;
+        
+        // Set focus to main heading for screen readers
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) {
+            pageTitle.focus();
+        }
+    }, 100);
+    
+    // Initialize form validation
+    initializeFormValidation();
+    
+    // Initialize accessibility enhancements
+    initializeAccessibility();
+});
+
+// Enhanced form validation
+function initializeFormValidation() {
+    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
+    const passwordForm = document.querySelector('form input[name="change_password"]').closest('form');
+    
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            if (!validateProfileForm(this)) {
+                e.preventDefault();
+                return false;
+            }
+            showLoadingState(this);
+        });
+    }
+    
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            if (!validatePasswordForm(this)) {
+                e.preventDefault();
+                return false;
+            }
+            showLoadingState(this);
+        });
+    }
+}
+
+function validateProfileForm(form) {
+    const nameInput = form.querySelector('input[name="name"]');
+    const fileInput = form.querySelector('input[name="profile_pic"]');
+    let isValid = true;
+    
+    // Clear previous error states
+    clearFieldErrors(form);
+    
+    // Validate name if provided
+    if (nameInput && nameInput.value.trim()) {
+        if (nameInput.value.trim().length < 2) {
+            showFieldError(nameInput, 'Name must be at least 2 characters long');
+            isValid = false;
+        } else if (!/^[a-zA-Z\s'-]+$/.test(nameInput.value.trim())) {
+            showFieldError(nameInput, 'Name can only contain letters, spaces, hyphens, and apostrophes');
+            isValid = false;
+        }
+    }
+    
+    // Validate profile picture if uploaded
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        
+        if (file.size > maxSize) {
+            showFieldError(fileInput, 'Profile picture must be smaller than 5MB');
+            isValid = false;
+        } else if (!allowedTypes.includes(file.type)) {
+            showFieldError(fileInput, 'Profile picture must be a JPG, PNG, or GIF file');
+            isValid = false;
+        }
+    }
+    
+    return isValid;
+}
+
+function validatePasswordForm(form) {
+    const currentPassword = form.querySelector('input[name="current_password"]');
+    const newPassword = form.querySelector('input[name="new_password"]');
+    const confirmPassword = form.querySelector('input[name="confirm_password"]');
+    let isValid = true;
+    
+    // Clear previous error states
+    clearFieldErrors(form);
+    
+    // Validate current password
+    if (!currentPassword.value.trim()) {
+        showFieldError(currentPassword, 'Current password is required');
+        isValid = false;
+    }
+    
+    // Validate new password
+    if (!newPassword.value) {
+        showFieldError(newPassword, 'New password is required');
+        isValid = false;
+    } else if (newPassword.value.length < 8) {
+        showFieldError(newPassword, 'New password must be at least 8 characters long');
+        isValid = false;
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword.value)) {
+        showFieldError(newPassword, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
+        isValid = false;
+    }
+    
+    // Validate password confirmation
+    if (!confirmPassword.value) {
+        showFieldError(confirmPassword, 'Please confirm your new password');
+        isValid = false;
+    } else if (newPassword.value !== confirmPassword.value) {
+        showFieldError(confirmPassword, 'Passwords do not match');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function showFieldError(field, message) {
+    field.classList.add('is-invalid');
+    field.setAttribute('aria-invalid', 'true');
+    
+    // Create or update error message
+    let errorElement = field.parentNode.querySelector('.error-message');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.className = 'error-message';
+        errorElement.setAttribute('role', 'alert');
+        errorElement.style.color = '#EF4444';
+        errorElement.style.fontSize = '0.875rem';
+        errorElement.style.marginTop = '0.25rem';
+        field.parentNode.appendChild(errorElement);
+    }
+    errorElement.textContent = message;
+    
+    // Set focus to first invalid field
+    if (!document.querySelector('.is-invalid:focus')) {
+        field.focus();
+    }
+}
+
+function clearFieldErrors(form) {
+    form.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+        field.removeAttribute('aria-invalid');
+    });
+    form.querySelectorAll('.error-message').forEach(error => error.remove());
+}
+
+function showLoadingState(form) {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2" aria-hidden="true"></i>Processing...';
+        submitBtn.setAttribute('aria-label', 'Processing your request, please wait');
+        
+        // Reset button after timeout as fallback
+        setTimeout(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            submitBtn.removeAttribute('aria-label');
+        }, 10000);
+    }
+}
+
+// Enhanced navigation transitions with accessibility
+document.querySelectorAll('.nav-link:not(.active)').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        if (link.href && !link.classList.contains('text-danger')) {
+            e.preventDefault();
+            
+            const fadeWrapper = document.getElementById('fade-wrapper');
+            fadeWrapper.style.transition = 'opacity 0.4s ease';
+            fadeWrapper.style.opacity = 0;
+            
+            // Announce navigation to screen readers
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = `Navigating to ${link.textContent.trim()}`;
+            document.body.appendChild(announcement);
+            
+            setTimeout(function() {
+                window.location = link.href;
+            }, 400);
+            
+            setTimeout(() => document.body.removeChild(announcement), 1000);
+        }
+    });
+});
+
+// Enhanced profile picture preview with accessibility
+document.getElementById('profile_pic').addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const preview = document.getElementById('profilePicPreview');
+            preview.src = e.target.result;
+            preview.alt = `New profile picture preview: ${file.name}`;
+            
+            // Announce change to screen readers
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.className = 'sr-only';
+            announcement.textContent = 'Profile picture updated. Preview is now showing your selected image.';
+            document.body.appendChild(announcement);
+            setTimeout(() => document.body.removeChild(announcement), 3000);
+        };
+        
+        reader.onerror = function() {
+            showFieldError(e.target, 'Failed to load image. Please try a different file.');
+        };
+        
+        reader.readAsDataURL(file);
+    }
+});
+    const modal = createConfirmationModal(
+        'Upgrade Subscription',
+        confirmMessage,
+        'Upgrade',
+        'Cancel',
+        function() {
+            console.log('User confirmed upgrade, submitting form...');
+            
+            // Show loading state
+            const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
+            upgradeButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = 'Processing...';
+            });
+            
+            // Create form and submit to payment gateway
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/create-checkout-session';
+            
+            const planInput = document.createElement('input');
+            planInput.type = 'hidden';
+            planInput.name = 'plan';
+            planInput.value = plan;
+            form.appendChild(planInput);
+            
+            // Add CSRF token if available
+            const csrfToken = document.querySelector('meta[name=csrf-token]');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken.getAttribute('content');
+                form.appendChild(csrfInput);
+            }
+            
+            document.body.appendChild(form);
+            
+            // Add error handling
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted, redirecting to Stripe...');
+            });
+            
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function downgradePlan(plan) {
+    const confirmMessage = `Are you sure you want to downgrade to the ${plan} plan? You will lose access to premium features.`;
+    const modal = createConfirmationModal(
+        'Downgrade Subscription',
+        confirmMessage,
+        'Downgrade',
+        'Cancel',
+        function() {
+            // Handle downgrade logic
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/my-account';
+            
+            const planInput = document.createElement('input');
+            planInput.type = 'hidden';
+            planInput.name = 'change_subscription';
+            planInput.value = '1';
+            form.appendChild(planInput);
+            
+            const subscriptionInput = document.createElement('input');
+            subscriptionInput.type = 'hidden';
+            subscriptionInput.name = 'subscription';
+            subscriptionInput.value = plan;
+            form.appendChild(subscriptionInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function confirmDeleteAccount() {
+    const modal = createConfirmationModal(
+        'Delete Account',
+        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
+        'Delete Account',
+        'Cancel',
+        function() {
+            // Show second confirmation
+            const finalModal = createConfirmationModal(
+                'Final Warning',
+                'This is your final warning. Are you sure you want to permanently delete your account?',
+                'Yes, Delete My Account',
+                'Cancel',
+                function() {
+                    // Handle account deletion
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/my-account';
+                    
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete_account';
+                    deleteInput.value = '1';
+                    form.appendChild(deleteInput);
+                    
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            );
+            document.body.appendChild(finalModal);
+            finalModal.querySelector('.modal-confirm').focus();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+// Enhanced subscription management functions
+function openCustomerPortal() {
+    const modal = createConfirmationModal(
+        'Manage Billing',
+        'You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history.',
+        'Open Portal',
+        'Cancel',
+        function() {
+            // Show loading state
+            const portalBtn = document.querySelector('button[onclick="openCustomerPortal()"]');
+            if (portalBtn) {
+                portalBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Opening Portal...';
+                portalBtn.disabled = true;
+            }
+            
+            try {
+                // Create form and submit to Customer Portal
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-customer-portal';
+                document.body.appendChild(form);
+                form.submit();
+            } catch (error) {
+                console.error('Customer Portal error:', error);
+                // Reset button state
+                if (portalBtn) {
+                    portalBtn.innerHTML = '<i class="bi bi-gear-fill me-2"></i>Manage Billing';
+                    portalBtn.disabled = false;
+                }
+                alert('Error opening Customer Portal. Please try again.');
+            }
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function loadBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    const loadingState = document.getElementById('billing-history-loading');
+    const historyContent = document.getElementById('billing-history-content');
+    
+    // Show the section and loading state
+    historySection.style.display = 'block';
+    loadingState.style.display = 'block';
+    historyContent.innerHTML = '';
+    
+    // Scroll to the billing history section
+    historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Fetch billing history from API
+    fetch('/subscription-billing-history')
+        .then(response => response.json())
+        .then(data => {
+            loadingState.style.display = 'none';
+            
+            if (data.error) {
+                historyContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        ${data.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            if (data.invoices.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="text-center" style="padding: 2rem; color: var(--gray-600);">
+                        <i class="bi bi-receipt" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        No billing history found.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create billing history table
+            const table = document.createElement('table');
+            table.className = 'billing-table';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.invoices.map(invoice => `
+                        <tr>
+                            <td>${invoice.created}</td>
+                            <td>${invoice.description}</td>
+                            <td>$${invoice.amount.toFixed(2)} ${invoice.currency}</td>
+                            <td>
+                                <span class="status-badge status-${invoice.status}">
+                                    ${invoice.status}
+                                </span>
+                            </td>
+                            <td>
+                                ${invoice.hosted_invoice_url ? 
+                                    `<a href="${invoice.hosted_invoice_url}" target="_blank" class="invoice-link">
+                                        <i class="bi bi-download me-1"></i>View
+                                    </a>` : 
+                                    'N/A'
+                                }
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            
+            historyContent.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Billing history error:', error);
+            loadingState.style.display = 'none';
+            historyContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Failed to load billing history. Please try again later.
+                </div>
+            `;
+            
+            // Show user-friendly error message
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'alert alert-warning';
+            errorMsg.innerHTML = `
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Network Error:</strong> Unable to connect to billing service. 
+                Please check your internet connection and try again.
+            `;
+            historyContent.appendChild(errorMsg);
+        });
+}
+
+function hideBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    historySection.style.display = 'none';
+}
+
+function cancelSubscription() {
+    const modal = createConfirmationModal(
+        'Cancel Subscription',
+        'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.',
+        'Cancel Subscription',
+        'Keep Subscription',
+        function() {
+            // Show loading state
+            const cancelBtn = document.querySelector('button[onclick="cancelSubscription()"]');
+            if (cancelBtn) {
+                cancelBtn.innerHTML = '<i class="bi bi-arrow-repeat spin me-2"></i>Cancelling...';
+                cancelBtn.disabled = true;
+            }
+            
+            // Create form and submit cancellation
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/cancel-subscription';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+// Create accessible confirmation modal
+function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: rgba(0,0,0,0.5); display: flex; align-items: center; 
+        justify-content: center; z-index: 9999;
+    `;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'modal-title');
+    modal.setAttribute('aria-describedby', 'modal-description');
+    
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = `
+        background: white; padding: 2rem; border-radius: 16px; 
+        max-width: 400px; margin: 1rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    `;
+    
+    modalContent.innerHTML = `
+        <h3 id="modal-title" style="margin: 0 0 1rem 0; color: var(--gray-900);">${title}</h3>
+        <p id="modal-description" style="margin: 0 0 2rem 0; color: var(--gray-700); line-height: 1.6;">${message}</p>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button type="button" class="modal-cancel" style="padding: 0.75rem 1.5rem; border: 2px solid var(--gray-300); background: white; border-radius: 8px; cursor: pointer;">
+                ${cancelText}
+            </button>
+            <button type="button" class="modal-confirm" style="padding: 0.75rem 1.5rem; border: none; background: var(--red-500); color: white; border-radius: 8px; cursor: pointer;">
+                ${confirmText}
+            </button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    
+    // Event handlers
+    modal.querySelector('.modal-cancel').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+    });
+    
+    modal.querySelector('.modal-confirm').addEventListener('click', () => {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+        if (onConfirm) onConfirm();
+    });
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+            document.body.style.overflow = '';
+        }
+    });
+    
+    // Keyboard handling
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.body.removeChild(modal);
+            document.body.style.overflow = '';
+        }
+    });
+    
+    document.body.style.overflow = 'hidden';
+    return modal;
+}
+
+// Initialize accessibility enhancements
+function initializeAccessibility() {
+    // Add keyboard navigation for plan cards
+    document.querySelectorAll('.plan-card').forEach(card => {
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const button = this.querySelector('button:not([disabled])');
+                if (button) {
+                    e.preventDefault();
+                    button.click();
+                }
+            }
+        });
+    });
+    
+    // Add keyboard navigation for stat cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                // Could add click behavior here if needed
+            }
+        });
+    });
+    
+    // Enhance form field focus management
+    document.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('focus', function() {
+            this.closest('.form-group')?.classList.add('focused');
+        });
+        
+        field.addEventListener('blur', function() {
+            this.closest('.form-group')?.classList.remove('focused');
+        });
+    });
+}
+
+// Enhanced hover effects for cards with keyboard support
+document.querySelectorAll('.account-card, .plan-card, .stat-card').forEach(function(card) {
+    function addHoverEffect() {
+        if (!card.classList.contains('recommended')) {
+            card.style.transform = 'translateY(-4px) scale(1.02)';
+            card.style.transition = 'transform 0.2s ease';
+        }
+    }
+    
+    function removeHoverEffect() {
+        if (!card.classList.contains('recommended')) {
+            card.style.transform = 'translateY(0) scale(1)';
+        }
+    }
+    
+    card.addEventListener('mouseenter', addHoverEffect);
+    card.addEventListener('mouseleave', removeHoverEffect);
+    card.addEventListener('focus', addHoverEffect);
+    card.addEventListener('blur', removeHoverEffect);
+});
+
+// Add CSS for focused form groups
+const style = document.createElement('style');
+style.textContent = `
+    .form-group.focused .form-label {
+        color: var(--primary-blue);
+        font-weight: 600;
+    }
+    
+    .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+    
+    .is-invalid {
+        border-color: var(--red-500) !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .error-message {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
+
+// Enhanced plan upgrade/downgrade functions with better UX
+function upgradePlan(plan) {
+    console.log('Attempting to upgrade to ' + plan + ' plan');
+    
+    // Validate plan
+    if (!plan || !['Pro', 'Premium'].includes(plan)) {
+        alert('Invalid plan selected. Please try again.');
+        return;
+    }
+    
+    const confirmMessage = 'Are you sure you want to upgrade to the ' + plan + ' plan?';
+    const modal = createConfirmationModal(
+        'Upgrade Subscription',
+        confirmMessage,
+        'Upgrade',
+        'Cancel',
+        function() {
+            console.log('User confirmed upgrade, submitting form...');
+            
+            // Show loading state
+            const upgradeButtons = document.querySelectorAll('.select-plan-btn.upgrade');
+            upgradeButtons.forEach(btn => {
+                btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
+                btn.disabled = true;
+            });
+            
+            // Create and submit form with error handling
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-checkout-session';
+                
+                const planInput = document.createElement('input');
+                planInput.type = 'hidden';
+                planInput.name = 'plan';
+                planInput.value = plan;
+                
+                form.appendChild(planInput);
+                document.body.appendChild(form);
+                
+                // Add form submit listener for debugging
+                form.addEventListener('submit', function() {
+                    console.log('Form submitted for plan:', plan);
+                });
+                
+                form.submit();
+            } catch (error) {
+                console.error('Error creating upgrade form:', error);
+                alert('An error occurred. Please refresh the page and try again.');
+                // Reset button state
+                upgradeButtons.forEach(btn => {
+                    btn.innerHTML = 'Upgrade to ' + plan;
+                    btn.disabled = false;
+                });
+            }
+        }
+    );
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    
+    // Focus the modal for accessibility
+    setTimeout(() => {
+        const confirmBtn = modal.querySelector('.btn-primary');
+        if (confirmBtn) confirmBtn.focus();
+    }, 100);
+}
+
+function downgradePlan(plan) {
+    console.log('Attempting to downgrade to ' + plan + ' plan');
+    
+    // Validate plan
+    if (!plan) {
+        alert('Invalid plan selected. Please try again.');
+        return;
+    }
+    
+    const confirmMessage = plan === 'Free' 
+        ? 'Are you sure you want to cancel your subscription and downgrade to the free plan? You will lose access to premium features at the end of your billing period.'
+        : 'Are you sure you want to change to the ' + plan + ' plan?';
+    
+    const modal = createConfirmationModal(
+        'Change Subscription',
+        confirmMessage,
+        'Confirm',
+        'Cancel',
+        function() {
+            console.log('User confirmed downgrade, submitting form...');
+            
+            // Show loading state
+            const downgradeButtons = document.querySelectorAll('.select-plan-btn.downgrade, .select-plan-btn.cancel');
+            downgradeButtons.forEach(btn => {
+                btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Processing...';
+                btn.disabled = true;
+            });
+            
+            // Create and submit form for downgrade
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/downgrade-subscription';
+                
+                const planInput = document.createElement('input');
+                planInput.type = 'hidden';
+                planInput.name = 'plan';
+                planInput.value = plan;
+                
+                form.appendChild(planInput);
+                document.body.appendChild(form);
+                
+                // Add form submit listener for debugging
+                form.addEventListener('submit', function() {
+                    console.log('Downgrade form submitted for plan:', plan);
+                });
+                
+                form.submit();
+            } catch (error) {
+                console.error('Error creating downgrade form:', error);
+                alert('An error occurred. Please refresh the page and try again.');
+                // Reset button state
+                downgradeButtons.forEach(btn => {
+                    btn.innerHTML = plan === 'Free' ? 'Cancel Subscription' : `Switch to ${plan}`;
+                    btn.disabled = false;
+                });
+            }
+        }
+    );
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    
+    // Focus the modal for accessibility
+    setTimeout(() => {
+        const confirmBtn = modal.querySelector('.btn-primary');
+        if (confirmBtn) confirmBtn.focus();
+    }, 100);
+}
+
+function hideBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    if (historySection) {
+        historySection.style.display = 'none';
+    }
+}
+
+function cancelSubscription() {
+    const modal = createConfirmationModal(
+        'Cancel Subscription',
+        'Are you sure you want to cancel your subscription? You will continue to have access until the end of your current billing period.',
+        'Cancel Subscription',
+        'Keep Subscription',
+        function() {
+            // Create form to cancel subscription
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/cancel-subscription';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.confirm-action').focus();
+}
+
+function confirmDeleteAccount() {
+    const modal = createConfirmationModal(
+        'Delete Account',
+        'Are you absolutely sure you want to delete your account? This action cannot be undone and you will lose all your data.',
+        'Delete Account',
+        'Cancel',
+        function() {
+            // Create form to delete account
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/delete-account';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.confirm-action').focus();
+}
+
+// Customer portal and billing history functions
+function openCustomerPortal() {
+    const modal = createConfirmationModal(
+        'Manage Billing',
+        'You will be redirected to Stripe Customer Portal where you can manage your subscription, update payment methods, and view billing history.',
+        'Open Portal',
+        'Cancel',
+        function() {
+            // Create form to open customer portal
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/create-customer-portal';
+            document.body.appendChild(form);
+            form.submit();
+        }
+    );
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-confirm').focus();
+}
+
+function loadBillingHistory() {
+    const historySection = document.getElementById('billing-history-section');
+    const loadingState = document.getElementById('billing-history-loading');
+    const historyContent = document.getElementById('billing-history-content');
+    
+    // Show the section and loading state
+    if (historySection) {
+        historySection.style.display = 'block';
+        historySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    if (loadingState) loadingState.style.display = 'block';
+    if (historyContent) historyContent.innerHTML = '';
+    
+    // Fetch billing history from API
+    fetch('/subscription-billing-history')
+        .then(response => response.json())
+        .then(data => {
+            if (loadingState) loadingState.style.display = 'none';
+            if (historyContent && data.invoices) {
+                // Create billing history table
+                const table = document.createElement('table');
+                table.className = 'billing-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.invoices.map(invoice => `
+                            <tr>
+                                <td>${new Date(invoice.created * 1000).toLocaleDateString()}</td>
+                                <td>$${(invoice.amount_due / 100).toFixed(2)}</td>
+                                <td><span class="status-badge status-${invoice.status}">${invoice.status}</span></td>
+                                <td><a href="${invoice.hosted_invoice_url}" target="_blank" class="invoice-link">View</a></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                historyContent.appendChild(table);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading billing history:', error);
+            if (loadingState) loadingState.style.display = 'none';
+            if (historyContent) {
+                historyContent.innerHTML = '<p class="text-danger">Error loading billing history. Please try again.</p>';
+            }
+        });
+}
+
+function createConfirmationModal(title, message, confirmText, cancelText, onConfirm) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade show';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    modal.style.zIndex = '1055';
+    
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${title}</h5>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>${message}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                    <button type="button" class="btn btn-primary confirm-action">${confirmText}</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    const closeBtn = modal.querySelector('.btn-close');
+    const cancelBtn = modal.querySelector('.btn-secondary');
+    const confirmBtn = modal.querySelector('.confirm-action');
+    
+    const closeModal = () => {
+        modal.remove();
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    confirmBtn.addEventListener('click', () => {
+        onConfirm();
+        closeModal();
+    });
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    return modal;
+}
+
+// Add CSS for loading animation
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .modal {
+        animation: fadeIn 0.15s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
+
+// Ensure functions are globally accessible for onclick handlers
+try {
+    window.upgradePlan = upgradePlan;
+    window.downgradePlan = downgradePlan;
+    window.createConfirmationModal = createConfirmationModal;
+    window.cancelSubscription = cancelSubscription;
+    window.confirmDeleteAccount = confirmDeleteAccount;
+    window.openCustomerPortal = openCustomerPortal;
+    window.loadBillingHistory = loadBillingHistory;
+    window.hideBillingHistory = hideBillingHistory;
+
+    console.log('✅ Subscription functions loaded and made globally accessible');
+    console.log('✅ window.upgradePlan type:', typeof window.upgradePlan);
+    
+    // Test the function immediately
+    console.log('🧪 Testing upgradePlan function availability...');
+    if (typeof window.upgradePlan === 'function') {
+        console.log('✅ upgradePlan is accessible as window function');
+    } else {
+        console.error('❌ upgradePlan is not accessible');
+    }
+    
+    // Add a global test function for debugging
+    window.testUpgrade = function() {
+        console.log('Test function called - calling upgradePlan...');
+        upgradePlan('Pro');
+    };
+    
+} catch (error) {
+    console.error('❌ Error setting up global functions:', error);
+    console.error('Error details:', error.message, error.stack);
+}
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Subscription Button</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Subscription Button</h1>
+    
+    <div class="test-section">
+        <h3>Button Tests</h3>
+        
+        <button class="btn" onclick="testDirectSubmit()">
+            Test 1: Direct Form Submit
+        </button>
+        
+        <button class="btn" onclick="testWithFunction()">
+            Test 2: Using Function
+        </button>
+        
+        <button class="btn" onclick="testExactCopy()">
+            Test 3: Exact Dashboard Copy
+        </button>
+        
+        <div class="log" id="log">
+            <strong>Test Results:</strong><br>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>Environment Check</h3>
+        <div class="log" id="env-log">
+            <strong>Environment Info:</strong><br>
+        </div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const envLog = document.getElementById('env-log');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            log.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span><br>`;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function addEnvLog(message) {
+            envLog.innerHTML += `${message}<br>`;
+        }
+
+        // Test 1: Direct form submission
+        function testDirectSubmit() {
+            addLog('🧪 Test 1: Direct form submission', 'info');
+            
+            try {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-customer-portal';
+                form.style.display = 'none';
+                
+                addLog('✅ Form created successfully', 'success');
+                
+                document.body.appendChild(form);
+                addLog('✅ Form appended to body', 'success');
+                
+                addLog('📤 Submitting form...', 'info');
+                form.submit();
+                
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 2: Using a function
+        function testWithFunction() {
+            addLog('🧪 Test 2: Using function approach', 'info');
+            
+            function submitForm() {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-customer-portal';
+                form.style.display = 'none';
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+            
+            try {
+                submitForm();
+                addLog('✅ Function executed successfully', 'success');
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test 3: Exact copy from dashboard
+        function testExactCopy() {
+            addLog('🧪 Test 3: Exact dashboard copy', 'info');
+            
+            // EXACT COPY FROM DASHBOARD
+            function openCustomerPortal() {
+                console.log('Subscription button clicked');
+                
+                // Create and submit form immediately
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/create-customer-portal';
+                form.style.display = 'none';
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+            
+            try {
+                openCustomerPortal();
+                addLog('✅ Dashboard function executed successfully', 'success');
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Environment check
+        function checkEnvironment() {
+            addEnvLog(`User Agent: ${navigator.userAgent}`);
+            addEnvLog(`URL: ${window.location.href}`);
+            addEnvLog(`Protocol: ${window.location.protocol}`);
+            addEnvLog(`Host: ${window.location.host}`);
+            addEnvLog(`JavaScript enabled: true`);
+            addEnvLog(`Document ready state: ${document.readyState}`);
+        }
+
+        // Run environment check on load
+        document.addEventListener('DOMContentLoaded', checkEnvironment);
+        
+        addLog('🚀 Debug page loaded and ready', 'success');
+    </script>
+</body>
+</html>

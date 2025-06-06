@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Subscription Button - Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .log {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Subscription Button - Simplified Version</h1>
+    
+    <div class="test-section">
+        <h3>Simplified Subscription Button Test</h3>
+        <p>This tests the exact same JavaScript that's now in the dashboard templates.</p>
+        <a href="javascript:void(0)" class="btn" onclick="openCustomerPortal()">
+            <i class="bi bi-credit-card"></i> Subscription
+        </a>
+        
+        <div class="log" id="log">
+            <strong>Console Log:</strong><br>
+            (Check browser console for additional debug info)
+        </div>
+    </div>
+
+    <script>
+        // Simplified customer portal functionality - EXACT COPY FROM DASHBOARD
+        function openCustomerPortal() {
+            console.log('Subscription button clicked');
+            
+            // Log to page
+            document.getElementById('log').innerHTML += '<br>→ Subscription button clicked';
+            
+            // Create and submit form immediately
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/create-customer-portal';
+            form.style.display = 'none';
+            
+            document.getElementById('log').innerHTML += '<br>→ Form created with action: ' + form.action;
+            
+            document.body.appendChild(form);
+            
+            document.getElementById('log').innerHTML += '<br>→ Form appended to body, submitting...';
+            
+            form.submit();
+        }
+
+        // Make the function globally accessible
+        window.openCustomerPortal = openCustomerPortal;
+    </script>
+</body>
+</html>
