@@ -351,6 +351,365 @@
         to { opacity: 1; transform: translateY(0); }
     }
     
+    /* Voice Interview Styles */
+    .voice-interview-section {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--gray-100);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .voice-interview-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .interview-setup {
+        text-align: center;
+    }
+    
+    .setup-form {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .interview-instructions {
+        background: var(--primary-blue-light);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        text-align: left;
+    }
+    
+    .interview-instructions h4 {
+        color: var(--primary-blue-dark);
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+    
+    .interview-instructions ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .interview-instructions li {
+        margin-bottom: 0.5rem;
+        color: var(--gray-700);
+    }
+    
+    /* Interview Progress */
+    .interview-progress {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--success-green) 100%);
+        width: 20%;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        font-size: 0.95rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+    
+    /* Question Panel */
+    .interview-question-panel {
+        background: var(--gray-50);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .question-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+    
+    .question-content {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-start;
+    }
+    
+    .ai-avatar {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .question-text {
+        flex: 1;
+        font-size: 1.125rem;
+        line-height: 1.6;
+        color: var(--gray-800);
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+    }
+    
+    /* Voice Controls */
+    .voice-controls {
+        text-align: center;
+    }
+    
+    .recording-status {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gray-400);
+        transition: all 0.3s ease;
+    }
+    
+    .status-indicator.recording {
+        background: var(--red-500);
+        animation: pulse 1s infinite;
+    }
+    
+    .status-indicator.ready {
+        background: var(--success-green);
+    }
+    
+    .status-text {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+    
+    .voice-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-record, .btn-stop, .btn-submit {
+        padding: 0.875rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+    
+    .btn-record {
+        background: var(--primary-blue);
+        color: white;
+    }
+    
+    .btn-record:hover {
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
+    }
+    
+    .btn-stop {
+        background: var(--red-500);
+        color: white;
+    }
+    
+    .btn-stop:hover {
+        background: #DC2626;
+        transform: translateY(-1px);
+    }
+    
+    .btn-submit {
+        background: var(--success-green);
+        color: white;
+    }
+    
+    .btn-submit:hover {
+        background: #059669;
+        transform: translateY(-1px);
+    }
+    
+    .answer-preview {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: left;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .answer-preview h4 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+    }
+    
+    .answer-preview p {
+        color: var(--gray-700);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Feedback Panel */
+    .feedback-panel, .results-panel {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .feedback-header, .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .feedback-header h4, .results-header h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .score-badge, .final-score {
+        background: var(--success-green);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .final-score {
+        font-size: 1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .feedback-content, .final-feedback {
+        color: var(--gray-700);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feedback-actions, .results-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    /* Interview History */
+    .interview-history {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 2rem;
+    }
+    
+    .history-list {
+        margin: 1.5rem 0;
+    }
+    
+    .history-item {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .history-info h4 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+    
+    .history-info p {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .history-score {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--success-green);
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.3s ease;
+    }
+
     /* Mobile Responsiveness */
     @media (max-width: 768px) {
         .page-header {
@@ -499,6 +858,162 @@
                 </button>
             </form>
         </div>
+
+        <!-- AI Voice Interview Section -->
+        <section class="voice-interview-section">
+            <h2 class="section-title">
+                <i class="bi bi-mic"></i>AI Voice Interview Practice
+            </h2>
+            
+            <div class="voice-interview-container">
+                <!-- Interview Setup -->
+                <div class="interview-setup" id="interviewSetup">
+                    <div class="setup-form">
+                        <div class="form-group">
+                            <label for="voice-job-title" class="form-label">
+                                <i class="bi bi-briefcase"></i> Job Title for Voice Interview
+                            </label>
+                            <input type="text" 
+                                   id="voice-job-title"
+                                   class="form-control" 
+                                   placeholder="e.g., Software Engineer, Product Manager..."
+                                   required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interviewer-personality" class="form-label">
+                                <i class="bi bi-person"></i> Interviewer Style
+                            </label>
+                            <select id="interviewer-personality" class="form-control">
+                                <option value="friendly">Friendly & Encouraging</option>
+                                <option value="professional">Professional & Business-focused</option>
+                                <option value="technical">Technical & Detail-oriented</option>
+                            </select>
+                        </div>
+                        
+                        <div class="interview-instructions">
+                            <h4><i class="bi bi-info-circle"></i> How it works:</h4>
+                            <ul>
+                                <li>AI will ask you 5 tailored interview questions</li>
+                                <li>Speak your answers aloud (microphone required)</li>
+                                <li>Get instant AI feedback and scoring</li>
+                                <li>Receive final interview summary and tips</li>
+                            </ul>
+                        </div>
+                        
+                        <button type="button" class="btn-generate" id="startVoiceInterview">
+                            <i class="bi bi-play-circle"></i>Start Voice Interview
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Active Interview Interface -->
+                <div class="interview-active" id="interviewActive" style="display: none;">
+                    <div class="interview-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <span class="progress-text" id="progressText">Question 1 of 5</span>
+                    </div>
+                    
+                    <div class="interview-question-panel">
+                        <div class="question-header">
+                            <h3 id="currentQuestionNumber">Question 1</h3>
+                            <div class="question-controls">
+                                <button class="btn-secondary" id="repeatQuestion">
+                                    <i class="bi bi-arrow-repeat"></i>Repeat Question
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-content">
+                            <div class="ai-avatar">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div class="question-text" id="questionText">
+                                Loading question...
+                            </div>
+                        </div>
+                        
+                        <div class="voice-controls">
+                            <div class="recording-status" id="recordingStatus">
+                                <div class="status-indicator"></div>
+                                <span class="status-text">Ready to record</span>
+                            </div>
+                            
+                            <div class="voice-buttons">
+                                <button class="btn-record" id="recordButton">
+                                    <i class="bi bi-mic"></i>
+                                    <span>Start Recording</span>
+                                </button>
+                                
+                                <button class="btn-stop" id="stopButton" style="display: none;">
+                                    <i class="bi bi-stop-circle"></i>
+                                    <span>Stop Recording</span>
+                                </button>
+                                
+                                <button class="btn-submit" id="submitAnswer" style="display: none;">
+                                    <i class="bi bi-send"></i>
+                                    <span>Submit Answer</span>
+                                </button>
+                            </div>
+                            
+                            <div class="answer-preview" id="answerPreview" style="display: none;">
+                                <h4>Your Answer:</h4>
+                                <p id="transcribedText"></p>
+                                <button class="btn-secondary btn-sm" id="rerecordButton">
+                                    <i class="bi bi-arrow-clockwise"></i>Re-record
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Feedback Panel -->
+                    <div class="feedback-panel" id="feedbackPanel" style="display: none;">
+                        <div class="feedback-header">
+                            <h4><i class="bi bi-chat-square-dots"></i> AI Feedback</h4>
+                            <div class="score-badge" id="scoreBadge">0/10</div>
+                        </div>
+                        <div class="feedback-content" id="feedbackContent"></div>
+                        <div class="feedback-actions">
+                            <button class="btn-primary" id="nextQuestionButton">
+                                <i class="bi bi-arrow-right"></i>Next Question
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Final Results Panel -->
+                    <div class="results-panel" id="resultsPanel" style="display: none;">
+                        <div class="results-header">
+                            <h3><i class="bi bi-trophy"></i> Interview Complete!</h3>
+                            <div class="final-score" id="finalScore">0/10</div>
+                        </div>
+                        <div class="results-content">
+                            <div class="final-feedback" id="finalFeedback"></div>
+                            <div class="results-actions">
+                                <button class="btn-primary" id="newInterviewButton">
+                                    <i class="bi bi-arrow-clockwise"></i>Start New Interview
+                                </button>
+                                <button class="btn-secondary" id="viewHistoryButton">
+                                    <i class="bi bi-clock-history"></i>View History
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interview History -->
+                <div class="interview-history" id="interviewHistory" style="display: none;">
+                    <h3><i class="bi bi-clock-history"></i> Your Interview History</h3>
+                    <div class="history-list" id="historyList">
+                        <!-- History items will be loaded here -->
+                    </div>
+                    <button class="btn-secondary" id="backToInterviewButton">
+                        <i class="bi bi-arrow-left"></i>Back to Interview
+                    </button>
+                </div>
+            </div>
+        </section>
 
         {% if interview_qa_list|length > 0 %}
         <!-- Interview Q&A Collection -->
@@ -816,6 +1331,542 @@
 
     // Add smooth scroll behavior for better UX
     document.documentElement.style.scrollBehavior = 'smooth';
+
+    // AI Voice Interview JavaScript Implementation
+    class VoiceInterviewManager {
+        constructor() {
+            this.mediaRecorder = null;
+            this.audioChunks = [];
+            this.currentInterviewSession = null;
+            this.currentQuestionIndex = 0;
+            this.questions = [];
+            this.isRecording = false;
+            this.speechRecognition = null;
+            this.currentTranscript = '';
+            
+            this.initializeSpeechRecognition();
+            this.bindEvents();
+        }
+        
+        initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.speechRecognition = new SpeechRecognition();
+                this.speechRecognition.continuous = true;
+                this.speechRecognition.interimResults = true;
+                this.speechRecognition.lang = 'en-US';
+                
+                this.speechRecognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+                    
+                    this.currentTranscript = finalTranscript;
+                    const transcribedText = document.getElementById('transcribedText');
+                    if (transcribedText) {
+                        transcribedText.textContent = finalTranscript + interimTranscript;
+                    }
+                };
+                
+                this.speechRecognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                };
+            }
+        }
+        
+        bindEvents() {
+            // Start voice interview
+            const startBtn = document.getElementById('startVoiceInterview');
+            if (startBtn) {
+                startBtn.addEventListener('click', () => this.startInterview());
+            }
+            
+            // Recording controls
+            const recordBtn = document.getElementById('recordButton');
+            const stopBtn = document.getElementById('stopButton');
+            const submitBtn = document.getElementById('submitAnswer');
+            const rerecordBtn = document.getElementById('rerecordButton');
+            
+            if (recordBtn) recordBtn.addEventListener('click', () => this.startRecording());
+            if (stopBtn) stopBtn.addEventListener('click', () => this.stopRecording());
+            if (submitBtn) submitBtn.addEventListener('click', () => this.submitAnswer());
+            if (rerecordBtn) rerecordBtn.addEventListener('click', () => this.rerecordAnswer());
+            
+            // Question controls
+            const repeatBtn = document.getElementById('repeatQuestion');
+            const nextBtn = document.getElementById('nextQuestionButton');
+            
+            if (repeatBtn) repeatBtn.addEventListener('click', () => this.repeatQuestion());
+            if (nextBtn) nextBtn.addEventListener('click', () => this.nextQuestion());
+            
+            // Interview management
+            const newInterviewBtn = document.getElementById('newInterviewButton');
+            const viewHistoryBtn = document.getElementById('viewHistoryButton');
+            const backToInterviewBtn = document.getElementById('backToInterviewButton');
+            
+            if (newInterviewBtn) newInterviewBtn.addEventListener('click', () => this.startNewInterview());
+            if (viewHistoryBtn) viewHistoryBtn.addEventListener('click', () => this.showHistory());
+            if (backToInterviewBtn) backToInterviewBtn.addEventListener('click', () => this.backToInterview());
+        }
+        
+        async startInterview() {
+            console.log('Starting interview...');
+            
+            const jobTitle = document.getElementById('voice-job-title').value.trim();
+            const personality = document.getElementById('interviewer-personality').value;
+            
+            console.log('Job title:', jobTitle, 'Personality:', personality);
+            
+            if (!jobTitle) {
+                alert('Please enter a job title for the interview.');
+                return;
+            }
+            
+            // Disable start button
+            const startBtn = document.getElementById('startVoiceInterview');
+            if (startBtn) {
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Starting Interview...';
+            }
+            
+            try {
+                console.log('Making API call to start interview...');
+                
+                const response = await fetch('/api/start-voice-interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        job_title: jobTitle,
+                        personality: personality
+                    })
+                });
+                
+                console.log('Start interview response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Start interview response data:', data);
+                
+                if (data.success) {
+                    this.currentInterviewSession = data.session_id;
+                    this.questions = data.questions;
+                    this.currentQuestionIndex = 0;
+                    
+                    console.log('Interview started successfully:', {
+                        session_id: data.session_id,
+                        questions: data.questions
+                    });
+                    
+                    this.showInterviewInterface();
+                    this.displayQuestion();
+                    this.speakQuestion();
+                } else {
+                    console.error('API returned error:', data);
+                    alert('Failed to start interview: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error starting interview:', error);
+                alert('Failed to start interview: ' + error.message + '. Check browser console for details.');
+            } finally {
+                // Re-enable start button
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="bi bi-play-circle"></i>Start Voice Interview';
+                }
+            }
+        }
+        
+        showInterviewInterface() {
+            document.getElementById('interviewSetup').style.display = 'none';
+            document.getElementById('interviewActive').style.display = 'block';
+            document.getElementById('interviewHistory').style.display = 'none';
+        }
+        
+        displayQuestion() {
+            if (this.currentQuestionIndex < this.questions.length) {
+                const question = this.questions[this.currentQuestionIndex];
+                
+                // Update progress
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                const progress = ((this.currentQuestionIndex + 1) / this.questions.length) * 100;
+                
+                if (progressFill) progressFill.style.width = progress + '%';
+                if (progressText) progressText.textContent = `Question ${this.currentQuestionIndex + 1} of ${this.questions.length}`;
+                
+                // Update question display
+                const questionNumber = document.getElementById('currentQuestionNumber');
+                const questionText = document.getElementById('questionText');
+                
+                if (questionNumber) questionNumber.textContent = `Question ${this.currentQuestionIndex + 1}`;
+                if (questionText) questionText.textContent = question;
+                
+                // Reset UI state
+                this.resetRecordingUI();
+            }
+        }
+        
+        speakQuestion() {
+            if ('speechSynthesis' in window) {
+                const question = this.questions[this.currentQuestionIndex];
+                const utterance = new SpeechSynthesisUtterance(question);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 0.8;
+                
+                speechSynthesis.speak(utterance);
+            }
+        }
+        
+        repeatQuestion() {
+            this.speakQuestion();
+        }
+        
+        async startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                this.mediaRecorder = new MediaRecorder(stream);
+                this.audioChunks = [];
+                this.currentTranscript = '';
+                
+                this.mediaRecorder.ondataavailable = (event) => {
+                    this.audioChunks.push(event.data);
+                };
+                
+                this.mediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                this.mediaRecorder.start();
+                this.isRecording = true;
+                
+                // Start speech recognition
+                if (this.speechRecognition) {
+                    this.speechRecognition.start();
+                }
+                
+                this.updateRecordingUI(true);
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('Unable to access microphone. Please check your permissions.');
+            }
+        }
+        
+        stopRecording() {
+            if (this.mediaRecorder && this.isRecording) {
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                
+                if (this.speechRecognition) {
+                    this.speechRecognition.stop();
+                }
+                
+                this.updateRecordingUI(false);
+                this.showAnswerPreview();
+            }
+        }
+        
+        updateRecordingUI(recording) {
+            const recordBtn = document.getElementById('recordButton');
+            const stopBtn = document.getElementById('stopButton');
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.querySelector('.status-text');
+            
+            if (recording) {
+                if (recordBtn) recordBtn.style.display = 'none';
+                if (stopBtn) stopBtn.style.display = 'inline-flex';
+                if (statusIndicator) statusIndicator.classList.add('recording');
+                if (statusText) statusText.textContent = 'Recording...';
+            } else {
+                if (recordBtn) recordBtn.style.display = 'inline-flex';
+                if (stopBtn) stopBtn.style.display = 'none';
+                if (statusIndicator) statusIndicator.classList.remove('recording');
+                if (statusText) statusText.textContent = 'Recording complete';
+            }
+        }
+        
+        showAnswerPreview() {
+            const answerPreview = document.getElementById('answerPreview');
+            const submitBtn = document.getElementById('submitAnswer');
+            const transcribedText = document.getElementById('transcribedText');
+            
+            if (answerPreview) answerPreview.style.display = 'block';
+            if (submitBtn) submitBtn.style.display = 'inline-flex';
+            
+            if (transcribedText && this.currentTranscript) {
+                transcribedText.textContent = this.currentTranscript;
+            } else if (transcribedText) {
+                transcribedText.textContent = 'Audio recorded. Click submit to continue.';
+            }
+        }
+        
+        rerecordAnswer() {
+            this.resetRecordingUI();
+        }
+        
+        resetRecordingUI() {
+            const answerPreview = document.getElementById('answerPreview');
+            const submitBtn = document.getElementById('submitAnswer');
+            const recordBtn = document.getElementById('recordButton');
+            const stopBtn = document.getElementById('stopButton');
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.querySelector('.status-text');
+            
+            if (answerPreview) answerPreview.style.display = 'none';
+            if (submitBtn) submitBtn.style.display = 'none';
+            if (recordBtn) recordBtn.style.display = 'inline-flex';
+            if (stopBtn) stopBtn.style.display = 'none';
+            if (statusIndicator) {
+                statusIndicator.classList.remove('recording');
+                statusIndicator.classList.add('ready');
+            }
+            if (statusText) statusText.textContent = 'Ready to record';
+            
+            this.currentTranscript = '';
+        }
+        
+        async submitAnswer() {
+            console.log('Submit button clicked!');
+            
+            // Disable button to prevent double clicks
+            const submitBtn = document.getElementById('submitAnswer');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting...';
+            }
+            
+            const answer = this.currentTranscript || 'Audio response recorded';
+            const question = this.questions[this.currentQuestionIndex];
+            
+            console.log('Submitting answer:', {
+                session_id: this.currentInterviewSession,
+                question_number: this.currentQuestionIndex + 1,
+                answer_text: answer,
+                current_question: question
+            });
+            
+            try {
+                const response = await fetch('/api/submit-voice-answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: this.currentInterviewSession,
+                        question_number: this.currentQuestionIndex + 1,
+                        answer_text: answer
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    this.showFeedback(data.feedback, data.score);
+                } else {
+                    console.error('API returned error:', data);
+                    alert('Failed to submit answer: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                alert('Failed to submit answer: ' + error.message + '. Check browser console for details.');
+            } finally {
+                // Re-enable button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-send"></i><span>Submit Answer</span>';
+                }
+            }
+        }
+        
+        showFeedback(feedback, score) {
+            const feedbackPanel = document.getElementById('feedbackPanel');
+            const scoreBadge = document.getElementById('scoreBadge');
+            const feedbackContent = document.getElementById('feedbackContent');
+            
+            if (feedbackPanel) feedbackPanel.style.display = 'block';
+            if (scoreBadge) scoreBadge.textContent = score + '/10';
+            if (feedbackContent) feedbackContent.textContent = feedback;
+            
+            // Scroll to feedback
+            if (feedbackPanel) {
+                feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        nextQuestion() {
+            // Hide feedback panel
+            const feedbackPanel = document.getElementById('feedbackPanel');
+            if (feedbackPanel) feedbackPanel.style.display = 'none';
+            
+            this.currentQuestionIndex++;
+            
+            if (this.currentQuestionIndex < this.questions.length) {
+                this.displayQuestion();
+                this.speakQuestion();
+            } else {
+                this.completeInterview();
+            }
+        }
+        
+        async completeInterview() {
+            try {
+                const response = await fetch(`/api/interview-session/${this.currentInterviewSession}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.showResults(data.session);
+                } else {
+                    alert('Failed to get interview results: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error completing interview:', error);
+                alert('Failed to complete interview. Please try again.');
+            }
+        }
+        
+        showResults(session) {
+            // Hide active interview interface
+            document.getElementById('interviewActive').style.display = 'none';
+            
+            // Show results panel
+            const resultsPanel = document.getElementById('resultsPanel');
+            const finalScore = document.getElementById('finalScore');
+            const finalFeedback = document.getElementById('finalFeedback');
+            
+            if (resultsPanel) resultsPanel.style.display = 'block';
+            if (finalScore) finalScore.textContent = session.average_score + '/10';
+            if (finalFeedback) finalFeedback.textContent = session.final_feedback || 'Interview completed successfully!';
+            
+            // Scroll to results
+            if (resultsPanel) {
+                resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        startNewInterview() {
+            // Reset state
+            this.currentInterviewSession = null;
+            this.currentQuestionIndex = 0;
+            this.questions = [];
+            this.currentTranscript = '';
+            
+            // Hide results and show setup
+            document.getElementById('resultsPanel').style.display = 'none';
+            document.getElementById('interviewActive').style.display = 'none';
+            document.getElementById('interviewSetup').style.display = 'block';
+            document.getElementById('interviewHistory').style.display = 'none';
+            
+            // Clear form
+            document.getElementById('voice-job-title').value = '';
+            document.getElementById('interviewer-personality').value = 'friendly';
+        }
+        
+        async showHistory() {
+            try {
+                const response = await fetch('/api/interview-sessions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.displayHistory(data.sessions);
+                } else {
+                    alert('Failed to load interview history: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                alert('Failed to load interview history. Please try again.');
+            }
+        }
+        
+        displayHistory(sessions) {
+            // Hide other panels
+            document.getElementById('interviewSetup').style.display = 'none';
+            document.getElementById('interviewActive').style.display = 'none';
+            document.getElementById('resultsPanel').style.display = 'none';
+            
+            // Show history panel
+            const historyPanel = document.getElementById('interviewHistory');
+            const historyList = document.getElementById('historyList');
+            
+            if (historyPanel) historyPanel.style.display = 'block';
+            
+            if (historyList) {
+                if (sessions.length === 0) {
+                    historyList.innerHTML = '<p class="text-center text-muted">No interview history found.</p>';
+                } else {
+                    historyList.innerHTML = sessions.map(session => `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <h4>${session.job_title}</h4>
+                                <p>Completed on ${new Date(session.completed_at).toLocaleDateString()}</p>
+                            </div>
+                            <div class="history-score">${session.average_score}/10</div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+        
+        backToInterview() {
+            document.getElementById('interviewHistory').style.display = 'none';
+            document.getElementById('interviewSetup').style.display = 'block';
+        }
+    }
+    
+    // Initialize voice interview manager when page loads
+    let voiceInterviewManager;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Initializing Voice Interview Manager...');
+        try {
+            voiceInterviewManager = new VoiceInterviewManager();
+            console.log('✅ Voice Interview Manager initialized successfully');
+            
+            // Test if elements exist
+            const startBtn = document.getElementById('startVoiceInterview');
+            const submitBtn = document.getElementById('submitAnswer');
+            console.log('Start button found:', !!startBtn);
+            console.log('Submit button found:', !!submitBtn);
+            
+            // Check speech recognition support
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                console.log('✅ Speech Recognition supported');
+            } else {
+                console.log('⚠️ Speech Recognition not supported');
+            }
+            
+            // Check media recorder support
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                console.log('✅ MediaRecorder supported');
+            } else {
+                console.log('⚠️ MediaRecorder not supported');
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize Voice Interview Manager:', error);
+        }
+    });
 
     // Subscription button functionality
     function openCustomerPortal() {

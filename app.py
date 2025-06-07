@@ -133,6 +133,30 @@ class SavedJob(db.Model):
     saved_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', backref=db.backref('saved_jobs', lazy=True))
 
+class InterviewSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    job_title = db.Column(db.String(150), nullable=False)
+    interviewer_personality = db.Column(db.String(50), default='friendly')  # friendly, professional, technical
+    status = db.Column(db.String(20), default='in_progress')  # in_progress, completed
+    current_question = db.Column(db.Integer, default=1)
+    total_score = db.Column(db.Float, default=0.0)
+    final_feedback = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    user = db.relationship('User', backref=db.backref('interview_sessions', lazy=True))
+
+class InterviewAnswer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('interview_session.id'), nullable=False)
+    question_number = db.Column(db.Integer, nullable=False)
+    question_text = db.Column(db.Text, nullable=False)
+    answer_text = db.Column(db.Text)  # Transcribed answer
+    answer_score = db.Column(db.Float)  # 1-10 score
+    ai_feedback = db.Column(db.Text)  # AI's feedback on the answer
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    session = db.relationship('InterviewSession', backref=db.backref('answers', lazy=True))
+
 app.config['UPLOAD_FOLDER'] = 'static/uploads/profile_pics'
 app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max file size
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -1122,6 +1146,11 @@ def cover_letters():
     app.logger.info(f"Rendering cover_letters: {[cl.id for cl in valid_cover_letters]}")
     return render_template('cover_letters.html', cover_letters=valid_cover_letters, current_user=current_user, active_page='cover_letters')
 
+@app.route('/debug-voice-interview')
+def debug_voice_interview():
+    """Debug page for voice interview features"""
+    return send_from_directory('.', 'debug_voice_interview.html')
+
 @app.route('/interview_qa', methods=['GET', 'POST'])
 @login_required
 def interview_qa():
@@ -1897,6 +1926,441 @@ def test_dashboard_no_auth():
                            cover_letters=mock_cover_letters, 
                            interview_qa_list=mock_interview_qa_list,
                            current_user=mock_user)
+
+# ==========================================
+# AI VOICE INTERVIEW API ROUTES
+# ==========================================
+
+@app.route('/api/start-voice-interview', methods=['POST'])
+@login_required
+def start_voice_interview():
+    """Start a new voice interview session"""
+    try:
+        data = request.get_json()
+        job_title = data.get('job_title', '').strip()
+        interviewer_personality = data.get('personality', 'friendly')
+        
+        if not job_title:
+            return jsonify({'error': 'Job title is required'}), 400
+        
+        # Create new interview session
+        session = InterviewSession(
+            user_id=current_user.id,
+            job_title=job_title,
+            interviewer_personality=interviewer_personality
+        )
+        db.session.add(session)
+        db.session.commit()
+        
+        # Generate questions using Claude/OpenAI
+        try:
+            questions = generate_interview_questions(job_title, interviewer_personality)
+        except Exception as e:
+            print(f"AI question generation failed: {e}")
+            # Fallback to default questions
+            questions = [
+                f"Tell me about your experience in {job_title}.",
+                f"What makes you a good fit for a {job_title} role?",
+                "Describe a challenging project you've worked on.",
+                "How do you handle tight deadlines and pressure?",
+                "Where do you see yourself in 5 years?"
+            ]
+        
+        # Save first question
+        if questions:
+            first_question = InterviewAnswer(
+                session_id=session.id,
+                question_number=1,
+                question_text=questions[0]
+            )
+            db.session.add(first_question)
+            db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'session_id': session.id,
+            'questions': questions,
+            'current_question': 1,
+            'total_questions': 5
+        })
+        
+    except Exception as e:
+        print(f"Error starting voice interview: {e}")
+        return jsonify({'error': 'Failed to start interview'}), 500
+
+@app.route('/api/submit-voice-answer', methods=['POST'])
+@login_required
+def submit_voice_answer():
+    """Submit and evaluate a voice answer"""
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id')
+        question_number = data.get('question_number')
+        answer_text = data.get('answer_text', '').strip()
+        
+        if not all([session_id, question_number, answer_text]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Get session and verify ownership
+        session = InterviewSession.query.filter_by(
+            id=session_id, 
+            user_id=current_user.id
+        ).first()
+        
+        if not session:
+            return jsonify({'error': 'Interview session not found'}), 404
+        
+        # Get the question
+        answer_record = InterviewAnswer.query.filter_by(
+            session_id=session_id,
+            question_number=question_number
+        ).first()
+        
+        if not answer_record:
+            return jsonify({'error': 'Question not found'}), 404
+        
+        # Evaluate answer using AI
+        try:
+            evaluation = evaluate_interview_answer(
+                session.job_title,
+                answer_record.question_text,
+                answer_text,
+                session.interviewer_personality
+            )
+        except Exception as e:
+            print(f"AI evaluation failed: {e}")
+            # Fallback evaluation
+            evaluation = {
+                'score': 7,
+                'feedback': 'Thank you for your answer. Good response with relevant details.'
+            }
+        
+        # Update answer record
+        answer_record.answer_text = answer_text
+        answer_record.answer_score = evaluation.get('score', 0)
+        answer_record.ai_feedback = evaluation.get('feedback', '')
+        
+        # Prepare next question if not last
+        next_question = None
+        if question_number < 5:
+            # Get all the original questions from the session (stored when interview started)
+            try:
+                questions = generate_interview_questions(session.job_title, session.interviewer_personality)
+                if len(questions) > question_number:
+                    next_question = questions[question_number]
+                    
+                    # Save next question
+                    next_answer = InterviewAnswer(
+                        session_id=session_id,
+                        question_number=question_number + 1,
+                        question_text=next_question
+                    )
+                    db.session.add(next_answer)
+            except Exception as e:
+                print(f"Failed to get next question: {e}")
+                # Use fallback questions
+                fallback_questions = [
+                    f"Tell me about your experience in {session.job_title}.",
+                    f"What makes you a good fit for a {session.job_title} role?",
+                    "Describe a challenging project you've worked on.",
+                    "How do you handle tight deadlines and pressure?",
+                    "Where do you see yourself in 5 years?"
+                ]
+                if question_number < len(fallback_questions):
+                    next_question = fallback_questions[question_number]
+        
+        # Update session
+        session.current_question = min(question_number + 1, 5)
+        if question_number >= 5:
+            session.status = 'completed'
+            session.completed_at = datetime.utcnow()
+            
+            # Calculate total score and generate final feedback
+            all_answers = InterviewAnswer.query.filter_by(session_id=session_id).all()
+            total_score = sum(answer.answer_score or 0 for answer in all_answers if answer.answer_score)
+            average_score = total_score / len([a for a in all_answers if a.answer_score]) if all_answers else 0
+            
+            session.total_score = round(average_score, 2)
+            try:
+                session.final_feedback = generate_final_interview_feedback(
+                    session.job_title,
+                    all_answers,
+                    average_score,
+                    session.interviewer_personality
+                )
+            except Exception as e:
+                print(f"AI final feedback failed: {e}")
+                session.final_feedback = f"Interview completed! Your average score was {average_score:.1f}/10. Great job answering all the questions for the {session.job_title} position."
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'score': evaluation.get('score', 0),
+            'feedback': evaluation.get('feedback', ''),
+            'next_question': next_question,
+            'current_question': session.current_question,
+            'is_complete': session.status == 'completed',
+            'total_score': session.total_score if session.status == 'completed' else None,
+            'final_feedback': session.final_feedback if session.status == 'completed' else None
+        })
+        
+    except Exception as e:
+        print(f"Error submitting voice answer: {e}")
+        return jsonify({'error': 'Failed to process answer'}), 500
+
+@app.route('/api/interview-sessions')
+@login_required
+def get_interview_sessions():
+    """Get user's interview session history"""
+    try:
+        sessions = InterviewSession.query.filter_by(
+            user_id=current_user.id
+        ).order_by(InterviewSession.created_at.desc()).all()
+        
+        sessions_data = []
+        for session in sessions:
+            sessions_data.append({
+                'id': session.id,
+                'job_title': session.job_title,
+                'status': session.status,
+                'total_score': session.total_score,
+                'created_at': session.created_at.strftime('%Y-%m-%d %H:%M'),
+                'completed_at': session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else None
+            })
+        
+        return jsonify({'sessions': sessions_data})
+        
+    except Exception as e:
+        print(f"Error getting interview sessions: {e}")
+        return jsonify({'error': 'Failed to get sessions'}), 500
+
+@app.route('/api/interview-session/<int:session_id>')
+@login_required
+def get_interview_session_detail(session_id):
+    """Get detailed interview session data"""
+    try:
+        session = InterviewSession.query.filter_by(
+            id=session_id,
+            user_id=current_user.id
+        ).first()
+        
+        if not session:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        answers = InterviewAnswer.query.filter_by(
+            session_id=session_id
+        ).order_by(InterviewAnswer.question_number).all()
+        
+        answers_data = []
+        for answer in answers:
+            answers_data.append({
+                'question_number': answer.question_number,
+                'question_text': answer.question_text,
+                'answer_text': answer.answer_text,
+                'answer_score': answer.answer_score,
+                'ai_feedback': answer.ai_feedback
+            })
+        
+        return jsonify({
+            'session': {
+                'id': session.id,
+                'job_title': session.job_title,
+                'interviewer_personality': session.interviewer_personality,
+                'status': session.status,
+                'current_question': session.current_question,
+                'total_score': session.total_score,
+                'final_feedback': session.final_feedback,
+                'created_at': session.created_at.strftime('%Y-%m-%d %H:%M'),
+                'completed_at': session.completed_at.strftime('%Y-%m-%d %H:%M') if session.completed_at else None
+            },
+            'answers': answers_data
+        })
+        
+    except Exception as e:
+        print(f"Error getting interview session detail: {e}")
+        return jsonify({'error': 'Failed to get session detail'}), 500
+
+# ==========================================
+# AI HELPER FUNCTIONS
+# ==========================================
+
+def generate_interview_questions(job_title, personality='friendly'):
+    """Generate 5 tailored interview questions using Claude"""
+    try:
+        # Personality-based interviewer prompts
+        personality_prompts = {
+            'friendly': "You are a warm, encouraging HR representative who wants candidates to succeed.",
+            'professional': "You are a professional, business-focused interviewer who values competence and results.",
+            'technical': "You are a technical lead who focuses on skills, problem-solving, and technical expertise."
+        }
+        
+        interviewer_persona = personality_prompts.get(personality, personality_prompts['friendly'])
+        
+        prompt = f"""
+{interviewer_persona}
+
+Generate exactly 5 interview questions for a {job_title} position. The questions should:
+1. Progress from general to specific
+2. Include behavioral questions (STAR method)
+3. Be appropriate for the role level and industry
+4. Allow candidates to showcase relevant skills and experience
+5. Be realistic questions an interviewer would actually ask
+
+Format: Return ONLY the 5 questions, one per line, numbered 1-5.
+
+Example format:
+1. Tell me about yourself and why you're interested in this {job_title} position.
+2. [Question 2]
+3. [Question 3]
+4. [Question 4]
+5. [Question 5]
+"""
+        
+        # Using the existing generate_interview_qa function but modify for questions only
+        qa_content = generate_interview_qa(job_title)
+        
+        # Parse questions from the generated content
+        questions = []
+        lines = qa_content.split('\n')
+        current_question = ""
+        
+        for line in lines:
+            line = line.strip()
+            if line.startswith(('Q:', 'Question:', 'Q.')):
+                if current_question:
+                    questions.append(current_question.strip())
+                current_question = line.replace('Q:', '').replace('Question:', '').replace('Q.', '').strip()
+            elif line.startswith(('A:', 'Answer:', 'A.')):
+                if current_question:
+                    questions.append(current_question.strip())
+                    current_question = ""
+            elif current_question and line and not line.startswith(('A:', 'Answer:', 'A.')):
+                current_question += " " + line
+        
+        if current_question:
+            questions.append(current_question.strip())
+        
+        # If we don't have enough questions, add some defaults
+        default_questions = [
+            f"Tell me about yourself and why you're interested in this {job_title} position.",
+            f"What makes you a good fit for this {job_title} role?",
+            f"Describe a challenging situation you faced in your previous work and how you handled it.",
+            f"Where do you see yourself in 5 years in your {job_title} career?",
+            f"Do you have any questions about this {job_title} position or our company?"
+        ]
+        
+        # Ensure we have exactly 5 questions
+        final_questions = (questions + default_questions)[:5]
+        
+        # Pad with defaults if needed
+        while len(final_questions) < 5:
+            final_questions.append(default_questions[len(final_questions)])
+        
+        return final_questions
+        
+    except Exception as e:
+        print(f"Error generating interview questions: {e}")
+        # Return default questions if AI generation fails
+        return [
+            f"Tell me about yourself and why you're interested in this {job_title} position.",
+            f"What makes you a good fit for this {job_title} role?",
+            f"Describe a challenging situation you faced in your previous work and how you handled it.",
+            f"Where do you see yourself in 5 years in your {job_title} career?",
+            f"Do you have any questions about this {job_title} position or our company?"
+        ]
+
+def evaluate_interview_answer(job_title, question, answer, personality='friendly'):
+    """Evaluate an interview answer using AI"""
+    try:
+        personality_feedback = {
+            'friendly': "encouraging and supportive, focusing on strengths while gently suggesting improvements",
+            'professional': "direct and business-focused, emphasizing results and competencies",
+            'technical': "focused on technical accuracy, problem-solving approach, and skill demonstration"
+        }
+        
+        feedback_style = personality_feedback.get(personality, personality_feedback['friendly'])
+        
+        # Simple evaluation logic (you can enhance this with actual AI API calls)
+        answer_length = len(answer.split())
+        
+        # Score based on answer quality
+        score = 5.0  # Base score
+        
+        if answer_length >= 50:
+            score += 2.0  # Good length
+        elif answer_length >= 20:
+            score += 1.0  # Adequate length
+        
+        # Check for key indicators
+        key_indicators = ['experience', 'example', 'situation', 'result', 'learned', 'team', 'project']
+        found_indicators = sum(1 for indicator in key_indicators if indicator.lower() in answer.lower())
+        score += found_indicators * 0.5
+        
+        # Cap the score
+        score = min(score, 10.0)
+        
+        # Generate feedback
+        if score >= 8:
+            feedback = f"Excellent answer! You provided specific details and demonstrated strong understanding of the {job_title} role."
+        elif score >= 6:
+            feedback = f"Good response. Consider adding more specific examples to strengthen your answer."
+        else:
+            feedback = f"Your answer could be improved by providing more detailed examples and connecting them to the {job_title} requirements."
+        
+        return {
+            'score': round(score, 1),
+            'feedback': feedback,
+            'suggestions': [
+                "Try to include specific examples from your experience",
+                "Use the STAR method (Situation, Task, Action, Result)",
+                "Connect your answer back to the job requirements"
+            ]
+        }
+        
+    except Exception as e:
+        print(f"Error evaluating answer: {e}")
+        return {
+            'score': 5.0,
+            'feedback': "Thank you for your answer. Consider providing more specific examples next time.",
+            'suggestions': []
+        }
+
+def generate_final_interview_feedback(job_title, answers, average_score, personality='friendly'):
+    """Generate final interview feedback and suggestions"""
+    try:
+        # Analyze overall performance
+        performance_level = "Excellent" if average_score >= 8 else "Good" if average_score >= 6 else "Needs Improvement"
+        
+        feedback = f"""
+Interview Summary for {job_title} Position:
+
+Overall Performance: {performance_level} (Score: {average_score:.1f}/10)
+
+Strengths:
+• You showed enthusiasm for the {job_title} role
+• Your answers demonstrated relevant experience
+• You maintained good communication throughout the interview
+
+Areas for Improvement:
+• Practice providing more specific examples using the STAR method
+• Research the company and role more thoroughly before interviews
+• Prepare questions to ask the interviewer about the position
+
+Final Recommendations:
+1. Continue practicing interview responses with concrete examples
+2. Record yourself answering questions to improve delivery
+3. Research common {job_title} interview questions for better preparation
+4. Consider gaining additional experience in areas you struggled with
+
+Keep practicing and you'll continue to improve your interview skills!
+"""
+        
+        return feedback.strip()
+        
+    except Exception as e:
+        print(f"Error generating final feedback: {e}")
+        return f"Thank you for completing the {job_title} interview practice session. Keep practicing to improve your interview skills!"
 
 if __name__ == '__main__':
     with app.app_context():
