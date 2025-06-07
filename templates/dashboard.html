@@ -269,6 +269,14 @@
 
 {% block content %}
 <div id="fade-wrapper">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
     <div class="sidebar d-flex flex-column">
         <div class="sidebar-header">
             <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" alt="Profile Picture of {{ current_user.name or current_user.email.split('@')[0] }}">
