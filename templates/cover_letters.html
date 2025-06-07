@@ -634,10 +634,9 @@
                 <span>My Account</span>
             </a>
             <a class="nav-link" 
-               href="javascript:void(0)" 
-               onclick="openCustomerPortal()" 
-               title="Manage your subscription, payment methods, and billing"
-               aria-label="Manage your subscription">
+               href="{{ url_for('pricing') }}" 
+               title="View and manage subscription plans"
+               aria-label="View and manage subscription plans">
                 <i class="bi bi-credit-card" aria-hidden="true"></i> 
                 <span>Subscription</span>
             </a>
