@@ -488,6 +488,26 @@ def dashboard():
                            cover_letters=valid_cover_letters, 
                            interview_qa_list=interview_qa_list)
 
+@app.route('/pricing')
+@login_required
+def pricing():
+    """Pricing page for subscription plan selection"""
+    return render_template('pricing.html', current_user=current_user, active_page='pricing')
+
+
+# Test route without authentication for pricing page UI testing
+@app.route('/test-pricing-no-auth')
+def test_pricing_no_auth():
+    """Test pricing page template rendering without authentication requirement"""
+    # Create mock user context
+    from types import SimpleNamespace
+    mock_user = SimpleNamespace()
+    mock_user.name = "Test User"
+    mock_user.email = "test@example.com"
+    mock_user.profile_pic = None
+    mock_user.subscription = "Free"
+    
+    return render_template('pricing.html', current_user=mock_user, active_page='pricing')
 
 
 # Cover Letter Creation Route
