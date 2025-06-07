@@ -427,12 +427,12 @@
 {% block content %}
 <div id="fade-wrapper">
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+    <button class="mobile-menu-toggle">
         <i class="bi bi-list"></i>
     </button>
     
     <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+    <div class="sidebar-overlay"></div>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -762,24 +762,17 @@ function openCustomerPortal() {
 // Make the function globally accessible
 window.openCustomerPortal = openCustomerPortal;
 
-// Mobile Menu Functions
-function toggleMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 // Close mobile menu when clicking on nav links
 document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-    link.addEventListener('click', closeMobileMenu);
+    link.addEventListener('click', function() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        if (sidebar && overlay) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+    });
 });
 </script>
 {% endblock %}

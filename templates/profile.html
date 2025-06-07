@@ -775,12 +775,12 @@
 {% block content %}
 <main role="main" aria-labelledby="page-title">
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+    <button class="mobile-menu-toggle">
         <i class="bi bi-list"></i>
     </button>
     
     <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+    <div class="sidebar-overlay"></div>
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
@@ -1332,20 +1332,6 @@ function createConfirmationModal(title, message, confirmText, cancelText, onConf
     return modal;
 }
 
-// Mobile Menu Functions
-function toggleMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 // Profile picture preview
 document.addEventListener('DOMContentLoaded', function() {

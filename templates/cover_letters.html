@@ -446,12 +446,12 @@
 {% block content %}
 <div id="fade-wrapper">
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+    <button class="mobile-menu-toggle">
         <i class="bi bi-list"></i>
     </button>
 
     <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+    <div class="sidebar-overlay"></div>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -611,26 +611,6 @@
 
 {% block extra_js %}
 <script>
-// Mobile Menu Functions
-function toggleMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-    }
-}
-
-function closeMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    }
-}
 
 // Enhanced Cover Letters Page JavaScript
 document.addEventListener('DOMContentLoaded', function() {
