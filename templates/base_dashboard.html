@@ -178,6 +178,17 @@
       padding: 0.75rem;
       font-size: 1.25rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-menu-toggle:hover {
+      background: var(--primary-blue-dark);
+      transform: scale(1.05);
+    }
+
+    .mobile-menu-toggle:active {
+      transform: scale(0.95);
     }
 
     .sidebar-overlay {
@@ -247,11 +258,17 @@
   <script>
     // Mobile Menu Toggle Function
     function toggleMobileMenu() {
+      console.log('toggleMobileMenu called');
       const sidebar = document.querySelector('.sidebar');
       const overlay = document.querySelector('.sidebar-overlay');
+      console.log('sidebar:', sidebar, 'overlay:', overlay);
       if (sidebar && overlay) {
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
+        console.log('sidebar classes:', sidebar.className);
+        console.log('overlay classes:', overlay.className);
+      } else {
+        console.log('sidebar or overlay not found');
       }
     }
 
@@ -267,14 +284,22 @@
 
     // Add event listeners once DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, setting up mobile menu');
+      
       // Add click event to mobile menu toggle if it exists
       const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+      console.log('mobile menu toggle found:', mobileMenuToggle);
       if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        mobileMenuToggle.addEventListener('click', function(e) {
+          console.log('mobile menu button clicked');
+          e.preventDefault();
+          toggleMobileMenu();
+        });
       }
 
       // Add click event to sidebar overlay if it exists
       const sidebarOverlay = document.querySelector('.sidebar-overlay');
+      console.log('sidebar overlay found:', sidebarOverlay);
       if (sidebarOverlay) {
         sidebarOverlay.addEventListener('click', closeMobileMenu);
       }
