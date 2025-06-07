@@ -39,10 +39,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            color: var(--gray-700);
+            background: #FAFBFC;
             min-height: 100vh;
         }
 
@@ -143,34 +140,34 @@
         }
 
         .page-header {
-            background: #fff;
-            border-radius: 16px;
-            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 1px solid var(--gray-100);
         }
 
         .page-title {
-            font-size: 2.25rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--gray-900);
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
+            letter-spacing: -0.025em;
         }
 
         .page-title .icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--success-green), #059669);
-            border-radius: 16px;
+            width: 48px;
+            height: 48px;
+            background: var(--success-light);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            font-size: 1.5rem;
+            color: var(--success-green);
+            font-size: 1.25rem;
         }
 
         .page-subtitle {
@@ -181,10 +178,9 @@
         }
 
         .form-container {
-            background: #fff;
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
             border: 1px solid var(--gray-100);
             max-width: 800px;
         }
@@ -201,6 +197,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            letter-spacing: -0.025em;
         }
 
         .form-section-title i {
@@ -231,7 +228,7 @@
 
         .form-label {
             font-weight: 600;
-            color: var(--gray-700);
+            color: var(--gray-900);
             margin-bottom: 0.75rem;
             font-size: 0.95rem;
             display: flex;
@@ -245,19 +242,19 @@
         }
 
         .form-control {
-            border: 2px solid var(--gray-200);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            font-size: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
-            background: var(--gray-50);
+            background: white;
             font-family: 'Inter', sans-serif;
         }
 
         .form-control:focus {
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px var(--primary-blue-light);
-            background: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: white;
             outline: none;
         }
 
@@ -306,39 +303,38 @@
         }
 
         .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            background: var(--primary-blue);
             border: none;
-            color: #fff;
-            padding: 1rem 2rem;
-            border-radius: 12px;
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             text-decoration: none;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
         }
 
         .btn-primary-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
-            color: #fff;
+            background: var(--primary-blue-dark);
+            transform: translateY(-1px);
+            color: white;
         }
 
         .btn-secondary-custom {
             background: var(--gray-100);
-            border: 2px solid var(--gray-200);
+            border: 1px solid var(--gray-200);
             color: var(--gray-700);
-            padding: 1rem 2rem;
-            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             text-decoration: none;
         }
 
@@ -357,24 +353,25 @@
         }
 
         .feature-card {
-            background: linear-gradient(135deg, #fff 0%, var(--gray-50) 100%);
-            border: 1px solid var(--gray-200);
-            border-radius: 16px;
+            background: white;
+            border: 1px solid var(--gray-100);
+            border-radius: 12px;
             padding: 1.5rem;
             text-align: center;
             transition: all 0.2s ease;
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-color: var(--gray-200);
         }
 
         .feature-card .icon {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             background: var(--success-light);
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -442,26 +439,26 @@
             display: flex;
             gap: 1rem;
             padding: 1.5rem;
-            background: linear-gradient(135deg, var(--primary-blue-light), #F0F9FF);
+            background: var(--primary-blue-light);
             border-radius: 12px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
+            border: 1px solid var(--primary-blue);
             transition: all 0.2s ease;
         }
 
         .tip-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .tip-icon {
             width: 48px;
             height: 48px;
             background: var(--primary-blue);
-            border-radius: 12px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: white;
             font-size: 1.25rem;
             flex-shrink: 0;
         }
@@ -485,14 +482,13 @@
         }
 
         .alert {
-            border-radius: 12px;
+            border-radius: 8px;
             border: none;
-            padding: 1rem 1.25rem;
+            padding: 1rem;
             font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .alert i {
@@ -518,12 +514,11 @@
         }
 
         .sample-preview {
-            background: #fff;
-            border: 2px solid var(--gray-200);
+            background: white;
+            border: 1px solid var(--gray-100);
             border-radius: 12px;
-            padding: 2rem;
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
         .sample-preview h4 {
@@ -606,8 +601,8 @@
         }
 
         .quick-start-tips {
-            background: linear-gradient(135deg, var(--warning-light), #FEF3C7);
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: var(--warning-light);
+            border: 1px solid var(--warning-amber);
             border-radius: 12px;
             padding: 1.5rem;
             margin-bottom: 2rem;
@@ -657,8 +652,8 @@
         }
 
         .premium-features {
-            background: linear-gradient(135deg, var(--purple-light), #F3E8FF);
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: var(--purple-light);
+            border: 1px solid var(--purple-500);
             border-radius: 12px;
             padding: 1.5rem;
             margin-top: 2rem;
@@ -707,13 +702,13 @@
         }
 
         .upgrade-btn {
-            background: linear-gradient(135deg, var(--purple-500), #7C3AED);
+            background: var(--purple-500);
             border: none;
-            color: #fff;
-            padding: 0.75rem 2rem;
+            color: white;
+            padding: 0.75rem 1.5rem;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
             text-decoration: none;
             display: inline-flex;
@@ -722,9 +717,9 @@
         }
 
         .upgrade-btn:hover {
+            background: #7C3AED;
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
-            color: #fff;
+            color: white;
         }
 
         .form-progress {
@@ -737,7 +732,7 @@
 
         .form-progress-bar {
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            background: var(--primary-blue);
             width: 0%;
             transition: width 0.3s ease;
             border-radius: 2px;
@@ -777,7 +772,7 @@
             }
             
             .form-container {
-                padding: 2rem 1.5rem;
+                padding: 1.5rem;
             }
             
             .action-buttons {
@@ -797,11 +792,11 @@
             }
             
             .form-container {
-                padding: 1.5rem 1rem;
+                padding: 1.25rem;
             }
             
             .page-header {
-                padding: 1.5rem;
+                padding: 1.25rem;
             }
         }
 
@@ -904,16 +899,6 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Page Header -->
-        <div class="page-header fade-in-up">
-            <h1 class="page-title">
-                <div class="icon">
-                    <i class="bi bi-envelope-paper"></i>
-                </div>
-                Create Cover Letter
-            </h1>
-            <p class="page-subtitle">Create a personalized cover letter that complements your resume and showcases your unique qualifications</p>
-        </div>
 
         <!-- Feature Cards -->
         <div class="feature-cards fade-in-up" style="animation-delay: 0.2s;">
@@ -943,67 +928,7 @@
         <!-- Form Container -->
         <div class="form-container fade-in-up" style="animation-delay: 0.4s;">
             
-            <!-- Quick Start Guide -->
-            <div class="quick-start-tips">
-                <h4>
-                    <i class="bi bi-lightning tip-icon"></i>
-                    Quick Start Guide
-                </h4>
-                <ul class="quick-start-list">
-                    <li>
-                        <span class="step-number">1</span>
-                        <span>Enter the exact job title from the job posting</span>
-                    </li>
-                    <li>
-                        <span class="step-number">2</span>
-                        <span>Copy and paste key requirements from the job description</span>
-                    </li>
-                    <li>
-                        <span class="step-number">3</span>
-                        <span>Click "Generate Cover Letter" and let our AI do the work</span>
-                    </li>
-                    <li>
-                        <span class="step-number">4</span>
-                        <span>Review, edit, and download your personalized cover letter</span>
-                    </li>
-                </ul>
-            </div>
 
-            <!-- Sample Preview Section -->
-            <div class="collapsible-section">
-                <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                    <h5>
-                        <i class="bi bi-eye"></i>
-                        Preview: What Your Cover Letter Will Look Like
-                    </h5>
-                    <i class="bi bi-chevron-down toggle-icon"></i>
-                </div>
-                <div class="collapsible-content">
-                    <div class="sample-preview">
-                        <h4>
-                            <div class="preview-icon">
-                                <i class="bi bi-file-text"></i>
-                            </div>
-                            Sample Cover Letter Structure
-                        </h4>
-                        <div class="sample-text">
-                            "Dear Hiring Manager,
-                            
-                            I am writing to express my strong interest in the [Job Title] position at [Company Name]. With my background in [relevant field] and [specific skills], I am confident I would be a valuable addition to your team.
-                            
-                            In my previous role as [previous position], I successfully [specific achievement with numbers]. This experience has equipped me with [relevant skills] that directly align with your requirements for [specific job requirements].
-                            
-                            I am particularly excited about this opportunity because [company-specific reason]. I believe my passion for [relevant area] and proven track record of [specific results] make me an ideal candidate.
-                            
-                            Thank you for considering my application. I look forward to discussing how I can contribute to [Company Name]'s continued success.
-                            
-                            Sincerely,
-                            [Your Name]"
-                        </div>
-                        <p><strong>Our AI will:</strong> Personalize this template with your information, match it to the job requirements, and ensure professional formatting.</p>
-                    </div>
-                </div>
-            </div>
 
             <form method="POST" id="coverLetterForm">
                 <!-- Progress Indicator -->
@@ -1169,123 +1094,9 @@ Example:
             </p>
         </div>
 
-        <!-- Collapsible Sections for Additional Information -->
-        <div class="collapsible-section fade-in-up" style="animation-delay: 0.8s;">
-            <div class="collapsible-header">
-                <h5>
-                    <i class="bi bi-plus-circle"></i>
-                    Additional Information
-                </h5>
-                <i class="bi bi-chevron-down toggle-icon"></i>
-            </div>
-            <div class="collapsible-content">
-                <p class="sample-text">
-                    This is an example of additional information that can be included in the cover letter. It can be used to provide more context about your experiences, explain gaps in employment, or elaborate on your skills and how they relate to the job you are applying for.
-                </p>
-            </div>
-        </div>
 
-        <!-- Quick Start Tips -->
-        <div class="quick-start-tips fade-in-up" style="animation-delay: 1s;">
-            <h4>
-                <i class="bi bi-lightbulb"></i>
-                Quick Start Tips
-            </h4>
-            <ul class="quick-start-list">
-                <li>
-                    <div class="step-number">1</div>
-                    Tailor your cover letter to each job application
-                </li>
-                <li>
-                    <div class="step-number">2</div>
-                    Highlight your most relevant experiences and skills
-                </li>
-                <li>
-                    <div class="step-number">3</div>
-                    Keep your cover letter to one page
-                </li>
-                <li>
-                    <div class="step-number">4</div>
-                    Proofread for spelling and grammar errors
-                </li>
-                <li>
-                    <div class="step-number">5</div>
-                    Use a professional format and tone
-                </li>
-            </ul>
-        </div>
 
-        <!-- Premium Features Section -->
-        <div class="premium-features fade-in-up" style="animation-delay: 1.2s;">
-            <h4>
-                <i class="bi bi-crown crown-icon"></i>
-                Unlock Premium Features
-            </h4>
-            <p>
-                Upgrade to premium for additional benefits that enhance your cover letter creation experience
-            </p>
-            <div class="premium-feature-list">
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    AI suggests personalized achievements and skills
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    Access to exclusive cover letter templates
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    Priority support for faster assistance
-                </div>
-            </div>
-            <a href="{{ url_for('my_account') }}#subscription" class="upgrade-btn">
-                <i class="bi bi-arrow-up-right-circle"></i>
-                Upgrade to Premium
-            </a>
-        </div>
 
-        <!-- Premium Features Section for Free Users -->
-        {% if current_user.subscription == 'Free' %}
-        <div class="premium-features">
-            <h4>
-                <i class="bi bi-crown crown-icon"></i>
-                Unlock Premium Cover Letter Features
-            </h4>
-            <p>Upgrade to Pro or Premium to access advanced cover letter tools and features</p>
-            
-            <div class="premium-feature-list">
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Multiple cover letter templates</span>
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Industry-specific customization</span>
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Advanced AI personalization</span>
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Export to multiple formats</span>
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Priority customer support</span>
-                </div>
-                <div class="premium-feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Unlimited cover letters</span>
-                </div>
-            </div>
-            
-            <a href="{{ url_for('my_account') }}#subscription" class="upgrade-btn">
-                <i class="bi bi-arrow-up-circle"></i>
-                Upgrade Now
-            </a>
-        </div>
-        {% endif %}
     </div>
 
     <script>

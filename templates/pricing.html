@@ -37,10 +37,7 @@
     }
 
     body {
-        background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        line-height: 1.6;
-        color: var(--gray-700);
+        background: #FAFBFC;
     }
 
     /* Mobile Menu Toggle */
@@ -171,16 +168,6 @@
         position: relative;
     }
 
-    .page-header::after {
-        content: '';
-        position: absolute;
-        bottom: -1rem;
-        left: 0;
-        width: 60px;
-        height: 4px;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-        border-radius: 2px;
-    }
 
     .page-title {
         display: flex;
@@ -189,41 +176,13 @@
     }
 
     .page-title h1 {
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-size: 2rem;
+        font-weight: 700;
         color: var(--gray-900);
         margin: 0;
-        letter-spacing: -0.02em;
-        background: linear-gradient(135deg, var(--gray-900) 0%, var(--gray-700) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        letter-spacing: -0.025em;
     }
 
-    .page-title .title-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.75rem;
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
-        position: relative;
-    }
-
-    .page-title .title-icon::before {
-        content: '';
-        position: absolute;
-        inset: -2px;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-        border-radius: 22px;
-        z-index: -1;
-        opacity: 0.3;
-        filter: blur(8px);
-    }
 
     .pricing-content {
         padding: 0;
@@ -265,93 +224,69 @@
 
     .pricing-card {
         background: white;
-        border-radius: 24px;
-        padding: 2.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        padding: 2rem;
+        border: 1px solid var(--gray-100);
+        transition: all 0.3s ease;
         position: relative;
-        border: 2px solid transparent;
         overflow: hidden;
     }
 
-    .pricing-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--gray-200) 0%, var(--gray-300) 100%);
-        transition: all 0.4s ease;
-    }
 
     .pricing-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-        border-color: var(--primary-blue-light);
-    }
-
-    .pricing-card:hover::before {
-        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-        height: 6px;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border-color: var(--gray-200);
     }
 
     .pricing-card.recommended {
         border-color: var(--primary-blue);
-        background: linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%);
-        transform: scale(1.05);
-        box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
-    }
-
-    .pricing-card.recommended::before {
-        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
-        height: 6px;
+        background: white;
     }
 
     .pricing-card.recommended:hover {
-        transform: scale(1.05) translateY(-8px);
-        box-shadow: 0 25px 70px rgba(59, 130, 246, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
     .recommended-badge {
         position: absolute;
-        top: -16px;
+        top: -12px;
         left: 50%;
         transform: translateX(-50%);
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        background: var(--primary-blue);
         color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 25px;
-        font-weight: 700;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
         font-size: 0.875rem;
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-        letter-spacing: 0.5px;
+        letter-spacing: 0.025em;
         text-transform: uppercase;
-        border: 3px solid white;
+        border: 2px solid white;
     }
 
     .plan-name {
-        font-size: 1.75rem;
-        font-weight: 800;
+        font-size: 1.5rem;
+        font-weight: 700;
         margin-bottom: 0.75rem;
         color: var(--gray-900);
-        letter-spacing: -0.01em;
+        letter-spacing: -0.025em;
     }
 
     .plan-price {
-        font-size: 3rem;
-        font-weight: 900;
+        font-size: 2.5rem;
+        font-weight: 700;
         color: var(--primary-blue);
         margin-bottom: 0.5rem;
         line-height: 0.9;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.025em;
         display: flex;
         align-items: baseline;
         gap: 0.25rem;
     }
 
     .plan-price .currency {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 600;
         margin-top: 0.5rem;
     }
@@ -423,91 +358,62 @@
 
     .select-plan-btn {
         width: 100%;
-        padding: 1rem 2rem;
+        padding: 0.875rem 1.5rem;
         border: none;
-        border-radius: 16px;
-        font-size: 1.1rem;
-        font-weight: 700;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         text-decoration: none;
         display: inline-block;
         text-align: center;
         text-transform: none;
-        letter-spacing: 0.5px;
+        letter-spacing: -0.025em;
         position: relative;
         overflow: hidden;
     }
 
-    .select-plan-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .select-plan-btn:hover::before {
-        left: 100%;
-    }
 
     .select-plan-btn.current {
-        background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+        background: var(--gray-100);
         color: var(--gray-600);
         cursor: not-allowed;
-        border: 2px solid var(--gray-300);
+        border: 1px solid var(--gray-200);
     }
 
     .select-plan-btn.upgrade {
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        background: var(--primary-blue);
         color: white;
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-        border: 2px solid transparent;
     }
 
     .select-plan-btn.upgrade:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(59, 130, 246, 0.5);
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
     }
 
     .select-plan-btn.downgrade {
         background: white;
         color: var(--primary-blue);
-        border: 2px solid var(--primary-blue);
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
+        border: 1px solid var(--primary-blue);
     }
 
     .select-plan-btn.downgrade:hover {
         background: var(--primary-blue);
         color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        transform: translateY(-1px);
     }
 
     .billing-note {
         text-align: center;
-        margin-top: 4rem;
-        padding: 2rem;
-        background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
-        border-radius: 20px;
+        margin-top: 3rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 12px;
         color: var(--gray-700);
-        border: 2px solid var(--gray-100);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        border: 1px solid var(--gray-100);
         position: relative;
         overflow: hidden;
-    }
-
-    .billing-note::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--success-green) 50%, var(--primary-blue) 100%);
     }
 
     .billing-note p {
@@ -541,34 +447,17 @@
     }
 
     .money-back {
-        background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
-        border: 2px solid var(--success-green);
+        background: var(--success-light);
+        border: 1px solid var(--success-green);
         color: #065F46;
-        padding: 2rem;
-        border-radius: 20px;
+        padding: 1.5rem;
+        border-radius: 12px;
         text-align: center;
         margin-top: 2rem;
-        font-weight: 700;
-        font-size: 1.1rem;
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+        font-weight: 600;
+        font-size: 1rem;
         position: relative;
         overflow: hidden;
-    }
-
-    .money-back::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-        animation: pulse 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); opacity: 0.3; }
-        50% { transform: scale(1.1); opacity: 0.1; }
     }
 
     .money-back i {
@@ -578,42 +467,17 @@
     }
 
     .testimonial {
-        background: linear-gradient(135deg, #F0F4FF 0%, #E0E7FF 100%);
-        padding: 3rem;
-        border-radius: 24px;
-        margin-top: 3rem;
+        background: var(--primary-blue-light);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-top: 2rem;
         text-align: center;
         color: var(--gray-700);
-        border: 2px solid rgba(59, 130, 246, 0.2);
-        box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+        border: 1px solid var(--primary-blue);
         position: relative;
         overflow: hidden;
     }
 
-    .testimonial::before {
-        content: '"';
-        position: absolute;
-        top: 1rem;
-        left: 2rem;
-        font-size: 4rem;
-        color: var(--primary-blue);
-        opacity: 0.3;
-        font-family: Georgia, serif;
-        line-height: 1;
-    }
-
-    .testimonial::after {
-        content: '"';
-        position: absolute;
-        bottom: 1rem;
-        right: 2rem;
-        font-size: 4rem;
-        color: var(--primary-blue);
-        opacity: 0.3;
-        font-family: Georgia, serif;
-        line-height: 1;
-        transform: rotate(180deg);
-    }
 
     .testimonial-text {
         font-size: 1.25rem;
@@ -651,13 +515,7 @@
         }
         
         .page-title h1 {
-            font-size: 3rem;
-        }
-        
-        .page-title .title-icon {
-            width: 70px;
-            height: 70px;
-            font-size: 2rem;
+            font-size: 2.25rem;
         }
         
         /* Stagger animation for cards */
@@ -715,17 +573,7 @@
         
         .pricing-card:hover .plan-name {
             color: var(--primary-blue);
-            transform: translateY(-2px);
-            transition: all 0.3s ease;
-        }
-        
-        .pricing-card:hover .plan-features li.available {
-            transform: translateX(8px);
-        }
-        
-        .page-title .title-icon:hover {
-            transform: rotate(5deg) scale(1.1);
-            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s ease;
         }
     }
 
@@ -761,11 +609,6 @@
             font-size: 1.875rem;
         }
         
-        .page-title .title-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.25rem;
-        }
     }
 
     @media (max-width: 768px) {
@@ -787,7 +630,7 @@
         }
         
         .pricing-card.recommended:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
         }
         
         .plan-price {

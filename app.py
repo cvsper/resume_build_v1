@@ -1901,5 +1901,5 @@ def test_dashboard_no_auth():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    print("Starting app on http://127.0.0.1:5006")
-    app.run(debug=True, host='127.0.0.1', port=5006)
+    print("Starting app on http://127.0.0.1:5009")
+    app.run(debug=True, host='127.0.0.1', port=5009)

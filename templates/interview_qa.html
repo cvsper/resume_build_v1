@@ -76,205 +76,34 @@
 
 {% block styles %}
 <style>
-    /* CSS Variables */
-    :root {
-        --primary-blue: #667eea;
+    body {
+        background: #FAFBFC;
     }
     
-    /* Base layout styles for dashboard */
-    body { 
-        background-color: #f7fafd; 
-        font-family: 'Inter', Arial, sans-serif; 
-    }
-    
-    /* Mobile Menu Toggle */
-    .mobile-menu-toggle {
-        display: none;
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 200;
-        background: var(--primary-blue);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.75rem;
-        font-size: 1.25rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Sidebar Overlay */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 99;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .sidebar-overlay.active {
-        display: block;
-        opacity: 1;
-    }
-    
-    /* Sidebar Navigation Styles */
-    .sidebar { 
-        min-height: 100vh; 
-        background: #fff; 
-        box-shadow: 2px 0 16px rgba(0,0,0,0.04); 
-        padding: 32px 0 0 0; 
-        position: fixed; 
-        left: 0; 
-        top: 0; 
-        width: 240px; 
-        z-index: 100; 
-        transition: all 0.3s; 
-    }
-    
-    .sidebar .nav-link { 
-        color: #222; 
-        font-weight: 500; 
-        font-size: 1.1rem; 
-        padding: 16px 32px; 
-        border-radius: 0 24px 24px 0; 
-        margin-bottom: 8px; 
-        transition: background 0.2s, color 0.2s, opacity 0.4s; 
-        opacity: 1; 
-    }
-    
-    .sidebar .nav-link:hover { 
-        opacity: 0.6; 
-    }
-    
-    .sidebar .nav-link.active, .sidebar .nav-link:hover { 
-        background: #e9f5ff; 
-        color: #1976d2; 
-    }
-    
-    .sidebar .sidebar-header { 
-        text-align: center; 
-        margin-bottom: 32px; 
-    }
-    
-    .sidebar .sidebar-header img { 
-        width: 60px; 
-        height: 60px; 
-        border-radius: 50%; 
-        margin-bottom: 10px; 
-    }
-    
-    .sidebar .sidebar-header h4 { 
-        font-size: 1.2rem; 
-        font-weight: 600; 
-    }
-    
-    /* Main content area */
-    .main-content { 
-        margin-left: 240px; 
-        padding: 48px 32px 32px 32px; 
-        transition: margin-left 0.3s; 
-    }
-    
-    /* Responsive design for sidebar */
-    @media (max-width: 991px) { 
-        .sidebar { 
-            width: 100%; 
-            min-height: auto; 
-            position: static; 
-            box-shadow: none; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: space-between; 
-        } 
-        
-        .sidebar .sidebar-header { 
-            margin-bottom: 0; 
-            padding: 8px 16px; 
-            display: flex; 
-            align-items: center; 
-        } 
-        
-        .sidebar .sidebar-header img { 
-            width: 40px; 
-            height: 40px; 
-            margin-bottom: 0; 
-            margin-right: 10px; 
-        } 
-        
-        .sidebar .sidebar-header h4 { 
-            font-size: 1rem; 
-            margin: 0; 
-        } 
-        
-        .sidebar nav { 
-            flex-direction: row !important; 
-            gap: 8px; 
-            padding: 0 8px; 
-        } 
-        
-        .sidebar .nav-link { 
-            font-size: 1rem; 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            margin-bottom: 0; 
-        } 
-        
-        .main-content { 
-            margin-left: 0; 
-            padding: 24px 8px; 
-        } 
-    }
-    
-    @media (max-width: 575px) { 
-        .sidebar .sidebar-header img { 
-            width: 32px; 
-            height: 32px; 
-        } 
-        
-        .sidebar .sidebar-header h4 { 
-            font-size: 0.95rem; 
-        } 
-        
-        .main-content { 
-            padding: 12px 2px; 
-        } 
-    }
-
-    /* Clean, modern styling for better UX */
+    /* Page Header */
     .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 2rem;
-        text-align: center;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
     
-    .page-header h1 {
-        font-size: 2.5rem;
+    .page-title h1 {
+        font-size: 2rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        color: var(--gray-900);
+        margin: 0;
+        letter-spacing: -0.025em;
     }
     
-    .page-subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 0;
-    }
-    
-    /* Generate Q&A Form */
+    /* Generate Form */
     .generate-form {
         background: white;
+        border-radius: 12px;
+        border: 1px solid var(--gray-100);
         padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         margin-bottom: 2rem;
     }
     
@@ -283,141 +112,176 @@
     }
     
     .form-label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.5rem;
         display: block;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--gray-900);
+        font-size: 0.95rem;
     }
     
     .form-control {
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 12px 16px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        background: white;
+        transition: all 0.2s ease;
     }
     
     .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        margin-top: 0.5rem;
     }
     
     .btn-generate {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
+        background: var(--primary-blue);
         color: white;
-        padding: 12px 30px;
-        border-radius: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
         font-weight: 600;
-        transition: all 0.3s ease;
+        padding: 0.875rem 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         cursor: pointer;
+        transition: all 0.2s ease;
     }
     
     .btn-generate:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        color: white;
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
     }
     
-    /* Q&A Cards */
+    .btn-generate:disabled {
+        background: var(--gray-300);
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* Section Title */
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        letter-spacing: -0.025em;
+    }
+    
+    .section-title i {
+        color: var(--primary-blue);
+        font-size: 1.25rem;
+    }
+    
+    /* Q&A Grid */
     .qa-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
         gap: 1.5rem;
-        margin-top: 2rem;
     }
     
     .qa-card {
         background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        border: 1px solid var(--gray-100);
+        overflow: hidden;
         transition: all 0.3s ease;
-        border-left: 4px solid #667eea;
     }
     
     .qa-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        border-color: var(--gray-200);
     }
     
     .qa-card-header {
+        padding: 1.5rem 1.5rem 1rem;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-50);
     }
     
     .qa-title {
         font-size: 1.25rem;
-        font-weight: 700;
-        color: #333;
+        font-weight: 600;
+        color: var(--gray-900);
         margin: 0;
+        letter-spacing: -0.025em;
     }
     
     .qa-date {
-        font-size: 0.85rem;
-        color: #666;
-        background: #f8f9fa;
-        padding: 4px 8px;
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        background: var(--gray-50);
+        padding: 0.25rem 0.75rem;
         border-radius: 6px;
     }
     
     .qa-preview {
-        color: #555;
+        padding: 0 1.5rem 1rem;
+        color: var(--gray-600);
         line-height: 1.6;
-        margin-bottom: 1rem;
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
         font-size: 0.95rem;
     }
     
     .qa-actions {
+        padding: 1rem 1.5rem 1.5rem;
         display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 0.75rem;
     }
     
     .btn-action {
-        padding: 8px 16px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        cursor: pointer;
+        padding: 0.625rem 1rem;
         border: none;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
     .btn-expand {
-        background: #e3f2fd;
-        color: #1976d2;
+        background: var(--primary-blue);
+        color: white;
+        flex: 1;
     }
     
     .btn-expand:hover {
-        background: #1976d2;
-        color: white;
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
     }
     
     .btn-delete {
-        background: #ffebee;
-        color: #d32f2f;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        min-width: 80px;
     }
     
     .btn-delete:hover {
-        background: #d32f2f;
-        color: white;
+        background: var(--red-light);
+        color: var(--red-500);
     }
     
-    /* Expanded Q&A Content */
+    /* Full Content Display */
     .qa-full-content {
         display: none;
-        margin-top: 1rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 3px solid #667eea;
+        padding: 1.5rem;
+        background: var(--gray-50);
+        border-top: 1px solid var(--gray-100);
     }
     
     .qa-full-content.show {
@@ -425,220 +289,222 @@
         animation: fadeIn 0.3s ease;
     }
     
+    .qa-full-content h4 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 1rem;
+    }
+    
     .qa-full-content pre {
         white-space: pre-wrap;
+        word-wrap: break-word;
         font-family: inherit;
-        margin: 0;
+        font-size: 0.95rem;
         line-height: 1.6;
+        color: var(--gray-700);
+        margin: 0;
     }
     
     /* Empty State */
     .empty-state {
-        text-align: center;
         padding: 4rem 2rem;
+        text-align: center;
         background: white;
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-radius: 16px;
+        border: 1px solid var(--gray-100);
+        max-width: 600px;
+        margin: 0 auto;
     }
     
     .empty-icon {
         font-size: 4rem;
-        color: #667eea;
-        margin-bottom: 1rem;
+        color: var(--gray-300);
+        margin-bottom: 1.5rem;
     }
     
     .empty-title {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #333;
-        margin-bottom: 0.5rem;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.025em;
     }
     
     .empty-subtitle {
-        color: #666;
-        margin-bottom: 2rem;
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
+        font-size: 1rem;
+        color: var(--gray-600);
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto;
     }
     
-    /* Section Title */
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
+    /* Autocomplete Dropdown */
+    .autocomplete-dropdown {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200) !important;
     }
     
     /* Animations */
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
+        from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
-    /* Responsive Design */
+    /* Mobile Responsiveness */
     @media (max-width: 768px) {
-        .mobile-menu-toggle { display: block; }
-        .sidebar {
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        .sidebar.active {
-            transform: translateX(0);
-        }
-        .main-content {
-            margin-left: 0;
-            padding: 6rem 1rem 2rem;
-        }
-        .qa-grid {
-            grid-template-columns: 1fr;
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
         }
         
-        .page-header h1 {
-            font-size: 2rem;
+        .generate-form {
+            padding: 1.5rem;
         }
         
         .qa-card-header {
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            align-items: flex-start;
         }
         
         .qa-actions {
+            flex-direction: column;
+        }
+        
+        .btn-expand {
             justify-content: center;
         }
         
-        .generate-form {
-            padding: 1.5rem;
+        .empty-state {
+            padding: 3rem 1.5rem;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+        }
+        
+        .empty-title {
+            font-size: 1.25rem;
         }
     }
     
-    @media (max-width: 575px) {
-        .page-header {
-            padding: 1.5rem;
-        }
-        
-        .page-header h1 {
-            font-size: 1.75rem;
-        }
-        
+    @media (max-width: 480px) {
         .generate-form {
-            padding: 1rem;
+            padding: 1.25rem;
         }
         
-        .main-content {
-            padding: 12px 8px;
+        .qa-card-header {
+            padding: 1.25rem 1.25rem 0.75rem;
+        }
+        
+        .qa-preview {
+            padding: 0 1.25rem 0.75rem;
+        }
+        
+        .qa-actions {
+            padding: 0.75rem 1.25rem 1.25rem;
+        }
+        
+        .qa-full-content {
+            padding: 1.25rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<main role="main" aria-labelledby="page-title">
+<div id="fade-wrapper">
     <!-- Mobile Menu Toggle -->
     <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
         <i class="bi bi-list"></i>
     </button>
-    
+
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
-    
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
-        <header class="sidebar-header">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
             <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
-                 alt="Profile picture of {{ current_user.name or current_user.email }}" 
-                 aria-describedby="user-info">
-            <div id="user-info">
-                <h4 class="user-name">{{ current_user.name or current_user.email }}</h4>
-                <span class="user-role" aria-label="User role">Job Seeker</span>
-            </div>
-        </header>
-        <nav class="nav flex-column" aria-label="Main navigation">
-            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" 
-               href="{{ url_for('dashboard') }}" 
-               aria-label="Go to Dashboard">
-                <i class="bi bi-house" aria-hidden="true"></i> 
-                <span>Dashboard</span>
+                 alt="Profile Picture" 
+                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA4MCA4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9IiNEMUQ1REIiIHJ4PSI0MCIvPjxwYXRoIGZpbGw9IiM5Q0EzQUYiIGQ9Ik00MCAyNGM0LjQgMCA4IDMuNiA4IDhzLTMuNiA4LTggOC04LTMuNi04LTggMy42LTggOC04Wm0wIDM2Yy04LjggMC0xNi0zLjYtMTYtOHYtMmMwLTQuNCA3LjItOCAxNi04czE2IDMuNiAxNiA4djJjMCA0LjQtNy4yIDgtMTYgOFoiLz48L3N2Zz4='">
+            <h4>{{ current_user.name or current_user.email }}</h4>
+            <div class="user-role">Resume Builder</div>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-house"></i>
+                Dashboard
             </a>
-            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" 
-               href="{{ url_for('resumes') }}"
-               aria-label="Manage your resumes">
-                <i class="bi bi-file-earmark-person" aria-hidden="true"></i> 
-                <span>Resumes</span>
+            <a class="nav-link {% if active_page == 'resumes' %}active{% endif %}" href="{{ url_for('resumes') }}">
+                <i class="bi bi-file-earmark-person"></i>
+                Resumes
             </a>
-            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" 
-               href="{{ url_for('cover_letters') }}"
-               aria-label="Manage your cover letters">
-                <i class="bi bi-envelope-paper" aria-hidden="true"></i> 
-                <span>Cover Letters</span>
+            <a class="nav-link {% if active_page == 'cover_letters' %}active{% endif %}" href="{{ url_for('cover_letters') }}">
+                <i class="bi bi-envelope-paper"></i>
+                Cover Letters
             </a>
-            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" 
-               href="{{ url_for('interview_qa') }}"
-               aria-current="page"
-               aria-label="Interview questions and answers - current page">
-                <i class="bi bi-question-circle" aria-hidden="true"></i> 
-                <span>Interview Q&amp;A</span>
+            <a class="nav-link {% if active_page == 'interview_qa' %}active{% endif %}" href="{{ url_for('interview_qa') }}">
+                <i class="bi bi-question-circle"></i>
+                Interview Q&A
             </a>
-            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" 
-               href="{{ url_for('jobs') }}"
-               aria-label="Browse job opportunities">
-                <i class="bi bi-briefcase" aria-hidden="true"></i> 
-                <span>Jobs</span>
+            <a class="nav-link {% if active_page == 'jobs' %}active{% endif %}" href="{{ url_for('jobs') }}">
+                <i class="bi bi-briefcase"></i>
+                Jobs
             </a>
-            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" 
-               href="{{ url_for('my_account') }}"
-               aria-label="Manage your account settings">
-                <i class="bi bi-person" aria-hidden="true"></i> 
-                <span>My Account</span>
+            <a class="nav-link {% if active_page == 'my_account' %}active{% endif %}" href="{{ url_for('my_account') }}">
+                <i class="bi bi-person"></i>
+                My Account
             </a>
-            <a class="nav-link" 
-               href="{{ url_for('pricing') }}" 
-               title="View and manage subscription plans"
-               aria-label="View and manage subscription plans">
-                <i class="bi bi-credit-card" aria-hidden="true"></i> Subscription
+            <a class="nav-link" href="{{ url_for('pricing') }}" title="View and manage subscription plans">
+                <i class="bi bi-credit-card"></i>
+                Subscription
             </a>
-            <a class="nav-link text-danger logout" 
-               href="{{ url_for('logout') }}"
-               aria-label="Sign out of your account">
-                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> 
-                <span>Logout</span>
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right"></i>
+                Logout
             </a>
         </nav>
-    </aside>
+    </div>
 
-    <!-- Main Content Area -->
-    <section class="main-content" role="main">
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="page-title">
+                <h1>Interview Q&A</h1>
+            </div>
+        </header>
+
         <!-- Generate Q&A Form -->
         <div class="generate-form">
-            <form method="POST" action="{{ url_for('interview_qa') }}" aria-label="Generate interview questions">
+            <form method="POST" action="{{ url_for('interview_qa') }}">
                 <div class="form-group">
                     <label for="job-title-input" class="form-label">
-                        <i class="bi bi-briefcase me-2"></i>Job Title
+                        <i class="bi bi-briefcase"></i> Job Title
                     </label>
                     <input type="text" 
                            id="job-title-input"
                            name="job_title" 
                            class="form-control" 
                            placeholder="e.g., Software Engineer, Product Manager, Data Scientist..." 
-                           required 
-                           aria-describedby="job-title-help">
-                    <small id="job-title-help" class="form-text text-muted">
+                           required>
+                    <div class="form-text">
                         Enter a specific job title to generate relevant interview questions and sample answers
-                    </small>
+                    </div>
                 </div>
                 <button type="submit" class="btn-generate">
-                    <i class="bi bi-plus-circle me-2"></i>Generate Q&A
+                    <i class="bi bi-plus-circle"></i>Generate Q&A
                 </button>
             </form>
         </div>
 
         {% if interview_qa_list|length > 0 %}
         <!-- Interview Q&A Collection -->
-        <section class="interview-qa-collection" aria-labelledby="qa-collection-title">
-            <h2 id="qa-collection-title" class="section-title">
-                <i class="bi bi-collection me-2"></i>Your Interview Preparations
+        <section class="interview-qa-collection">
+            <h2 class="section-title">
+                <i class="bi bi-collection"></i>Your Interview Preparations
             </h2>
             
             <div class="qa-grid">
@@ -659,15 +525,15 @@
                     
                     <div class="qa-actions">
                         <button class="btn-action btn-expand" onclick="toggleQAContent({{ loop.index }})">
-                            <i class="bi bi-eye me-1"></i>View Full Content
+                            <i class="bi bi-eye"></i>View Full Content
                         </button>
                         <button class="btn-action btn-delete" onclick="deleteQA({{ loop.index }}, '{{ qa.job_title }}')">
-                            <i class="bi bi-trash me-1"></i>Delete
+                            <i class="bi bi-trash"></i>Delete
                         </button>
                     </div>
                     
                     <div class="qa-full-content" id="qa-content-{{ loop.index }}">
-                        <h4>📝 Complete Q&A for {{ qa.job_title }}</h4>
+                        <h4>Complete Q&A for {{ qa.job_title }}</h4>
                         <pre>{{ qa.qa }}</pre>
                     </div>
                 </article>
@@ -687,290 +553,287 @@
             </p>
         </div>
         {% endif %}
-    </section>
-</main>
+    </main>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Mobile Menu Functions
-function toggleMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
+    // Mobile menu functionality
+    function toggleMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
     }
-}
-
-function closeMobileMenu() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar && overlay) {
+    function closeMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
     }
-}
+    // Close mobile menu when clicking on nav links
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        link.addEventListener('click', closeMobileMenu);
+    });
 
-// Clean, functional JavaScript for better UX
-document.addEventListener('DOMContentLoaded', function() {
-    // Focus job title input for better UX
-    const jobTitleInput = document.querySelector('input[name="job_title"]');
-    if (jobTitleInput) {
-        jobTitleInput.focus();
-    }
-    
-    // Form validation with user-friendly feedback
-    const form = document.querySelector('form[method="POST"]');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            const input = this.querySelector('input[name="job_title"]');
-            const value = input.value.trim();
-            
-            if (!value) {
-                e.preventDefault();
-                showErrorMessage(input, 'Please enter a job title to generate interview questions.');
-                return false;
-            }
-            
-            // Show loading state
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating Q&A...';
+    // Clean, functional JavaScript for better UX
+    document.addEventListener('DOMContentLoaded', function() {
+        // Focus job title input for better UX
+        const jobTitleInput = document.querySelector('input[name="job_title"]');
+        if (jobTitleInput) {
+            jobTitleInput.focus();
+        }
+        
+        // Form validation with user-friendly feedback
+        const form = document.querySelector('form[method="POST"]');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const input = this.querySelector('input[name="job_title"]');
+                const value = input.value.trim();
                 
-                // Add visual feedback
-                submitBtn.style.opacity = '0.7';
-                submitBtn.style.cursor = 'not-allowed';
-            }
-        });
-    }
-    
-    // Enhanced autocomplete for job titles
-    if (jobTitleInput) {
-        const commonJobs = [
-            'Software Engineer', 'Product Manager', 'Data Scientist', 'Marketing Manager',
-            'Sales Representative', 'Business Analyst', 'UX/UI Designer', 'Project Manager',
-            'Customer Service Representative', 'Accountant', 'HR Manager', 'DevOps Engineer',
-            'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Data Analyst',
-            'Digital Marketing Specialist', 'Content Writer', 'Graphic Designer', 'Operations Manager'
-        ];
-        
-        // Create autocomplete dropdown
-        const dropdown = document.createElement('div');
-        dropdown.className = 'autocomplete-dropdown';
-        dropdown.style.cssText = `
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        `;
-        
-        jobTitleInput.parentNode.style.position = 'relative';
-        jobTitleInput.parentNode.appendChild(dropdown);
-        
-        jobTitleInput.addEventListener('input', function() {
-            const value = this.value.toLowerCase();
-            dropdown.innerHTML = '';
-            
-            if (value.length > 1) {
-                const matches = commonJobs.filter(job => 
-                    job.toLowerCase().includes(value)
-                ).slice(0, 5);
+                if (!value) {
+                    e.preventDefault();
+                    showErrorMessage(input, 'Please enter a job title to generate interview questions.');
+                    return false;
+                }
                 
-                if (matches.length > 0) {
-                    matches.forEach(job => {
-                        const item = document.createElement('div');
-                        item.textContent = job;
-                        item.style.cssText = `
-                            padding: 10px;
-                            cursor: pointer;
-                            border-bottom: 1px solid #eee;
-                        `;
-                        item.addEventListener('mouseenter', () => item.style.background = '#f0f0f0');
-                        item.addEventListener('mouseleave', () => item.style.background = 'white');
-                        item.addEventListener('click', () => {
-                            jobTitleInput.value = job;
-                            dropdown.style.display = 'none';
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Generating Q&A...';
+                    
+                    // Add visual feedback
+                    submitBtn.style.opacity = '0.7';
+                    submitBtn.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        
+        // Enhanced autocomplete for job titles
+        if (jobTitleInput) {
+            const commonJobs = [
+                'Software Engineer', 'Product Manager', 'Data Scientist', 'Marketing Manager',
+                'Sales Representative', 'Business Analyst', 'UX/UI Designer', 'Project Manager',
+                'Customer Service Representative', 'Accountant', 'HR Manager', 'DevOps Engineer',
+                'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'Data Analyst',
+                'Digital Marketing Specialist', 'Content Writer', 'Graphic Designer', 'Operations Manager'
+            ];
+            
+            // Create autocomplete dropdown
+            const dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+            dropdown.style.cssText = `
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid #ddd;
+                border-top: none;
+                border-radius: 0 0 8px 8px;
+                max-height: 200px;
+                overflow-y: auto;
+                z-index: 1000;
+                display: none;
+            `;
+            
+            jobTitleInput.parentNode.style.position = 'relative';
+            jobTitleInput.parentNode.appendChild(dropdown);
+            
+            jobTitleInput.addEventListener('input', function() {
+                const value = this.value.toLowerCase();
+                dropdown.innerHTML = '';
+                
+                if (value.length > 1) {
+                    const matches = commonJobs.filter(job => 
+                        job.toLowerCase().includes(value)
+                    ).slice(0, 5);
+                    
+                    if (matches.length > 0) {
+                        matches.forEach(job => {
+                            const item = document.createElement('div');
+                            item.textContent = job;
+                            item.style.cssText = `
+                                padding: 10px;
+                                cursor: pointer;
+                                border-bottom: 1px solid #eee;
+                            `;
+                            item.addEventListener('mouseenter', () => item.style.background = '#f0f0f0');
+                            item.addEventListener('mouseleave', () => item.style.background = 'white');
+                            item.addEventListener('click', () => {
+                                jobTitleInput.value = job;
+                                dropdown.style.display = 'none';
+                            });
+                            dropdown.appendChild(item);
                         });
-                        dropdown.appendChild(item);
-                    });
-                    dropdown.style.display = 'block';
+                        dropdown.style.display = 'block';
+                    } else {
+                        dropdown.style.display = 'none';
+                    }
                 } else {
                     dropdown.style.display = 'none';
                 }
-            } else {
-                dropdown.style.display = 'none';
-            }
-        });
-        
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!jobTitleInput.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-    }
-});
-
-// Toggle Q&A content visibility
-function toggleQAContent(qaId) {
-    const content = document.getElementById(`qa-content-${qaId}`);
-    const button = event.target.closest('.btn-expand');
-    
-    if (content.classList.contains('show')) {
-        content.classList.remove('show');
-        button.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
-    } else {
-        // Hide all other open contents
-        document.querySelectorAll('.qa-full-content.show').forEach(el => {
-            el.classList.remove('show');
-        });
-        document.querySelectorAll('.btn-expand').forEach(btn => {
-            btn.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
-        });
-        
-        // Show this content
-        content.classList.add('show');
-        button.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Hide Content';
-        
-        // Scroll to content
-        content.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-}
-
-// Delete Q&A item (client-side only for now)
-function deleteQA(qaId, jobTitle) {
-    if (confirm(`Are you sure you want to delete the interview Q&A for "${jobTitle}"?`)) {
-        const card = document.querySelector(`[data-qa-id="${qaId}"]`);
-        if (card) {
-            // Add fade out animation
-            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            card.style.opacity = '0';
-            card.style.transform = 'scale(0.9)';
+            });
             
-            setTimeout(() => {
-                card.remove();
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!jobTitleInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Toggle Q&A content visibility
+    function toggleQAContent(qaId) {
+        const content = document.getElementById(`qa-content-${qaId}`);
+        const button = event.target.closest('.btn-expand');
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            button.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
+        } else {
+            // Hide all other open contents
+            document.querySelectorAll('.qa-full-content.show').forEach(el => {
+                el.classList.remove('show');
+            });
+            document.querySelectorAll('.btn-expand').forEach(btn => {
+                btn.innerHTML = '<i class="bi bi-eye me-1"></i>View Full Content';
+            });
+            
+            // Show this content
+            content.classList.add('show');
+            button.innerHTML = '<i class="bi bi-eye-slash me-1"></i>Hide Content';
+            
+            // Scroll to content
+            content.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    // Delete Q&A item (client-side only for now)
+    function deleteQA(qaId, jobTitle) {
+        if (confirm(`Are you sure you want to delete the interview Q&A for "${jobTitle}"?`)) {
+            const card = document.querySelector(`[data-qa-id="${qaId}"]`);
+            if (card) {
+                // Add fade out animation
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
                 
-                // Check if this was the last item
-                const remainingCards = document.querySelectorAll('.qa-card');
-                if (remainingCards.length === 0) {
-                    // Reload page to show empty state
-                    window.location.reload();
+                setTimeout(() => {
+                    card.remove();
+                    
+                    // Check if this was the last item
+                    const remainingCards = document.querySelectorAll('.qa-card');
+                    if (remainingCards.length === 0) {
+                        // Reload page to show empty state
+                        window.location.reload();
+                    }
+                }, 300);
+                
+                // Show success message
+                showSuccessMessage(`Interview Q&A for "${jobTitle}" has been deleted.`);
+            }
+        }
+    }
+
+    // Show error message
+    function showErrorMessage(input, message) {
+        // Remove existing error
+        const existingError = input.parentNode.querySelector('.error-message');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Add error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.style.cssText = `
+            color: #d32f2f;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #ffebee;
+            border-radius: 4px;
+            border-left: 3px solid #d32f2f;
+        `;
+        errorDiv.textContent = message;
+        
+        input.parentNode.appendChild(errorDiv);
+        input.focus();
+        
+        // Add error styling to input
+        input.style.borderColor = '#d32f2f';
+        
+        // Remove error after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+                input.style.borderColor = '';
+            }
+        }, 5000);
+    }
+
+    // Show success message
+    function showSuccessMessage(message) {
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        `;
+        successDiv.textContent = message;
+        
+        // Add slide in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(successDiv);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            successDiv.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.remove();
+                }
+                if (style.parentNode) {
+                    style.remove();
                 }
             }, 300);
-            
-            // Show success message
-            showSuccessMessage(`Interview Q&A for "${jobTitle}" has been deleted.`);
-        }
+        }, 3000);
     }
-}
 
-// Show error message
-function showErrorMessage(input, message) {
-    // Remove existing error
-    const existingError = input.parentNode.querySelector('.error-message');
-    if (existingError) {
-        existingError.remove();
+    // Add smooth scroll behavior for better UX
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    // Subscription button functionality
+    function openCustomerPortal() {
+        console.log('Subscription button clicked');
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/create-customer-portal';
+        form.style.display = 'none';
+        document.body.appendChild(form);
+        form.submit();
     }
-    
-    // Add error message
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.style.cssText = `
-        color: #d32f2f;
-        font-size: 0.875rem;
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background: #ffebee;
-        border-radius: 4px;
-        border-left: 3px solid #d32f2f;
-    `;
-    errorDiv.textContent = message;
-    
-    input.parentNode.appendChild(errorDiv);
-    input.focus();
-    
-    // Add error styling to input
-    input.style.borderColor = '#d32f2f';
-    
-    // Remove error after 5 seconds
-    setTimeout(() => {
-        if (errorDiv.parentNode) {
-            errorDiv.remove();
-            input.style.borderColor = '';
-        }
-    }, 5000);
-}
-
-// Show success message
-function showSuccessMessage(message) {
-    const successDiv = document.createElement('div');
-    successDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4caf50;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        font-weight: 500;
-        animation: slideIn 0.3s ease;
-    `;
-    successDiv.textContent = message;
-    
-    // Add slide in animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(successDiv);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        successDiv.style.animation = 'slideIn 0.3s ease reverse';
-        setTimeout(() => {
-            if (successDiv.parentNode) {
-                successDiv.remove();
-            }
-            if (style.parentNode) {
-                style.remove();
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Add smooth scroll behavior for better UX
-document.documentElement.style.scrollBehavior = 'smooth';
-
-// Subscription button functionality
-function openCustomerPortal() {
-    console.log('Subscription button clicked');
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/create-customer-portal';
-    form.style.display = 'none';
-    document.body.appendChild(form);
-    form.submit();
-}
-// Make function globally accessible
-window.openCustomerPortal = openCustomerPortal;
+    // Make function globally accessible
+    window.openCustomerPortal = openCustomerPortal;
 </script>
 {% endblock %}
