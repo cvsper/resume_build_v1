@@ -1,6 +1,262 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Edit Resume{% endblock %}
+{% block title %}Edit Resume - {{ resume.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-blue-dark: #2563EB;
+        --primary-blue-light: #DBEAFE;
+        --gray-50: #F9FAFB;
+        --gray-100: #F3F4F6;
+        --gray-200: #E5E7EB;
+        --gray-300: #D1D5DB;
+        --gray-400: #9CA3AF;
+        --gray-500: #6B7280;
+        --gray-600: #4B5563;
+        --gray-700: #374151;
+        --gray-800: #1F2937;
+        --gray-900: #111827;
+        --success-green: #10B981;
+        --warning-amber: #F59E0B;
+        --red-500: #EF4444;
+    }
+
+    body {
+        background: var(--gray-50);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .edit-resume-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .title-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .page-subtitle {
+        color: var(--gray-600);
+        font-size: 1.1rem;
+    }
+
+    .resume-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+    }
+
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 1rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-blue-light);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue-dark);
+        font-size: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        line-height: 1.5;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-control.tall {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .section-description {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary {
+        background: var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-300);
+        transform: translateY(-1px);
+        color: var(--gray-700);
+        text-decoration: none;
+    }
+
+    .template-selector {
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 200;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+        .mobile-menu-toggle {
+            display: block;
+        }
+
+        .edit-resume-container {
+            margin: 1rem;
+            padding: 0;
+        }
+
+        .page-header, .resume-form {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <!-- Mobile Menu Toggle -->
@@ -11,32 +267,138 @@
 <!-- Sidebar Overlay -->
 <div class="sidebar-overlay"></div>
 
-<div class="container my-5">
-    <h2>Edit Resume</h2>
-    <div class="mb-3">
-    <label for="template" class="form-label">Template</label>
-    <select class="form-control" name="template" id="template">
-        <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
-        <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
-        <option value="elegant" {% if resume.template == 'elegant' %}selected{% endif %}>Elegant</option>
-        <option value="minimal" {% if resume.template == 'minimal' %}selected{% endif %}>Minimal</option>
-        <option value="professional" {% if resume.template == 'professional' %}selected{% endif %}>Professional</option>
-        <option value="executive" {% if resume.template == 'executive' %}selected{% endif %}>Executive</option>
-        <option value="creative" {% if resume.template == 'creative' %}selected{% endif %}>Creative</option>
-    </select>
-</div>
+<div class="edit-resume-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <div class="title-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            Edit Resume
+        </h1>
+        <p class="page-subtitle">Update your resume sections with professional content and formatting</p>
+    </div>
 
-    <form method="POST">
-        <div class="mb-3">
-            <label for="title" class="form-label">Resume Title</label>
-            <input type="text" class="form-control" name="title" id="title" value="{{ resume.title }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="content" class="form-label">Resume Content</label>
-            <textarea class="form-control" name="content" id="content" rows="8" required>{{ resume.content }}</textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Update Resume</button>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
-    </form>
+    <!-- Resume Edit Form -->
+    <div class="resume-form">
+        <form method="POST">
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <h2 class="section-title">Basic Information</h2>
+                </div>
+
+                <div class="template-selector">
+                    <label for="template" class="form-label">Resume Template</label>
+                    <select class="form-control" name="template" id="template">
+                        <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
+                        <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
+                        <option value="elegant" {% if resume.template == 'elegant' %}selected{% endif %}>Elegant</option>
+                        <option value="minimal" {% if resume.template == 'minimal' %}selected{% endif %}>Minimal</option>
+                        <option value="professional" {% if resume.template == 'professional' %}selected{% endif %}>Professional</option>
+                        <option value="executive" {% if resume.template == 'executive' %}selected{% endif %}>Executive</option>
+                        <option value="creative" {% if resume.template == 'creative' %}selected{% endif %}>Creative</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="title" class="form-label">Resume Title</label>
+                    <input type="text" class="form-control" name="title" id="title" 
+                           value="{{ resume.title }}" 
+                           placeholder="e.g., Software Engineer Resume" required>
+                </div>
+            </div>
+
+            <!-- Professional Summary Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <h2 class="section-title">Professional Summary</h2>
+                </div>
+                <p class="section-description">
+                    Write a compelling 2-3 sentence summary highlighting your key qualifications, experience, and career objectives.
+                </p>
+                <textarea class="form-control tall" name="professional_summary" id="professional_summary" 
+                          placeholder="e.g., Experienced software engineer with 5+ years developing scalable web applications. Proven track record of leading cross-functional teams and delivering high-quality solutions. Passionate about creating efficient, maintainable code and mentoring junior developers.">{{ resume.professional_summary or '' }}</textarea>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                    <h2 class="section-title">Skills</h2>
+                </div>
+                <p class="section-description">
+                    List your technical skills, programming languages, tools, and technologies. Separate items with commas or use bullet points.
+                </p>
+                <textarea class="form-control tall" name="skills" id="skills" 
+                          placeholder="e.g., JavaScript, Python, React, Node.js, PostgreSQL, AWS, Docker, Git, Agile/Scrum, Problem Solving, Team Leadership">{{ resume.skills or '' }}</textarea>
+            </div>
+
+            <!-- Work Experience Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <h2 class="section-title">Work Experience</h2>
+                </div>
+                <p class="section-description">
+                    Include your work history with job titles, company names, dates, and key accomplishments. Use action verbs and quantify achievements where possible.
+                </p>
+                <textarea class="form-control tall" name="work_experience" id="work_experience" 
+                          placeholder="e.g., Senior Software Engineer | Tech Company Inc. | 2020-Present&#10;• Led development of customer portal serving 10,000+ users&#10;• Reduced page load times by 40% through optimization&#10;• Mentored 3 junior developers and improved team productivity&#10;&#10;Software Engineer | StartUp LLC | 2018-2020&#10;• Developed REST APIs using Python and Django&#10;• Collaborated with design team on user interface improvements">{{ resume.work_experience or '' }}</textarea>
+            </div>
+
+            <!-- Education Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <h2 class="section-title">Education</h2>
+                </div>
+                <p class="section-description">
+                    List your educational background including degrees, institutions, graduation dates, and relevant coursework or achievements.
+                </p>
+                <textarea class="form-control tall" name="education" id="education" 
+                          placeholder="e.g., Bachelor of Science in Computer Science | University Name | 2018&#10;• Relevant Coursework: Data Structures, Algorithms, Database Systems&#10;• Dean's List: Fall 2017, Spring 2018&#10;• GPA: 3.8/4.0">{{ resume.education or '' }}</textarea>
+            </div>
+
+            <!-- Additional Sections -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </div>
+                    <h2 class="section-title">Additional Sections</h2>
+                </div>
+                <p class="section-description">
+                    Include certifications, awards, projects, volunteer work, publications, or other relevant information.
+                </p>
+                <textarea class="form-control tall" name="additional_sections" id="additional_sections" 
+                          placeholder="e.g., CERTIFICATIONS&#10;• AWS Certified Solutions Architect (2023)&#10;• Scrum Master Certification (2022)&#10;&#10;PROJECTS&#10;• E-commerce Platform: Built full-stack application with React and Node.js&#10;• Open Source Contributor: 50+ contributions to popular JavaScript libraries">{{ resume.additional_sections or '' }}</textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i>
+                    Update Resume
+                </button>
+                <a href="{{ url_for('resumes') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Resumes
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

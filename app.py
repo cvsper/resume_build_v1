@@ -131,9 +131,17 @@ class Resume(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(150))
-    content = db.Column(db.Text)
+    content = db.Column(db.Text)  # Keep for backward compatibility
     template = db.Column(db.String(50), default='classic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # New structured fields
+    professional_summary = db.Column(db.Text)
+    skills = db.Column(db.Text)
+    work_experience = db.Column(db.Text)
+    education = db.Column(db.Text)
+    additional_sections = db.Column(db.Text)  # For certifications, awards, etc.
+    
     user = db.relationship('User', backref=db.backref('resumes', lazy=True))
 
 class SavedJob(db.Model):
@@ -285,12 +293,44 @@ def get_resumes_api():
 @login_required
 def create_resume_api():
     data = request.json
-    new_resume = Resume(
-        user_id=current_user.id,
-        title=data['title'],
-        content=data['content'],
-        template=data.get('template', 'classic')
-    )
+    
+    # Support both structured and legacy content
+    if 'professional_summary' in data or 'skills' in data or 'work_experience' in data or 'education' in data:
+        # New structured format
+        new_resume = Resume(
+            user_id=current_user.id,
+            title=data['title'],
+            template=data.get('template', 'classic'),
+            professional_summary=data.get('professional_summary', ''),
+            skills=data.get('skills', ''),
+            work_experience=data.get('work_experience', ''),
+            education=data.get('education', ''),
+            additional_sections=data.get('additional_sections', '')
+        )
+        
+        # Generate combined content for backward compatibility
+        content_sections = []
+        if new_resume.professional_summary:
+            content_sections.append(f"PROFESSIONAL SUMMARY\n{new_resume.professional_summary}")
+        if new_resume.skills:
+            content_sections.append(f"SKILLS\n{new_resume.skills}")
+        if new_resume.work_experience:
+            content_sections.append(f"WORK EXPERIENCE\n{new_resume.work_experience}")
+        if new_resume.education:
+            content_sections.append(f"EDUCATION\n{new_resume.education}")
+        if new_resume.additional_sections:
+            content_sections.append(new_resume.additional_sections)
+        
+        new_resume.content = '\n\n'.join(content_sections)
+    else:
+        # Legacy format
+        new_resume = Resume(
+            user_id=current_user.id,
+            title=data['title'],
+            content=data['content'],
+            template=data.get('template', 'classic')
+        )
+    
     db.session.add(new_resume)
     db.session.commit()
     return jsonify({'message': 'Resume created', 'id': new_resume.id}), 201
@@ -626,19 +666,112 @@ def edit_resume(resume_id):
     resume = Resume.query.get_or_404(resume_id)
     if resume.user_id != current_user.id:
         return "Unauthorized", 403
+    
     if request.method == 'POST':
+        # Update basic information
         resume.title = request.form['title']
-        resume.content = request.form['content']
         resume.template = request.form.get('template', 'classic')
+        
+        # Update structured fields
+        resume.professional_summary = request.form.get('professional_summary', '').strip()
+        resume.skills = request.form.get('skills', '').strip()
+        resume.work_experience = request.form.get('work_experience', '').strip()
+        resume.education = request.form.get('education', '').strip()
+        resume.additional_sections = request.form.get('additional_sections', '').strip()
+        
+        # Generate combined content for backward compatibility
+        content_sections = []
+        if resume.professional_summary:
+            content_sections.append(f"PROFESSIONAL SUMMARY\n{resume.professional_summary}")
+        if resume.skills:
+            content_sections.append(f"SKILLS\n{resume.skills}")
+        if resume.work_experience:
+            content_sections.append(f"WORK EXPERIENCE\n{resume.work_experience}")
+        if resume.education:
+            content_sections.append(f"EDUCATION\n{resume.education}")
+        if resume.additional_sections:
+            content_sections.append(resume.additional_sections)
+        
+        resume.content = '\n\n'.join(content_sections)
+        
         db.session.commit()
+        
         # Generate thumbnail after editing
-        rendered_html = render_template(f"resume_templates/{resume.template}.html", resume=resume)
         try:
+            rendered_html = render_template(f"resume_templates/{resume.template}.html", resume=resume)
             generate_resume_thumbnail(resume.id, rendered_html)
         except Exception as e:
             print(f"Thumbnail generation failed: {e}")
-        return redirect(url_for('dashboard'))
-    return render_template('edit_resume.html', resume=resume)
+        
+        flash('Resume updated successfully!', 'success')
+        return redirect(url_for('resumes'))
+    
+    # For existing resumes, try to parse content into structured fields if they're empty
+    if resume.content and not any([resume.professional_summary, resume.skills, resume.work_experience, resume.education]):
+        parse_legacy_content(resume)
+    
+    return render_template('edit_resume.html', resume=resume, active_page='resumes')
+
+def parse_legacy_content(resume):
+    """Parse legacy resume content into structured fields"""
+    if not resume.content:
+        return
+    
+    content = resume.content.strip()
+    sections = {}
+    current_section = None
+    current_content = []
+    
+    lines = content.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        
+        # Check if this line is a section header
+        upper_line = line.upper()
+        if upper_line in ['PROFESSIONAL SUMMARY', 'SUMMARY', 'PROFILE', 'OBJECTIVE']:
+            if current_section:
+                sections[current_section] = '\n'.join(current_content).strip()
+            current_section = 'professional_summary'
+            current_content = []
+        elif upper_line in ['SKILLS', 'TECHNICAL SKILLS', 'CORE COMPETENCIES']:
+            if current_section:
+                sections[current_section] = '\n'.join(current_content).strip()
+            current_section = 'skills'
+            current_content = []
+        elif upper_line in ['WORK EXPERIENCE', 'EXPERIENCE', 'EMPLOYMENT HISTORY', 'PROFESSIONAL EXPERIENCE']:
+            if current_section:
+                sections[current_section] = '\n'.join(current_content).strip()
+            current_section = 'work_experience'
+            current_content = []
+        elif upper_line in ['EDUCATION', 'ACADEMIC BACKGROUND']:
+            if current_section:
+                sections[current_section] = '\n'.join(current_content).strip()
+            current_section = 'education'
+            current_content = []
+        elif upper_line in ['CERTIFICATIONS', 'AWARDS', 'PROJECTS', 'ADDITIONAL', 'OTHER']:
+            if current_section:
+                sections[current_section] = '\n'.join(current_content).strip()
+            current_section = 'additional_sections'
+            current_content = []
+        elif line and current_section:
+            current_content.append(line)
+    
+    # Add the last section
+    if current_section:
+        sections[current_section] = '\n'.join(current_content).strip()
+    
+    # Update the resume fields
+    if 'professional_summary' in sections:
+        resume.professional_summary = sections['professional_summary']
+    if 'skills' in sections:
+        resume.skills = sections['skills']
+    if 'work_experience' in sections:
+        resume.work_experience = sections['work_experience']
+    if 'education' in sections:
+        resume.education = sections['education']
+    if 'additional_sections' in sections:
+        resume.additional_sections = sections['additional_sections']
 
 @app.route('/delete-resume/<int:resume_id>')
 @login_required
