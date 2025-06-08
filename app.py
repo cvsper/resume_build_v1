@@ -440,11 +440,19 @@ def elevenlabs_tts():
         selected_voice = voice_map.get(personality, voice_map['professional'])
         
         # Generate speech using ElevenLabs
-        audio = elevenlabs_client.generate(
+        audio_generator = elevenlabs_client.text_to_speech.convert(
+            voice_id=selected_voice,
             text=text,
-            voice=selected_voice,
-            model="eleven_monolingual_v1"
+            model_id="eleven_monolingual_v1"
         )
+        
+        # Collect audio chunks
+        audio_chunks = []
+        for chunk in audio_generator:
+            audio_chunks.append(chunk)
+        
+        # Combine all audio chunks
+        audio = b''.join(audio_chunks)
         
         # Convert audio to base64 for JSON response
         audio_base64 = base64.b64encode(audio).decode('utf-8')
@@ -467,15 +475,15 @@ def get_elevenlabs_voices():
     """Get available ElevenLabs voices"""
     try:
         # Get available voices from ElevenLabs
-        available_voices = elevenlabs_client.voices.get_all()
+        voices_response = elevenlabs_client.voices.get_all()
         
         # Format voices for frontend
         voice_list = []
-        for voice in available_voices:
+        for voice in voices_response.voices:
             voice_list.append({
                 'voice_id': voice.voice_id,
                 'name': voice.name,
-                'category': voice.category,
+                'category': getattr(voice, 'category', ''),
                 'description': getattr(voice, 'description', ''),
                 'preview_url': getattr(voice, 'preview_url', '')
             })
