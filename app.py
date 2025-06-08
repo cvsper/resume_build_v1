@@ -22,6 +22,9 @@ import logging
 import uuid
 import time
 from werkzeug.routing import BuildError
+from elevenlabs.client import ElevenLabs
+import base64
+from io import BytesIO
 
 
 
@@ -29,6 +32,10 @@ from werkzeug.routing import BuildError
 
 ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID")
 ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY")
+
+# ElevenLabs Configuration
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "sk_a5a1ce972c73d4f783688bd2c2a350831ef97abd65d92d85")
+elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 
 app = Flask(__name__)
 app_secret = os.getenv("SECRET_KEY")
@@ -405,6 +412,82 @@ def analyze_job_posting_api():
     except Exception as e:
         logging.error(f'Job analysis API error: {e}')
         return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+
+@app.route('/api/elevenlabs-tts', methods=['POST'])
+@login_required
+def elevenlabs_tts():
+    """Generate speech using ElevenLabs TTS"""
+    try:
+        data = request.json
+        text = data.get('text', '').strip()
+        voice_id = data.get('voice_id', 'EXAVITQu4vr4xnSDxMaL')  # Default voice
+        personality = data.get('personality', 'professional')
+        
+        if not text:
+            return jsonify({'success': False, 'error': 'Text is required'}), 400
+        
+        if len(text) > 5000:  # Limit text length
+            return jsonify({'success': False, 'error': 'Text too long (max 5000 characters)'}), 400
+        
+        # Select voice based on personality
+        voice_map = {
+            'friendly': 'EXAVITQu4vr4xnSDxMaL',  # Bella - warm, friendly
+            'professional': 'ThT5KcBeYPX3keUQqHPh',  # Dorothy - professional
+            'technical': 'MF3mGyEYCl7XYWbV9V6O'   # Elli - clear, technical
+        }
+        
+        selected_voice = voice_map.get(personality, voice_map['professional'])
+        
+        # Generate speech using ElevenLabs
+        audio = elevenlabs_client.generate(
+            text=text,
+            voice=selected_voice,
+            model="eleven_monolingual_v1"
+        )
+        
+        # Convert audio to base64 for JSON response
+        audio_base64 = base64.b64encode(audio).decode('utf-8')
+        
+        return jsonify({
+            'success': True,
+            'audio': audio_base64,
+            'voice_id': selected_voice,
+            'personality': personality
+        })
+        
+    except Exception as e:
+        logging.error(f'ElevenLabs TTS error: {e}')
+        return jsonify({'success': False, 'error': 'TTS generation failed'}), 500
+
+
+@app.route('/api/elevenlabs-voices', methods=['GET'])
+@login_required
+def get_elevenlabs_voices():
+    """Get available ElevenLabs voices"""
+    try:
+        # Get available voices from ElevenLabs
+        available_voices = elevenlabs_client.voices.get_all()
+        
+        # Format voices for frontend
+        voice_list = []
+        for voice in available_voices:
+            voice_list.append({
+                'voice_id': voice.voice_id,
+                'name': voice.name,
+                'category': voice.category,
+                'description': getattr(voice, 'description', ''),
+                'preview_url': getattr(voice, 'preview_url', '')
+            })
+        
+        return jsonify({
+            'success': True,
+            'voices': voice_list
+        })
+        
+    except Exception as e:
+        logging.error(f'Get voices error: {e}')
+        return jsonify({'success': False, 'error': 'Failed to get voices'}), 500
 
 
 @app.route('/register', methods=['GET', 'POST'])

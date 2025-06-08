@@ -1492,6 +1492,7 @@
             this.isRecording = false;
             this.speechRecognition = null;
             this.currentTranscript = '';
+            this.currentAudio = null; // Track ElevenLabs audio playback
             
             this.initializeSpeechRecognition();
             this.bindEvents();
@@ -1668,49 +1669,123 @@
             }
         }
         
-        speakQuestion() {
-            if ('speechSynthesis' in window) {
+        async speakQuestion() {
+            try {
                 const question = this.questions[this.currentQuestionIndex];
                 
                 // Add natural speech patterns and pauses
                 const naturalQuestion = this.addNaturalSpeechPatterns(question);
                 
-                const utterance = new SpeechSynthesisUtterance(naturalQuestion);
+                // Get personality for voice selection
+                const personality = document.getElementById('interviewer-personality')?.value || 'professional';
                 
-                // Get the best available voice for more realistic speech
-                const voice = this.getBestVoice();
-                if (voice) {
-                    utterance.voice = voice;
+                console.log('AI started speaking with ElevenLabs');
+                this.updateSpeakingIndicator(true);
+                
+                // Stop any currently playing audio
+                this.stopCurrentAudio();
+                
+                // Generate speech using ElevenLabs
+                const response = await fetch('/api/elevenlabs-tts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: naturalQuestion,
+                        personality: personality
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Convert base64 audio to blob and play
+                    const audioBlob = this.base64ToBlob(data.audio, 'audio/mpeg');
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    this.currentAudio = new Audio(audioUrl);
+                    
+                    this.currentAudio.onended = () => {
+                        console.log('AI finished speaking');
+                        this.updateSpeakingIndicator(false);
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    this.currentAudio.onerror = (error) => {
+                        console.error('Audio playback error:', error);
+                        this.updateSpeakingIndicator(false);
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    await this.currentAudio.play();
+                } else {
+                    console.error('ElevenLabs TTS error:', data.error);
+                    this.updateSpeakingIndicator(false);
+                    // Fallback to text display if speech fails
+                    this.showSpeechFallback('Speech generation failed. Please read the question above.');
                 }
                 
-                // Optimize speech parameters for natural sound
-                utterance.rate = this.getPersonalityRate();
-                utterance.pitch = this.getPersonalityPitch();
-                utterance.volume = 0.85;
+            } catch (error) {
+                console.error('Speech generation error:', error);
+                this.updateSpeakingIndicator(false);
+                // Fallback to text display if speech fails
+                this.showSpeechFallback('Speech is temporarily unavailable. Please read the question above.');
+            }
+        }
+        
+        // Helper method to convert base64 to blob
+        base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+        
+        // Helper method to stop current audio
+        stopCurrentAudio() {
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio.currentTime = 0;
+                this.currentAudio = null;
+            }
+        }
+        
+        // Helper method to show fallback text when speech fails
+        showSpeechFallback(message) {
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.className = 'speech-fallback-message';
+            fallbackDiv.style.cssText = `
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                color: #856404;
+                padding: 0.75rem;
+                border-radius: 0.375rem;
+                margin: 1rem 0;
+                font-size: 0.875rem;
+            `;
+            fallbackDiv.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${message}`;
+            
+            // Remove any existing fallback messages
+            const existingFallback = document.querySelector('.speech-fallback-message');
+            if (existingFallback) {
+                existingFallback.remove();
+            }
+            
+            // Add after the question
+            const questionContainer = document.querySelector('.question-display');
+            if (questionContainer) {
+                questionContainer.appendChild(fallbackDiv);
                 
-                // Add event listeners for better control
-                utterance.onstart = () => {
-                    console.log('AI started speaking');
-                    this.updateSpeakingIndicator(true);
-                };
-                
-                utterance.onend = () => {
-                    console.log('AI finished speaking');
-                    this.updateSpeakingIndicator(false);
-                };
-                
-                utterance.onerror = (event) => {
-                    console.error('Speech synthesis error:', event);
-                    this.updateSpeakingIndicator(false);
-                };
-                
-                // Cancel any existing speech before speaking
-                speechSynthesis.cancel();
-                
-                // Small delay to ensure cancellation is complete
+                // Auto-remove after 5 seconds
                 setTimeout(() => {
-                    speechSynthesis.speak(utterance);
-                }, 100);
+                    if (fallbackDiv.parentNode) {
+                        fallbackDiv.remove();
+                    }
+                }, 5000);
             }
         }
         
@@ -2103,8 +2178,8 @@
             }
         }
         
-        speakFeedback(feedback, score) {
-            if ('speechSynthesis' in window) {
+        async speakFeedback(feedback, score) {
+            try {
                 const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
                 
                 // Create natural feedback introduction
@@ -2153,31 +2228,61 @@
                 const shortFeedback = this.summarizeFeedbackForSpeech(feedback);
                 spokenFeedback += shortFeedback;
                 
-                const utterance = new SpeechSynthesisUtterance(spokenFeedback);
-                
-                // Use the same voice settings as questions
-                const voice = this.getBestVoice();
-                if (voice) {
-                    utterance.voice = voice;
-                }
-                
-                utterance.rate = this.getPersonalityRate() + 0.05; // Slightly faster for feedback
-                utterance.pitch = this.getPersonalityPitch();
-                utterance.volume = 0.8;
-                
-                // Visual feedback while speaking
-                utterance.onstart = () => {
-                    this.updateSpeakingIndicator(true);
-                };
-                
-                utterance.onend = () => {
-                    this.updateSpeakingIndicator(false);
-                };
-                
                 // Small delay before speaking feedback
-                setTimeout(() => {
-                    speechSynthesis.speak(utterance);
+                setTimeout(async () => {
+                    try {
+                        this.updateSpeakingIndicator(true);
+                        
+                        // Stop any currently playing audio
+                        this.stopCurrentAudio();
+                        
+                        // Generate speech using ElevenLabs
+                        const response = await fetch('/api/elevenlabs-tts', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                text: spokenFeedback,
+                                personality: personality
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Convert base64 audio to blob and play
+                            const audioBlob = this.base64ToBlob(data.audio, 'audio/mpeg');
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            
+                            this.currentAudio = new Audio(audioUrl);
+                            
+                            this.currentAudio.onended = () => {
+                                this.updateSpeakingIndicator(false);
+                                URL.revokeObjectURL(audioUrl);
+                            };
+                            
+                            this.currentAudio.onerror = (error) => {
+                                console.error('Feedback audio playback error:', error);
+                                this.updateSpeakingIndicator(false);
+                                URL.revokeObjectURL(audioUrl);
+                            };
+                            
+                            await this.currentAudio.play();
+                        } else {
+                            console.error('ElevenLabs feedback TTS error:', data.error);
+                            this.updateSpeakingIndicator(false);
+                        }
+                        
+                    } catch (error) {
+                        console.error('Feedback speech generation error:', error);
+                        this.updateSpeakingIndicator(false);
+                    }
                 }, 500);
+                
+            } catch (error) {
+                console.error('Feedback speech error:', error);
+                this.updateSpeakingIndicator(false);
             }
         }
         
@@ -2318,8 +2423,8 @@
             document.getElementById('interviewSetup').style.display = 'block';
         }
         
-        testVoice() {
-            if ('speechSynthesis' in window) {
+        async testVoice() {
+            try {
                 const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
                 
                 // Create test message based on personality
@@ -2336,49 +2441,77 @@
                         break;
                 }
                 
-                const utterance = new SpeechSynthesisUtterance(testMessage);
-                
-                // Get the best voice
-                const voice = this.getBestVoice();
-                if (voice) {
-                    utterance.voice = voice;
-                }
-                
-                // Apply user settings
-                utterance.rate = this.getPersonalityRate();
-                utterance.pitch = this.getPersonalityPitch();
-                utterance.volume = 0.85;
-                
                 // Disable test button while speaking
                 const testBtn = document.getElementById('testVoiceButton');
                 if (testBtn) {
                     testBtn.disabled = true;
-                    testBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Speaking...';
+                    testBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
                 }
                 
-                utterance.onend = () => {
+                // Stop any currently playing audio
+                this.stopCurrentAudio();
+                
+                // Generate speech using ElevenLabs
+                const response = await fetch('/api/elevenlabs-tts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: testMessage,
+                        personality: personality
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update button to show playing status
+                    if (testBtn) {
+                        testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Playing...';
+                    }
+                    
+                    // Convert base64 audio to blob and play
+                    const audioBlob = this.base64ToBlob(data.audio, 'audio/mpeg');
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    this.currentAudio = new Audio(audioUrl);
+                    
+                    this.currentAudio.onended = () => {
+                        if (testBtn) {
+                            testBtn.disabled = false;
+                            testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
+                        }
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    this.currentAudio.onerror = (error) => {
+                        console.error('Test voice playback error:', error);
+                        if (testBtn) {
+                            testBtn.disabled = false;
+                            testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
+                        }
+                        URL.revokeObjectURL(audioUrl);
+                    };
+                    
+                    await this.currentAudio.play();
+                } else {
+                    console.error('ElevenLabs test voice error:', data.error);
                     if (testBtn) {
                         testBtn.disabled = false;
                         testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
                     }
-                };
+                    alert('Voice test failed: ' + (data.error || 'Unknown error'));
+                }
                 
-                utterance.onerror = () => {
-                    if (testBtn) {
-                        testBtn.disabled = false;
-                        testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
-                    }
-                };
-                
-                // Cancel any existing speech
-                speechSynthesis.cancel();
-                
-                // Speak test message
-                setTimeout(() => {
-                    speechSynthesis.speak(utterance);
-                }, 100);
-            } else {
-                alert('Speech synthesis is not supported in your browser.');
+            } catch (error) {
+                console.error('Test voice error:', error);
+                const testBtn = document.getElementById('testVoiceButton');
+                if (testBtn) {
+                    testBtn.disabled = false;
+                    testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
+                }
+                alert('Voice test failed. Please try again.');
             }
         }
     }
