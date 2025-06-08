@@ -650,6 +650,25 @@ def delete_resume(resume_id):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
+@app.route('/resumes/<int:resume_id>/delete', methods=['POST'])
+@login_required
+def delete_resume_ajax(resume_id):
+    """AJAX endpoint for deleting resumes from the resumes page"""
+    try:
+        resume = Resume.query.get_or_404(resume_id)
+        if resume.user_id != current_user.id:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
+        db.session.delete(resume)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Resume deleted successfully'}), 200
+        
+    except Exception as e:
+        print(f"Error deleting resume: {e}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to delete resume'}), 500
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
