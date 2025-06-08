@@ -466,6 +466,126 @@
         color: white;
         font-size: 1.5rem;
         flex-shrink: 0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ai-avatar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .ai-avatar.speaking {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(45deg, var(--primary-blue), var(--primary-blue-dark));
+    }
+    
+    .ai-avatar.speaking::before {
+        opacity: 1;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+    
+    .ai-status-text {
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        transition: color 0.3s ease;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.7; }
+    }
+    
+    @keyframes voiceWave {
+        0%, 100% { 
+            transform: scaleY(1);
+            background: var(--primary-blue);
+        }
+        25% { 
+            transform: scaleY(1.3);
+            background: var(--success-green);
+        }
+        50% { 
+            transform: scaleY(0.8);
+            background: var(--primary-blue-light);
+        }
+        75% { 
+            transform: scaleY(1.1);
+            background: var(--purple-500);
+        }
+    }
+    
+    .ai-avatar.speaking {
+        animation: voiceWave 1.2s ease-in-out infinite;
+    }
+    
+    .voice-settings {
+        background: var(--gray-50);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+    
+    .setting-row:last-child {
+        margin-bottom: 0;
+    }
+    
+    .setting-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0;
+    }
+    
+    .form-control.compact {
+        width: auto;
+        min-width: 120px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    .btn-test-voice {
+        background: var(--primary-blue-light);
+        color: var(--primary-blue-dark);
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-test-voice:hover {
+        background: var(--primary-blue);
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    .btn-test-voice:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
     
     .question-text {
@@ -891,13 +1011,42 @@
                             </select>
                         </div>
                         
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-volume-up"></i> Voice Settings
+                            </label>
+                            <div class="voice-settings">
+                                <div class="setting-row">
+                                    <label for="voice-speed" class="setting-label">Speech Speed:</label>
+                                    <select id="voice-speed" class="form-control compact">
+                                        <option value="slow">Slow</option>
+                                        <option value="normal" selected>Normal</option>
+                                        <option value="fast">Fast</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row">
+                                    <label for="auto-speak-feedback" class="setting-label">Speak Feedback:</label>
+                                    <select id="auto-speak-feedback" class="form-control compact">
+                                        <option value="true" selected>Yes</option>
+                                        <option value="false">Text Only</option>
+                                    </select>
+                                </div>
+                                <div class="setting-row">
+                                    <button type="button" class="btn-test-voice" id="testVoiceButton">
+                                        <i class="bi bi-volume-up"></i> Test Voice
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="interview-instructions">
                             <h4><i class="bi bi-info-circle"></i> How it works:</h4>
                             <ul>
-                                <li>AI will ask you 5 tailored interview questions</li>
-                                <li>Speak your answers aloud (microphone required)</li>
-                                <li>Get instant AI feedback and scoring</li>
-                                <li>Receive final interview summary and tips</li>
+                                <li>🎤 AI will ask you 5 tailored interview questions with realistic voice</li>
+                                <li>🗣️ Speak your answers aloud (microphone required)</li>
+                                <li>⚡ Get instant AI feedback and scoring</li>
+                                <li>📊 Receive final interview summary and tips</li>
+                                <li>🔄 Questions adapt to your selected interviewer style</li>
                             </ul>
                         </div>
                         
@@ -1522,12 +1671,245 @@
         speakQuestion() {
             if ('speechSynthesis' in window) {
                 const question = this.questions[this.currentQuestionIndex];
-                const utterance = new SpeechSynthesisUtterance(question);
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                utterance.volume = 0.8;
                 
-                speechSynthesis.speak(utterance);
+                // Add natural speech patterns and pauses
+                const naturalQuestion = this.addNaturalSpeechPatterns(question);
+                
+                const utterance = new SpeechSynthesisUtterance(naturalQuestion);
+                
+                // Get the best available voice for more realistic speech
+                const voice = this.getBestVoice();
+                if (voice) {
+                    utterance.voice = voice;
+                }
+                
+                // Optimize speech parameters for natural sound
+                utterance.rate = this.getPersonalityRate();
+                utterance.pitch = this.getPersonalityPitch();
+                utterance.volume = 0.85;
+                
+                // Add event listeners for better control
+                utterance.onstart = () => {
+                    console.log('AI started speaking');
+                    this.updateSpeakingIndicator(true);
+                };
+                
+                utterance.onend = () => {
+                    console.log('AI finished speaking');
+                    this.updateSpeakingIndicator(false);
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error('Speech synthesis error:', event);
+                    this.updateSpeakingIndicator(false);
+                };
+                
+                // Cancel any existing speech before speaking
+                speechSynthesis.cancel();
+                
+                // Small delay to ensure cancellation is complete
+                setTimeout(() => {
+                    speechSynthesis.speak(utterance);
+                }, 100);
+            }
+        }
+        
+        getBestVoice() {
+            const voices = speechSynthesis.getVoices();
+            const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+            
+            // Define preferred voices for each personality
+            const voicePreferences = {
+                'friendly': [
+                    // Female voices - often sound more approachable
+                    'Samantha', 'Karen', 'Victoria', 'Allison', 'Susan',
+                    // Google voices
+                    'Google US English Female', 'Google UK English Female',
+                    // Microsoft voices
+                    'Microsoft Zira Desktop', 'Microsoft Hazel Desktop',
+                    // General female voices
+                    'Female', 'en-US Female', 'en-GB Female'
+                ],
+                'professional': [
+                    // Professional sounding voices
+                    'Daniel', 'Alex', 'Tom', 'David', 'Mark',
+                    // Google voices
+                    'Google US English Male', 'Google UK English Male',
+                    // Microsoft voices
+                    'Microsoft David Desktop', 'Microsoft Mark Desktop',
+                    // General male voices
+                    'Male', 'en-US Male', 'en-GB Male'
+                ],
+                'technical': [
+                    // Clear, precise voices
+                    'Alex', 'Daniel', 'Victoria', 'Samantha',
+                    // Google voices
+                    'Google US English', 'Google UK English',
+                    // Microsoft voices
+                    'Microsoft David Desktop', 'Microsoft Zira Desktop',
+                    // Any clear English voice
+                    'en-US', 'en-GB'
+                ]
+            };
+            
+            const preferredNames = voicePreferences[personality] || voicePreferences['friendly'];
+            
+            // First, try to find exact matches
+            for (const preferredName of preferredNames) {
+                const voice = voices.find(v => 
+                    v.name.includes(preferredName) && 
+                    (v.lang.startsWith('en-') || v.lang === 'en')
+                );
+                if (voice) {
+                    console.log(`Selected voice: ${voice.name} (${voice.lang})`);
+                    return voice;
+                }
+            }
+            
+            // Fallback: find any good English voice
+            const englishVoices = voices.filter(v => 
+                v.lang.startsWith('en-') || v.lang === 'en'
+            );
+            
+            // Prefer local voices over network voices
+            const localVoices = englishVoices.filter(v => v.localService);
+            if (localVoices.length > 0) {
+                console.log(`Selected fallback voice: ${localVoices[0].name}`);
+                return localVoices[0];
+            }
+            
+            if (englishVoices.length > 0) {
+                console.log(`Selected English voice: ${englishVoices[0].name}`);
+                return englishVoices[0];
+            }
+            
+            console.log('Using default voice');
+            return null;
+        }
+        
+        getPersonalityRate() {
+            const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+            const speedSetting = document.getElementById('voice-speed')?.value || 'normal';
+            
+            // Base rates by personality
+            let baseRate;
+            switch (personality) {
+                case 'friendly':
+                    baseRate = 0.85; // Slightly slower, more conversational
+                    break;
+                case 'professional':
+                    baseRate = 0.9;  // Standard business pace
+                    break;
+                case 'technical':
+                    baseRate = 0.8;  // Slower for clarity
+                    break;
+                default:
+                    baseRate = 0.85;
+            }
+            
+            // Adjust based on user preference
+            switch (speedSetting) {
+                case 'slow':
+                    return baseRate - 0.15;
+                case 'fast':
+                    return baseRate + 0.15;
+                default:
+                    return baseRate;
+            }
+        }
+        
+        getPersonalityPitch() {
+            const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+            
+            switch (personality) {
+                case 'friendly':
+                    return 1.1;  // Slightly higher, more warm
+                case 'professional':
+                    return 1.0;  // Neutral pitch
+                case 'technical':
+                    return 0.95; // Slightly lower, more serious
+                default:
+                    return 1.0;
+            }
+        }
+        
+        addNaturalSpeechPatterns(text) {
+            // Add natural pauses and emphasis for more human-like speech
+            let naturalText = text;
+            
+            // Add pauses after common phrases
+            naturalText = naturalText.replace(/(\w+),/g, '$1, <break time="300ms"/>');
+            naturalText = naturalText.replace(/(\w+)\./g, '$1. <break time="500ms"/>');
+            naturalText = naturalText.replace(/(\w+)\?/g, '$1? <break time="400ms"/>');
+            
+            // Add emphasis to important words
+            naturalText = naturalText.replace(/\b(experience|skills|challenges|goals|achievements)\b/gi, '<emphasis level="moderate">$1</emphasis>');
+            
+            // Add natural conversational starters
+            const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+            const questionNumber = this.currentQuestionIndex + 1;
+            
+            let prefix = '';
+            if (questionNumber === 1) {
+                switch (personality) {
+                    case 'friendly':
+                        prefix = "Great! Let's get started. <break time=\"400ms\"/> ";
+                        break;
+                    case 'professional':
+                        prefix = "Thank you for your time today. <break time=\"300ms\"/> ";
+                        break;
+                    case 'technical':
+                        prefix = "Let's begin with the technical assessment. <break time=\"400ms\"/> ";
+                        break;
+                }
+            } else if (questionNumber > 1) {
+                const encouragers = {
+                    'friendly': [
+                        "Excellent! <break time=\"300ms\"/> Now, ",
+                        "That's great to hear. <break time=\"300ms\"/> Next, ",
+                        "Perfect! <break time=\"300ms\"/> Let's move on. "
+                    ],
+                    'professional': [
+                        "Thank you. <break time=\"200ms\"/> Next question: ",
+                        "I see. <break time=\"300ms\"/> Moving forward, ",
+                        "Understood. <break time=\"200ms\"/> "
+                    ],
+                    'technical': [
+                        "Good. <break time=\"200ms\"/> Next, ",
+                        "I see. <break time=\"300ms\"/> Now, ",
+                        "Alright. <break time=\"200ms\"/> "
+                    ]
+                };
+                
+                const options = encouragers[personality] || encouragers['friendly'];
+                prefix = options[Math.floor(Math.random() * options.length)];
+            }
+            
+            return prefix + naturalText;
+        }
+        
+        updateSpeakingIndicator(speaking) {
+            const aiAvatar = document.querySelector('.ai-avatar');
+            const statusText = document.querySelector('.ai-status-text');
+            
+            if (speaking) {
+                if (aiAvatar) {
+                    aiAvatar.classList.add('speaking');
+                    aiAvatar.style.animation = 'pulse 1.5s ease-in-out infinite';
+                }
+                if (statusText) {
+                    statusText.textContent = 'AI is speaking...';
+                    statusText.style.color = '#10B981';
+                }
+            } else {
+                if (aiAvatar) {
+                    aiAvatar.classList.remove('speaking');
+                    aiAvatar.style.animation = '';
+                }
+                if (statusText) {
+                    statusText.textContent = 'Ready for your response';
+                    statusText.style.color = '#6B7280';
+                }
             }
         }
         
@@ -1713,6 +2095,109 @@
             if (feedbackPanel) {
                 feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+            
+            // Speak the feedback in a natural way (if enabled)
+            const shouldSpeak = document.getElementById('auto-speak-feedback')?.value !== 'false';
+            if (shouldSpeak) {
+                this.speakFeedback(feedback, score);
+            }
+        }
+        
+        speakFeedback(feedback, score) {
+            if ('speechSynthesis' in window) {
+                const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+                
+                // Create natural feedback introduction
+                let spokenFeedback = '';
+                
+                // Score-based intro
+                if (score >= 8) {
+                    switch (personality) {
+                        case 'friendly':
+                            spokenFeedback = "Excellent response! ";
+                            break;
+                        case 'professional':
+                            spokenFeedback = "Very good. ";
+                            break;
+                        case 'technical':
+                            spokenFeedback = "Strong answer. ";
+                            break;
+                    }
+                } else if (score >= 6) {
+                    switch (personality) {
+                        case 'friendly':
+                            spokenFeedback = "Good job! ";
+                            break;
+                        case 'professional':
+                            spokenFeedback = "Acceptable response. ";
+                            break;
+                        case 'technical':
+                            spokenFeedback = "Adequate. ";
+                            break;
+                    }
+                } else {
+                    switch (personality) {
+                        case 'friendly':
+                            spokenFeedback = "Thanks for sharing. ";
+                            break;
+                        case 'professional':
+                            spokenFeedback = "I see. ";
+                            break;
+                        case 'technical':
+                            spokenFeedback = "Noted. ";
+                            break;
+                    }
+                }
+                
+                // Add the actual feedback (shortened for speech)
+                const shortFeedback = this.summarizeFeedbackForSpeech(feedback);
+                spokenFeedback += shortFeedback;
+                
+                const utterance = new SpeechSynthesisUtterance(spokenFeedback);
+                
+                // Use the same voice settings as questions
+                const voice = this.getBestVoice();
+                if (voice) {
+                    utterance.voice = voice;
+                }
+                
+                utterance.rate = this.getPersonalityRate() + 0.05; // Slightly faster for feedback
+                utterance.pitch = this.getPersonalityPitch();
+                utterance.volume = 0.8;
+                
+                // Visual feedback while speaking
+                utterance.onstart = () => {
+                    this.updateSpeakingIndicator(true);
+                };
+                
+                utterance.onend = () => {
+                    this.updateSpeakingIndicator(false);
+                };
+                
+                // Small delay before speaking feedback
+                setTimeout(() => {
+                    speechSynthesis.speak(utterance);
+                }, 500);
+            }
+        }
+        
+        summarizeFeedbackForSpeech(feedback) {
+            // Extract key points from written feedback for speaking
+            const sentences = feedback.split('. ');
+            
+            // Take first sentence and any sentence with "improve" or "consider"
+            let spokenParts = [sentences[0]];
+            
+            for (let i = 1; i < Math.min(sentences.length, 3); i++) {
+                if (sentences[i].toLowerCase().includes('improve') || 
+                    sentences[i].toLowerCase().includes('consider') ||
+                    sentences[i].toLowerCase().includes('try')) {
+                    spokenParts.push(sentences[i]);
+                    break;
+                }
+            }
+            
+            return spokenParts.join('. ') + '.';
         }
         
         nextQuestion() {
@@ -1832,13 +2317,110 @@
             document.getElementById('interviewHistory').style.display = 'none';
             document.getElementById('interviewSetup').style.display = 'block';
         }
+        
+        testVoice() {
+            if ('speechSynthesis' in window) {
+                const personality = document.getElementById('interviewer-personality')?.value || 'friendly';
+                
+                // Create test message based on personality
+                let testMessage = '';
+                switch (personality) {
+                    case 'friendly':
+                        testMessage = "Hi there! I'm your friendly AI interviewer. I'm excited to help you practice and improve your interview skills today.";
+                        break;
+                    case 'professional':
+                        testMessage = "Good afternoon. I will be conducting your interview assessment today. Please ensure you're ready to begin with the technical questions.";
+                        break;
+                    case 'technical':
+                        testMessage = "Hello. I'm your technical interviewer. I'll be evaluating your responses based on accuracy, depth, and practical application.";
+                        break;
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(testMessage);
+                
+                // Get the best voice
+                const voice = this.getBestVoice();
+                if (voice) {
+                    utterance.voice = voice;
+                }
+                
+                // Apply user settings
+                utterance.rate = this.getPersonalityRate();
+                utterance.pitch = this.getPersonalityPitch();
+                utterance.volume = 0.85;
+                
+                // Disable test button while speaking
+                const testBtn = document.getElementById('testVoiceButton');
+                if (testBtn) {
+                    testBtn.disabled = true;
+                    testBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Speaking...';
+                }
+                
+                utterance.onend = () => {
+                    if (testBtn) {
+                        testBtn.disabled = false;
+                        testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
+                    }
+                };
+                
+                utterance.onerror = () => {
+                    if (testBtn) {
+                        testBtn.disabled = false;
+                        testBtn.innerHTML = '<i class="bi bi-volume-up"></i> Test Voice';
+                    }
+                };
+                
+                // Cancel any existing speech
+                speechSynthesis.cancel();
+                
+                // Speak test message
+                setTimeout(() => {
+                    speechSynthesis.speak(utterance);
+                }, 100);
+            } else {
+                alert('Speech synthesis is not supported in your browser.');
+            }
+        }
     }
     
     // Initialize voice interview manager when page loads
     let voiceInterviewManager;
     
-    document.addEventListener('DOMContentLoaded', function() {
+    // Voice initialization function
+    function initializeVoices() {
+        return new Promise((resolve) => {
+            const loadVoices = () => {
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    console.log('🎤 Available voices loaded:', voices.length);
+                    voices.forEach((voice, index) => {
+                        console.log(`Voice ${index}: ${voice.name} (${voice.lang}) ${voice.localService ? '[Local]' : '[Network]'}`);
+                    });
+                    resolve(voices);
+                } else {
+                    // Some browsers need more time to load voices
+                    setTimeout(loadVoices, 100);
+                }
+            };
+            
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            
+            loadVoices();
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', async function() {
         console.log('🚀 Initializing Voice Interview Manager...');
+        
+        // Initialize voices first
+        try {
+            await initializeVoices();
+        } catch (e) {
+            console.warn('Voice initialization warning:', e);
+        }
+        
         try {
             voiceInterviewManager = new VoiceInterviewManager();
             console.log('✅ Voice Interview Manager initialized successfully');
@@ -1861,6 +2443,17 @@
                 console.log('✅ MediaRecorder supported');
             } else {
                 console.log('⚠️ MediaRecorder not supported');
+            }
+            
+            // Add test voice button listener
+            const testVoiceBtn = document.getElementById('testVoiceButton');
+            if (testVoiceBtn) {
+                testVoiceBtn.addEventListener('click', () => {
+                    if (voiceInterviewManager) {
+                        voiceInterviewManager.testVoice();
+                    }
+                });
+                console.log('✅ Test voice button listener added');
             }
             
         } catch (error) {
