@@ -1,6 +1,346 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Create Resume{% endblock %}
+{% block title %}Create Resume - Tailored to Your Target Job{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-blue: #3B82F6;
+        --primary-blue-dark: #2563EB;
+        --primary-blue-light: #DBEAFE;
+        --gray-50: #F9FAFB;
+        --gray-100: #F3F4F6;
+        --gray-200: #E5E7EB;
+        --gray-300: #D1D5DB;
+        --gray-400: #9CA3AF;
+        --gray-500: #6B7280;
+        --gray-600: #4B5563;
+        --gray-700: #374151;
+        --gray-800: #1F2937;
+        --gray-900: #111827;
+        --success-green: #10B981;
+        --success-light: #D1FAE5;
+        --warning-amber: #F59E0B;
+        --warning-light: #FEF3C7;
+        --red-500: #EF4444;
+        --red-light: #FEE2E2;
+    }
+
+    body {
+        background: var(--gray-50);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .create-resume-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .title-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .page-subtitle {
+        color: var(--gray-600);
+        font-size: 1.1rem;
+    }
+
+    .resume-form {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+    }
+
+    .form-section {
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 1rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-blue-light);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-blue-dark);
+        font-size: 1.2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .section-description {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        line-height: 1.5;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-control.tall {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .job-url-container {
+        position: relative;
+    }
+
+    .fetch-job-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .fetch-job-btn:hover {
+        background: var(--primary-blue-dark);
+    }
+
+    .fetch-job-btn:disabled {
+        background: var(--gray-400);
+        cursor: not-allowed;
+    }
+
+    .job-details {
+        display: none;
+        margin-top: 1rem;
+        padding: 1.5rem;
+        background: var(--success-light);
+        border-radius: 8px;
+        border: 1px solid #A7F3D0;
+    }
+
+    .job-details.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .job-info {
+        margin-bottom: 1rem;
+    }
+
+    .job-company {
+        font-weight: 600;
+        color: var(--gray-900);
+        font-size: 1.1rem;
+    }
+
+    .job-title {
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .job-requirements {
+        margin-top: 1rem;
+    }
+
+    .requirements-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .requirements-list {
+        font-size: 0.9rem;
+        color: var(--gray-700);
+        line-height: 1.5;
+        max-height: 120px;
+        overflow-y: auto;
+    }
+
+    .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+        width: 100%;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-primary:disabled {
+        background: var(--gray-400);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .tailoring-indicator {
+        display: none;
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--warning-light);
+        border-radius: 8px;
+        border-left: 4px solid var(--warning-amber);
+        color: var(--gray-800);
+        font-size: 0.9rem;
+    }
+
+    .tailoring-indicator.show {
+        display: block;
+    }
+
+    .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 200;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+
+    @media (max-width: 768px) {
+        .mobile-menu-toggle {
+            display: block;
+        }
+
+        .create-resume-container {
+            margin: 1rem;
+            padding: 0;
+        }
+
+        .page-header, .resume-form {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .fetch-job-btn {
+            position: static;
+            margin-top: 0.5rem;
+            width: 100%;
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <!-- Mobile Menu Toggle -->
@@ -11,34 +351,218 @@
 <!-- Sidebar Overlay -->
 <div class="sidebar-overlay"></div>
 
-<div class="main-content">
-    <h2 class="mb-4">Create Resume</h2>
-    <div class="card p-4" style="max-width: 700px; margin: auto;">
-        <form method="POST" action="{{ url_for('create_resume') }}">
-            <div class="mb-3">
-                <label class="form-label">Name</label>
-                <input type="text" class="form-control" name="name" required>
+<div class="create-resume-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <div class="title-icon">
+                <i class="bi bi-file-earmark-plus"></i>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Phone number</label>
-                <input type="text" class="form-control" name="phone" required>
+            Create Tailored Resume
+        </h1>
+        <p class="page-subtitle">Build a professional resume optimized for your target job</p>
+    </div>
+
+    <!-- Resume Creation Form -->
+    <div class="resume-form">
+        <form method="POST" action="{{ url_for('create_resume') }}" id="createResumeForm">
+            <!-- Job Targeting Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h2 class="section-title">Job Targeting (Optional)</h2>
+                </div>
+                <div class="section-description">
+                    🎯 <strong>Pro Tip:</strong> Enter a job posting URL to automatically tailor your resume to match the specific requirements, keywords, and qualifications for that position.
+                </div>
+
+                <div>
+                    <label for="job_url" class="form-label">Job Posting URL</label>
+                    <div class="job-url-container">
+                        <input type="url" class="form-control" name="job_url" id="job_url" 
+                               placeholder="https://company.com/careers/job-posting or LinkedIn/Indeed job URL"
+                               style="padding-right: 120px;">
+                        <button type="button" class="fetch-job-btn" id="fetchJobBtn">
+                            <i class="bi bi-download"></i>
+                            Analyze Job
+                        </button>
+                    </div>
+                    <div id="jobDetails" class="job-details">
+                        <div class="job-info">
+                            <div class="job-company" id="jobCompany"></div>
+                            <div class="job-title" id="jobTitle"></div>
+                        </div>
+                        <div class="job-requirements">
+                            <div class="requirements-title">Key Requirements Found:</div>
+                            <div class="requirements-list" id="jobRequirements"></div>
+                        </div>
+                    </div>
+                    <div id="tailoringIndicator" class="tailoring-indicator">
+                        ✨ Your resume will be tailored to match the job requirements and keywords from this posting.
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Email address</label>
-                <input type="text" class="form-control" name="email" required>
+
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h2 class="section-title">Personal Information</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" name="name" id="name" 
+                               placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" name="phone" id="phone" 
+                               placeholder="(555) 123-4567" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" name="email" id="email" 
+                               placeholder="john.doe@email.com" required>
+                    </div>
+                    <div>
+                        <label for="job_title" class="form-label">Target Job Title</label>
+                        <input type="text" class="form-control" name="job_title" id="job_title" 
+                               placeholder="Software Engineer" required>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Job Title</label>
-                <input type="text" class="form-control" name="job_title" required>
+
+            <!-- Resume Content Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <h2 class="section-title">Resume Content</h2>
+                </div>
+                <div class="section-description">
+                    📝 Include your work experience, skills, education, and accomplishments. If you provided a job URL above, this content will be automatically optimized to match the job requirements.
+                </div>
+
+                <div>
+                    <label for="content" class="form-label">Experience & Background</label>
+                    <textarea class="form-control tall" name="content" id="content" 
+                              placeholder="Describe your work experience, skills, education, and key accomplishments. Include specific technologies, tools, and achievements that demonstrate your qualifications." 
+                              required></textarea>
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Experience / Resume Content</label>
-                <textarea class="form-control" name="content" rows="6" required></textarea>
+
+            <!-- Form Actions -->
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" id="createBtn">
+                    <i class="bi bi-magic"></i>
+                    <span id="createBtnText">Create Tailored Resume</span>
+                </button>
             </div>
-            <button type="submit" class="btn btn-success w-100">Create Resume</button>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jobUrlInput = document.getElementById('job_url');
+    const fetchJobBtn = document.getElementById('fetchJobBtn');
+    const jobDetails = document.getElementById('jobDetails');
+    const tailoringIndicator = document.getElementById('tailoringIndicator');
+    const createBtn = document.getElementById('createBtn');
+    const createBtnText = document.getElementById('createBtnText');
+
+    // Update button text based on job URL
+    function updateCreateButton() {
+        if (jobUrlInput.value.trim()) {
+            createBtnText.textContent = 'Create Tailored Resume';
+            tailoringIndicator.classList.add('show');
+        } else {
+            createBtnText.textContent = 'Create Resume';
+            tailoringIndicator.classList.remove('show');
+            jobDetails.classList.remove('show');
+        }
+    }
+
+    jobUrlInput.addEventListener('input', updateCreateButton);
+
+    // Fetch job details
+    fetchJobBtn.addEventListener('click', async function() {
+        const jobUrl = jobUrlInput.value.trim();
+        
+        if (!jobUrl) {
+            alert('Please enter a job URL first');
+            return;
+        }
+
+        // Validate URL format
+        try {
+            new URL(jobUrl);
+        } catch {
+            alert('Please enter a valid URL');
+            return;
+        }
+
+        fetchJobBtn.disabled = true;
+        fetchJobBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
+
+        try {
+            const response = await fetch('/api/analyze-job-posting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ job_url: jobUrl })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Display job details
+                document.getElementById('jobCompany').textContent = data.company || 'Company Name';
+                document.getElementById('jobTitle').textContent = data.title || 'Job Position';
+                document.getElementById('jobRequirements').textContent = data.requirements || 'Requirements analysis in progress...';
+                
+                jobDetails.classList.add('show');
+                
+                // Auto-fill job title if provided
+                if (data.title && !document.getElementById('job_title').value) {
+                    document.getElementById('job_title').value = data.title;
+                }
+            } else {
+                alert('Could not analyze job posting: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error analyzing job:', error);
+            alert('Error analyzing job posting. Please try again.');
+        } finally {
+            fetchJobBtn.disabled = false;
+            fetchJobBtn.innerHTML = '<i class="bi bi-download"></i> Analyze Job';
+        }
+    });
+
+    // Form submission enhancement
+    document.getElementById('createResumeForm').addEventListener('submit', function(e) {
+        createBtn.disabled = true;
+        
+        if (jobUrlInput.value.trim()) {
+            createBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating Tailored Resume...';
+        } else {
+            createBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Creating Resume...';
+        }
+    });
+});
+</script>
+{% endblock %}
 
 <style>
 body { 

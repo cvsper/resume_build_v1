@@ -5,7 +5,7 @@ import os
 import json
 import xml.etree.ElementTree as ET
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, make_response, jsonify, flash, send_from_directory
-from resume.resume_generator import generate_resume, generate_cover_letter, generate_interview_qa
+from resume.resume_generator import generate_resume, generate_cover_letter, generate_interview_qa, analyze_job_posting, tailor_resume_to_job
 import tempfile
 from weasyprint import HTML
 import stripe
@@ -372,6 +372,41 @@ def generate_interview_qa_api():
     return jsonify({'qa': qa_content})
 
 
+@app.route('/api/analyze-job-posting', methods=['POST'])
+@login_required
+def analyze_job_posting_api():
+    """API endpoint to analyze a job posting URL"""
+    try:
+        data = request.json
+        job_url = data.get('job_url', '').strip()
+        
+        if not job_url:
+            return jsonify({'success': False, 'error': 'Job URL is required'}), 400
+        
+        # Validate URL format
+        from urllib.parse import urlparse
+        parsed = urlparse(job_url)
+        if not parsed.scheme or not parsed.netloc:
+            return jsonify({'success': False, 'error': 'Invalid URL format'}), 400
+        
+        # Analyze the job posting
+        analysis = analyze_job_posting(job_url)
+        
+        if 'error' in analysis:
+            return jsonify({'success': False, 'error': analysis['error']}), 500
+        
+        return jsonify({
+            'success': True,
+            'company': analysis.get('company', 'Company'),
+            'title': analysis.get('title', 'Position'),
+            'requirements': analysis.get('requirements', 'Requirements analysis in progress...')
+        })
+        
+    except Exception as e:
+        logging.error(f'Job analysis API error: {e}')
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -634,31 +669,58 @@ def create_cover_letter():
 def create_resume():
     if request.method == 'POST':
         logging.debug('Create resume POST request received.')
-        # Use a default title since the form field was removed
-        title = f"Resume - {current_user.name or current_user.email}"
+        
+        # Get form data
+        name = request.form.get('name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        job_title = request.form.get('job_title', '').strip()
         experience = request.form.get('content', '').strip()
-        if not experience:
-            # Show a user-friendly error if content is missing
-            error_message = 'Please enter your experience or resume content.'
-            return render_template('create_resume.html', error_message=error_message)
-        template = request.form.get('template', session.get('selected_template', 'classic'))
-        name = request.form.get('name', '')
+        job_url = request.form.get('job_url', '').strip()
+        
+        # Validate required fields
+        if not all([name, phone, email, job_title, experience]):
+            error_message = 'Please fill in all required fields.'
+            return render_template('create_resume.html', error_message=error_message, active_page='resumes')
+        
         # Capitalize the first letter of each word in the name
         name = ' '.join([part.capitalize() for part in name.split()])
-        content = generate_resume(name, '', current_user.email, title, experience)
+        
+        # Create resume title
+        title = f"{job_title} Resume - {name}"
+        
+        # If job URL provided, tailor the resume to the job requirements
+        if job_url:
+            try:
+                tailored_content = tailor_resume_to_job(experience, job_url, job_title)
+                content = generate_resume(name, phone, email, title, tailored_content)
+            except Exception as e:
+                logging.error(f'Job tailoring failed: {e}')
+                # Fall back to regular resume generation
+                content = generate_resume(name, phone, email, title, experience)
+        else:
+            content = generate_resume(name, phone, email, title, experience)
+        
+        template = request.form.get('template', session.get('selected_template', 'classic'))
+        
+        # Create new resume
         new_resume = Resume(user_id=current_user.id, title=title, content=content, template=template)
         db.session.add(new_resume)
         db.session.commit()
+        
         # Generate thumbnail after saving
-        rendered_html = render_template(f"resume_templates/{template}.html", resume=new_resume)
         try:
+            rendered_html = render_template(f"resume_templates/{template}.html", resume=new_resume)
             generate_resume_thumbnail(new_resume.id, rendered_html)
         except Exception as e:
             logging.error(f'Thumbnail generation failed: {e}')
-        logging.debug('Redirecting to preview_resume.')
+        
+        logging.debug('Redirecting to resumes page.')
+        flash('Resume created successfully!', 'success')
         return redirect(url_for('resumes'))
+    
     logging.debug('Rendering create_resume.html template.')
-    return render_template('create_resume.html')
+    return render_template('create_resume.html', active_page='resumes')
 
 @app.route('/edit-resume/<int:resume_id>', methods=['GET', 'POST'])
 @login_required
