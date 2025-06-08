@@ -19,6 +19,8 @@ from flask_migrate import Migrate
 import requests
 import fitz  # PyMuPDF
 import logging
+import uuid
+import time
 from werkzeug.routing import BuildError
 
 
@@ -47,6 +49,17 @@ if not stripe_publishable_key:
 @app.context_processor
 def inject_stripe_key():
     return {'stripe_publishable_key': stripe_publishable_key}
+
+# Helper function for cache-busting profile pictures
+@app.context_processor
+def inject_cache_buster():
+    def profile_pic_url(filename):
+        if not filename or filename == 'default.jpg':
+            return url_for('static', filename='uploads/profile_pics/default.jpg')
+        # Add timestamp to prevent caching issues
+        cache_buster = int(time.time())
+        return url_for('static', filename=f'uploads/profile_pics/{filename}') + f'?v={cache_buster}'
+    return {'profile_pic_url': profile_pic_url}
 
 supabase_db_url = os.getenv('SUPABASE_DB_URL')
 if not supabase_db_url:
@@ -649,10 +662,26 @@ def profile():
         current_user.preferred_template = preferred_template
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Delete old profile picture if it exists and isn't the default
+            if current_user.profile_pic and current_user.profile_pic != 'default.jpg':
+                try:
+                    old_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.profile_pic)
+                    if os.path.exists(old_pic_path):
+                        os.remove(old_pic_path)
+                except Exception as e:
+                    print(f"Error deleting old profile picture: {e}")
+            
+            # Create upload directory if it doesn't exist
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            
+            # Generate unique filename to avoid conflicts and cache issues
+            file_extension = os.path.splitext(secure_filename(file.filename))[1]
+            unique_filename = f"profile_{current_user.id}_{uuid.uuid4().hex[:8]}{file_extension}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            
+            # Save the file
             file.save(filepath)
-            current_user.profile_pic = filename
+            current_user.profile_pic = unique_filename
 
         db.session.commit()
         return redirect(url_for('dashboard'))
@@ -1273,6 +1302,10 @@ def my_account():
     elif payment_status == 'failed':
         error_message = "❌ Payment failed. Please try again or contact support."
     
+    # Handle profile update success
+    if request.args.get('success') == 'profile_updated':
+        success_message = "✅ Profile updated successfully!"
+    
     if request.method == 'POST':
         # Handle profile updates
         name = request.form.get('name')
@@ -1358,13 +1391,36 @@ def my_account():
         if preferred_template:
             current_user.preferred_template = preferred_template
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Delete old profile picture if it exists and isn't the default
+            if current_user.profile_pic and current_user.profile_pic != 'default.jpg':
+                try:
+                    old_pic_path = os.path.join(app.config['UPLOAD_FOLDER'], current_user.profile_pic)
+                    if os.path.exists(old_pic_path):
+                        os.remove(old_pic_path)
+                except Exception as e:
+                    print(f"Error deleting old profile picture: {e}")
+            
+            # Create upload directory if it doesn't exist
+            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+            
+            # Generate unique filename to avoid conflicts and cache issues
+            import uuid
+            file_extension = os.path.splitext(secure_filename(file.filename))[1]
+            unique_filename = f"profile_{current_user.id}_{uuid.uuid4().hex[:8]}{file_extension}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            
+            # Save the file
             file.save(filepath)
-            current_user.profile_pic = filename
+            current_user.profile_pic = unique_filename
             
         db.session.commit()
-        return redirect(url_for('my_account'))
+        
+        # Set success message
+        success_message = "✅ Profile updated successfully!"
+        if file and allowed_file(file.filename):
+            success_message = "✅ Profile and picture updated successfully!"
+            
+        return redirect(url_for('my_account') + '?success=profile_updated')
     
     return render_template('profile.html', 
                          user=current_user, 

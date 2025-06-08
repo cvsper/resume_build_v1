@@ -785,7 +785,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar d-flex flex-column" role="navigation" aria-label="Dashboard Navigation">
         <header class="sidebar-header">
-            <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
+            <img src="{{ profile_pic_url(current_user.profile_pic) }}" 
                  alt="Profile picture of {{ current_user.name or current_user.email.split('@')[0] }}" 
                  aria-describedby="user-info">
             <div id="user-info">
@@ -905,7 +905,7 @@
                           aria-labelledby="profile-title" novalidate>
                         <div class="profile-pic-section">
                             <div class="profile-pic-container">
-                                <img src="{{ url_for('static', filename='uploads/profile_pics/' ~ current_user.profile_pic) }}" 
+                                <img src="{{ profile_pic_url(current_user.profile_pic) }}" 
                                      alt="Current profile picture for {{ current_user.name or current_user.email.split('@')[0] }}" 
                                      class="profile-pic" id="profilePicPreview">
                                 <label for="profile_pic" class="pic-upload-btn" aria-label="Upload new profile picture">
@@ -1341,11 +1341,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if (profilePicInput && profilePicPreview) {
         profilePicInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPG, PNG, or GIF).');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size must be less than 2MB.');
+                    this.value = '';
+                    return;
+                }
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     profilePicPreview.src = e.target.result;
+                    // Add a visual indicator that changes will take effect after saving
+                    profilePicPreview.style.border = '3px solid #10B981';
+                    profilePicPreview.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.3)';
                 };
-                reader.readAsDataURL(this.files[0]);
+                reader.readAsDataURL(file);
             }
         });
     }
