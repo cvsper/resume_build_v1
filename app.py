@@ -1838,18 +1838,16 @@ def get_resume_text_content(resume):
     
     if resume.professional_summary:
         content_parts.append(resume.professional_summary)
-    if resume.experience:
-        content_parts.append(resume.experience)
+    if resume.work_experience:
+        content_parts.append(resume.work_experience)
     if resume.education:
         content_parts.append(resume.education)
     if resume.skills:
         content_parts.append(resume.skills)
-    if resume.certifications:
-        content_parts.append(resume.certifications)
-    if resume.projects:
-        content_parts.append(resume.projects)
-    if resume.achievements:
-        content_parts.append(resume.achievements)
+    if resume.additional_sections:
+        content_parts.append(resume.additional_sections)
+    if resume.content:  # Legacy content field
+        content_parts.append(resume.content)
     
     return ' '.join(content_parts)
 
@@ -1865,7 +1863,7 @@ def analyze_format_structure(resume, content):
         recommendations.append("Add a professional summary section at the top of your resume")
         tips.append("Write a 2-3 sentence summary highlighting your key qualifications and career goals")
     
-    if not resume.experience:
+    if not resume.work_experience:
         score -= 25
         recommendations.append("Include a detailed work experience section")
         tips.append("List your jobs in reverse chronological order with bullet points describing achievements")
@@ -1940,25 +1938,39 @@ def analyze_contact_info(resume):
     recommendations = []
     tips = []
     
-    if not resume.email:
+    # Contact info is stored in User model, accessed via resume.user
+    user = resume.user if hasattr(resume, 'user') else None
+    
+    if not user or not user.email:
         score -= 30
         recommendations.append("Add a professional email address")
         tips.append("Use a format like firstname.lastname@email.com - avoid unprofessional usernames")
     
-    if not resume.phone:
+    if not user or not user.name:
         score -= 20
-        recommendations.append("Include your phone number")
-        tips.append("Use a format like (555) 123-4567 and ensure voicemail is professional")
+        recommendations.append("Include your full name")
+        tips.append("Make sure your name is clearly visible at the top of your resume")
     
-    if not resume.location:
+    # Check if contact info is in resume content or additional_sections
+    content_lower = get_resume_text_content(resume).lower()
+    has_phone = any(keyword in content_lower for keyword in ['phone', 'tel:', 'mobile', '(', ')', '-', 'call'])
+    has_location = any(keyword in content_lower for keyword in ['city', 'state', 'address', 'location'])
+    has_linkedin = any(keyword in content_lower for keyword in ['linkedin', 'linkedin.com'])
+    
+    if not has_phone:
         score -= 15
+        recommendations.append("Include your phone number")
+        tips.append("Add phone number in format (555) 123-4567 and ensure voicemail is professional")
+    
+    if not has_location:
+        score -= 10
         recommendations.append("Add your location (city, state)")
         tips.append("Include at least 'City, State' - full address not necessary for privacy")
     
-    if not resume.linkedin_url:
-        score -= 10
-        recommendations.append("Add your LinkedIn profile URL")
-        tips.append("Ensure your LinkedIn profile is complete and matches your resume")
+    if not has_linkedin:
+        score -= 5
+        recommendations.append("Consider adding your LinkedIn profile URL")
+        tips.append("LinkedIn profiles help recruiters learn more about your background")
     
     return max(score, 0), recommendations, tips
 
@@ -1971,22 +1983,30 @@ def analyze_sections(resume, content):
     # Check for essential sections
     sections_present = 0
     if resume.professional_summary: sections_present += 1
-    if resume.experience: sections_present += 1
+    if resume.work_experience: sections_present += 1
     if resume.education: sections_present += 1
     if resume.skills: sections_present += 1
     
     if sections_present < 3:
         score -= 30
         recommendations.append("Include more standard resume sections")
-        tips.append("Essential sections: Professional Summary, Experience, Education, Skills")
+        tips.append("Essential sections: Professional Summary, Work Experience, Education, Skills")
     
-    # Check for additional valuable sections
+    # Check for additional valuable sections in additional_sections field
+    additional_content = resume.additional_sections or ""
+    additional_content_lower = additional_content.lower()
+    
     additional_sections = 0
-    if resume.certifications: additional_sections += 1
-    if resume.projects: additional_sections += 1
-    if resume.achievements: additional_sections += 1
+    if any(keyword in additional_content_lower for keyword in ['certification', 'certificate', 'license']):
+        additional_sections += 1
+    if any(keyword in additional_content_lower for keyword in ['project', 'portfolio', 'github']):
+        additional_sections += 1
+    if any(keyword in additional_content_lower for keyword in ['achievement', 'award', 'honor', 'recognition']):
+        additional_sections += 1
+    if any(keyword in additional_content_lower for keyword in ['language', 'fluent', 'bilingual']):
+        additional_sections += 1
     
-    if additional_sections == 0:
+    if additional_sections == 0 and not additional_content:
         score -= 10
         recommendations.append("Consider adding additional sections like Projects or Certifications")
         tips.append("Extra sections can differentiate you: Certifications, Projects, Achievements, Languages")
@@ -2236,10 +2256,10 @@ def analyze_title_match(resume, job_title):
     """
     Analyze how well current job titles match the target job
     """
-    if not job_title or not resume.experience:
+    if not job_title or not resume.work_experience:
         return None
     
-    experience_lower = resume.experience.lower()
+    experience_lower = resume.work_experience.lower()
     job_title_lower = job_title.lower()
     
     # Extract key words from job title
