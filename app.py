@@ -1583,8 +1583,11 @@ def jobs():
     job_listings = []
     error_message = None
     
+    print(f"Jobs route: keyword='{keyword}', location='{location}'")
+    
     # Try Adzuna API first
     adzuna_jobs = fetch_adzuna_jobs(keyword, location)
+    print(f"Adzuna jobs returned: {len(adzuna_jobs) if adzuna_jobs else 0}")
     if adzuna_jobs:
         job_listings.extend(adzuna_jobs)
     
@@ -1603,9 +1606,23 @@ def jobs():
     
     # If still no jobs, provide sample/fallback jobs
     if not job_listings:
+        print("No API jobs found, using sample jobs")
         job_listings = get_sample_jobs(location)
+        print(f"Sample jobs returned: {len(job_listings)}")
         if not job_listings:
-            error_message = 'Unable to load jobs at the moment. Please try again later or check your internet connection.'
+            # This should never happen since get_sample_jobs always returns jobs
+            job_listings = [
+                {
+                    'title': 'Software Developer',
+                    'company': 'Local Tech Company',
+                    'location': location,
+                    'url': '#',
+                    'description': 'Join our team as a software developer. Great opportunity for growth.',
+                    'salary': 65000,
+                    'salary_max': 85000,
+                    'source': 'Fallback'
+                }
+            ]
     
     # Sort jobs by relevance (salary, recent posts, etc.)
     job_listings = sorted(job_listings, key=lambda x: (
@@ -1628,8 +1645,8 @@ def jobs():
 def fetch_adzuna_jobs(keyword, location):
     """Fetch jobs from Adzuna API"""
     if not ADZUNA_APP_ID or not ADZUNA_APP_KEY:
-        print("Adzuna API credentials not configured")
-        return []
+        print("Adzuna API credentials not configured - using sample jobs")
+        return []  # This will trigger the sample jobs fallback
     
     api_url = f'https://api.adzuna.com/v1/api/jobs/us/search/1'
     params = {
@@ -1670,7 +1687,7 @@ def get_sample_jobs(location):
             'title': 'Software Engineer',
             'company': 'Tech Solutions Inc.',
             'location': location,
-            'url': '#',
+            'url': 'https://www.indeed.com/jobs?q=software+engineer&l=' + location.replace(' ', '+').replace(',', '%2C'),
             'description': 'We are looking for a skilled software engineer to join our dynamic team. Experience with Python, JavaScript, and cloud technologies preferred.',
             'salary': 75000,
             'salary_max': 95000,
@@ -1680,7 +1697,7 @@ def get_sample_jobs(location):
             'title': 'Marketing Coordinator',
             'company': 'Creative Marketing Agency',
             'location': location,
-            'url': '#',
+            'url': 'https://www.indeed.com/jobs?q=marketing+coordinator&l=' + location.replace(' ', '+').replace(',', '%2C'),
             'description': 'Join our marketing team to help develop and execute marketing campaigns. Experience with digital marketing and social media required.',
             'salary': 45000,
             'salary_max': 55000,
@@ -1690,7 +1707,7 @@ def get_sample_jobs(location):
             'title': 'Data Analyst',
             'company': 'Analytics Corp',
             'location': location,
-            'url': '#',
+            'url': 'https://www.indeed.com/jobs?q=data+analyst&l=' + location.replace(' ', '+').replace(',', '%2C'),
             'description': 'Analyze business data to provide insights and recommendations. Strong Excel and SQL skills required.',
             'salary': 60000,
             'salary_max': 75000,
@@ -1700,7 +1717,7 @@ def get_sample_jobs(location):
             'title': 'Customer Service Representative',
             'company': 'Service First Company',
             'location': location,
-            'url': '#',
+            'url': 'https://www.indeed.com/jobs?q=customer+service&l=' + location.replace(' ', '+').replace(',', '%2C'),
             'description': 'Provide excellent customer service via phone and email. Great communication skills and patience required.',
             'salary': 35000,
             'salary_max': 45000,
@@ -1710,10 +1727,60 @@ def get_sample_jobs(location):
             'title': 'Project Manager',
             'company': 'Global Projects LLC',
             'location': location,
-            'url': '#',
+            'url': 'https://www.indeed.com/jobs?q=project+manager&l=' + location.replace(' ', '+').replace(',', '%2C'),
             'description': 'Lead cross-functional teams to deliver projects on time and within budget. PMP certification preferred.',
             'salary': 70000,
             'salary_max': 90000,
+            'source': 'Sample'
+        },
+        {
+            'title': 'Business Analyst',
+            'company': 'Enterprise Solutions',
+            'location': location,
+            'url': 'https://www.indeed.com/jobs?q=business+analyst&l=' + location.replace(' ', '+').replace(',', '%2C'),
+            'description': 'Analyze business processes and requirements to recommend solutions. Strong analytical and communication skills required.',
+            'salary': 65000,
+            'salary_max': 80000,
+            'source': 'Sample'
+        },
+        {
+            'title': 'UX Designer',
+            'company': 'Design Studio Pro',
+            'location': location,
+            'url': 'https://www.indeed.com/jobs?q=ux+designer&l=' + location.replace(' ', '+').replace(',', '%2C'),
+            'description': 'Create user-centered designs for web and mobile applications. Experience with Figma, Sketch, and user research required.',
+            'salary': 70000,
+            'salary_max': 85000,
+            'source': 'Sample'
+        },
+        {
+            'title': 'Sales Representative',
+            'company': 'Growth Sales Corp',
+            'location': location,
+            'url': 'https://www.indeed.com/jobs?q=sales+representative&l=' + location.replace(' ', '+').replace(',', '%2C'),
+            'description': 'Drive sales growth by building relationships with clients and identifying new business opportunities.',
+            'salary': 40000,
+            'salary_max': 65000,
+            'source': 'Sample'
+        },
+        {
+            'title': 'Content Writer',
+            'company': 'Digital Content Agency',
+            'location': location,
+            'url': 'https://www.indeed.com/jobs?q=content+writer&l=' + location.replace(' ', '+').replace(',', '%2C'),
+            'description': 'Create engaging content for websites, blogs, and social media. Strong writing skills and SEO knowledge preferred.',
+            'salary': 42000,
+            'salary_max': 55000,
+            'source': 'Sample'
+        },
+        {
+            'title': 'Account Manager',
+            'company': 'Client Relations Inc.',
+            'location': location,
+            'url': 'https://www.indeed.com/jobs?q=account+manager&l=' + location.replace(' ', '+').replace(',', '%2C'),
+            'description': 'Manage client relationships and ensure customer satisfaction. Experience in account management and strong communication skills required.',
+            'salary': 55000,
+            'salary_max': 70000,
             'source': 'Sample'
         }
     ]

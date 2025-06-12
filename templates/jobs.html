@@ -543,6 +543,13 @@
                         <strong>Smart Job Discovery:</strong> We've automatically found popular jobs in your area. Use the search above to find specific roles.
                     </div>
                     {% endif %}
+                    
+                    {% if jobs and jobs[0].source == 'Sample' %}
+                    <div class="sample-jobs-notice" style="background: #FEF3C7; border: 1px solid #F59E0B; border-radius: 8px; padding: 1rem; margin-top: 1rem; color: #92400E;">
+                        <i class="bi bi-lightbulb"></i>
+                        <strong>Sample Jobs:</strong> These are example job postings from your area. Click "Apply Now" to search for real opportunities on Indeed.
+                    </div>
+                    {% endif %}
                 </header>
 
                 <div class="jobs-grid">
@@ -612,8 +619,11 @@ document.addEventListener('DOMContentLoaded', function() {
         detectUserLocation();
     }
     
-    // Show loading indicator for better UX
-    if (window.location.search === '') {
+    // Only show loading indicator if page is actually empty
+    const jobsGrid = document.querySelector('.jobs-grid');
+    const noJobsDiv = document.querySelector('.no-jobs');
+    
+    if (window.location.search === '' && !jobsGrid && !noJobsDiv) {
         showJobsLoading();
     }
 });
