@@ -1754,23 +1754,504 @@ def generate_resume_thumbnail(resume_id, html_content):
 @app.route('/analyze-resume/<int:resume_id>', methods=['GET'])
 @login_required
 def analyze_resume(resume_id):
-    # Fetch the resume content (this assumes resumes are stored as text or can be converted to text)
-    resume_path = os.path.join('static', 'resume_thumbnails', f'{resume_id}.png')
-    if not os.path.exists(resume_path):
-        return jsonify({'error': 'Resume not found'}), 404
+    try:
+        # Get the resume from database
+        resume = Resume.query.filter_by(id=resume_id, user_id=current_user.id).first()
+        if not resume:
+            return jsonify({'error': 'Resume not found'}), 404
 
-    # Placeholder for ATS analysis logic
-    # Replace this with actual analysis logic or API integration
-    analysis_result = {
-        'score': 85,  # Example score
-        'recommendations': [
-            'Use more keywords relevant to the job description.',
-            'Avoid using tables or images for critical information.',
-            'Ensure consistent formatting throughout the resume.'
-        ]
+        # Perform comprehensive ATS analysis
+        analysis_result = analyze_resume_ats_score(resume)
+        return jsonify(analysis_result)
+        
+    except Exception as e:
+        app.logger.error(f"Error analyzing resume {resume_id}: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+def analyze_resume_ats_score(resume):
+    """
+    Comprehensive ATS scoring algorithm analyzing multiple factors
+    """
+    scores = {}
+    recommendations = []
+    improvement_tips = []
+    
+    # Get resume content
+    content = get_resume_text_content(resume)
+    
+    # 1. Format and Structure Analysis (25% weight)
+    format_score, format_recs, format_tips = analyze_format_structure(resume, content)
+    scores['format'] = format_score
+    recommendations.extend(format_recs)
+    improvement_tips.extend(format_tips)
+    
+    # 2. Keywords and Content Analysis (30% weight) 
+    keyword_score, keyword_recs, keyword_tips = analyze_keywords_content(content, resume)
+    scores['keywords'] = keyword_score
+    recommendations.extend(keyword_recs)
+    improvement_tips.extend(keyword_tips)
+    
+    # 3. Contact Information (15% weight)
+    contact_score, contact_recs, contact_tips = analyze_contact_info(resume)
+    scores['contact'] = contact_score
+    recommendations.extend(contact_recs)
+    improvement_tips.extend(contact_tips)
+    
+    # 4. Section Organization (20% weight)
+    section_score, section_recs, section_tips = analyze_sections(resume, content)
+    scores['sections'] = section_score
+    recommendations.extend(section_recs)
+    improvement_tips.extend(section_tips)
+    
+    # 5. Length and Readability (10% weight)
+    length_score, length_recs, length_tips = analyze_length_readability(content)
+    scores['length'] = length_score
+    recommendations.extend(length_recs)
+    improvement_tips.extend(length_tips)
+    
+    # Calculate weighted overall score
+    overall_score = (
+        scores['format'] * 0.25 +
+        scores['keywords'] * 0.30 +
+        scores['contact'] * 0.15 +
+        scores['sections'] * 0.20 +
+        scores['length'] * 0.10
+    )
+    
+    return {
+        'score': round(overall_score),
+        'breakdown': scores,
+        'recommendations': recommendations[:6],  # Top 6 recommendations
+        'improvement_tips': improvement_tips,
+        'analysis_details': {
+            'total_words': len(content.split()) if content else 0,
+            'keyword_density': calculate_keyword_density(content),
+            'ats_friendly_format': scores['format'] >= 80,
+            'strong_keywords': scores['keywords'] >= 75,
+            'complete_contact': scores['contact'] >= 90
+        }
     }
 
-    return jsonify(analysis_result)
+def get_resume_text_content(resume):
+    """Extract text content from resume fields"""
+    content_parts = []
+    
+    if resume.professional_summary:
+        content_parts.append(resume.professional_summary)
+    if resume.experience:
+        content_parts.append(resume.experience)
+    if resume.education:
+        content_parts.append(resume.education)
+    if resume.skills:
+        content_parts.append(resume.skills)
+    if resume.certifications:
+        content_parts.append(resume.certifications)
+    if resume.projects:
+        content_parts.append(resume.projects)
+    if resume.achievements:
+        content_parts.append(resume.achievements)
+    
+    return ' '.join(content_parts)
+
+def analyze_format_structure(resume, content):
+    """Analyze resume format and structure for ATS compatibility"""
+    score = 100
+    recommendations = []
+    tips = []
+    
+    # Check for proper headings and structure
+    if not resume.professional_summary:
+        score -= 20
+        recommendations.append("Add a professional summary section at the top of your resume")
+        tips.append("Write a 2-3 sentence summary highlighting your key qualifications and career goals")
+    
+    if not resume.experience:
+        score -= 25
+        recommendations.append("Include a detailed work experience section")
+        tips.append("List your jobs in reverse chronological order with bullet points describing achievements")
+    
+    if not resume.education:
+        score -= 10
+        recommendations.append("Add your education information")
+        tips.append("Include degree, institution, graduation year, and relevant coursework or honors")
+    
+    if not resume.skills:
+        score -= 15
+        recommendations.append("Create a dedicated skills section")
+        tips.append("List both technical and soft skills relevant to your target job")
+    
+    # Check content length and bullet points
+    if content and len(content.split()) < 200:
+        score -= 10
+        recommendations.append("Expand your resume content - it appears too brief")
+        tips.append("Aim for 400-600 words total across all sections for optimal ATS scanning")
+    
+    return max(score, 0), recommendations, tips
+
+def analyze_keywords_content(content, resume):
+    """Analyze keyword usage and content quality"""
+    score = 100
+    recommendations = []
+    tips = []
+    
+    if not content:
+        return 0, ["Add content to your resume"], ["Fill in all relevant sections with detailed information"]
+    
+    words = content.lower().split()
+    word_count = len(words)
+    
+    # Check for action verbs
+    action_verbs = ['achieved', 'managed', 'led', 'developed', 'created', 'improved', 'increased', 
+                   'reduced', 'implemented', 'designed', 'coordinated', 'supervised', 'analyzed']
+    action_verb_count = sum(1 for verb in action_verbs if verb in content.lower())
+    
+    if action_verb_count < 5:
+        score -= 15
+        recommendations.append("Use more strong action verbs to describe your achievements")
+        tips.append("Start bullet points with verbs like: achieved, managed, led, developed, improved, increased")
+    
+    # Check for quantifiable achievements
+    numbers_pattern = r'\d+'
+    import re
+    numbers = re.findall(numbers_pattern, content)
+    if len(numbers) < 3:
+        score -= 20
+        recommendations.append("Include more quantified achievements and metrics")
+        tips.append("Add specific numbers: '% improvement', 'managed X people', 'saved $X', 'increased by X%'")
+    
+    # Check for industry keywords (basic analysis)
+    if word_count < 300:
+        score -= 10
+        recommendations.append("Expand content with more industry-specific keywords")
+        tips.append("Research job postings in your field and include relevant technical terms and skills")
+    
+    # Check for repetitive language
+    unique_words = set(words)
+    if len(unique_words) / word_count < 0.7:
+        score -= 5
+        recommendations.append("Vary your language to avoid repetition")
+        tips.append("Use synonyms and different phrasing to describe similar accomplishments")
+    
+    return max(score, 0), recommendations, tips
+
+def analyze_contact_info(resume):
+    """Analyze contact information completeness"""
+    score = 100
+    recommendations = []
+    tips = []
+    
+    if not resume.email:
+        score -= 30
+        recommendations.append("Add a professional email address")
+        tips.append("Use a format like firstname.lastname@email.com - avoid unprofessional usernames")
+    
+    if not resume.phone:
+        score -= 20
+        recommendations.append("Include your phone number")
+        tips.append("Use a format like (555) 123-4567 and ensure voicemail is professional")
+    
+    if not resume.location:
+        score -= 15
+        recommendations.append("Add your location (city, state)")
+        tips.append("Include at least 'City, State' - full address not necessary for privacy")
+    
+    if not resume.linkedin_url:
+        score -= 10
+        recommendations.append("Add your LinkedIn profile URL")
+        tips.append("Ensure your LinkedIn profile is complete and matches your resume")
+    
+    return max(score, 0), recommendations, tips
+
+def analyze_sections(resume, content):
+    """Analyze section organization and completeness"""
+    score = 100
+    recommendations = []
+    tips = []
+    
+    # Check for essential sections
+    sections_present = 0
+    if resume.professional_summary: sections_present += 1
+    if resume.experience: sections_present += 1
+    if resume.education: sections_present += 1
+    if resume.skills: sections_present += 1
+    
+    if sections_present < 3:
+        score -= 30
+        recommendations.append("Include more standard resume sections")
+        tips.append("Essential sections: Professional Summary, Experience, Education, Skills")
+    
+    # Check for additional valuable sections
+    additional_sections = 0
+    if resume.certifications: additional_sections += 1
+    if resume.projects: additional_sections += 1
+    if resume.achievements: additional_sections += 1
+    
+    if additional_sections == 0:
+        score -= 10
+        recommendations.append("Consider adding additional sections like Projects or Certifications")
+        tips.append("Extra sections can differentiate you: Certifications, Projects, Achievements, Languages")
+    
+    return max(score, 0), recommendations, tips
+
+def analyze_length_readability(content):
+    """Analyze resume length and readability"""
+    score = 100
+    recommendations = []
+    tips = []
+    
+    if not content:
+        return 0, ["Add content to your resume"], ["Fill in all sections with relevant information"]
+    
+    word_count = len(content.split())
+    
+    if word_count < 250:
+        score -= 20
+        recommendations.append("Resume content is too brief - expand with more details")
+        tips.append("Aim for 400-600 words total. Add more details about your accomplishments")
+    elif word_count > 800:
+        score -= 15
+        recommendations.append("Resume may be too lengthy - consider condensing")
+        tips.append("Focus on most relevant and impressive achievements. Remove outdated information")
+    
+    # Check average sentence length (basic readability)
+    sentences = content.split('.')
+    if sentences:
+        avg_words_per_sentence = word_count / len(sentences)
+        if avg_words_per_sentence > 25:
+            score -= 5
+            recommendations.append("Use shorter, clearer sentences")
+            tips.append("Break long sentences into shorter ones for better ATS parsing and readability")
+    
+    return max(score, 0), recommendations, tips
+
+def calculate_keyword_density(content):
+    """Calculate keyword density for common professional terms"""
+    if not content:
+        return {}
+    
+    content_lower = content.lower()
+    common_keywords = ['management', 'leadership', 'analysis', 'development', 'project', 
+                      'team', 'strategy', 'communication', 'problem', 'solution']
+    
+    density = {}
+    total_words = len(content.split())
+    
+    for keyword in common_keywords:
+        count = content_lower.count(keyword)
+        density[keyword] = round((count / total_words) * 100, 2) if total_words > 0 else 0
+    
+    return density
+
+@app.route('/analyze-resume-job/<int:resume_id>', methods=['POST'])
+@login_required
+def analyze_resume_job_specific(resume_id):
+    """
+    Analyze resume against a specific job description for targeted ATS score
+    """
+    try:
+        # Get the resume from database
+        resume = Resume.query.filter_by(id=resume_id, user_id=current_user.id).first()
+        if not resume:
+            return jsonify({'error': 'Resume not found'}), 404
+
+        # Get job description from request
+        data = request.get_json()
+        job_description = data.get('job_description', '').strip()
+        job_title = data.get('job_title', '').strip()
+        
+        if not job_description:
+            return jsonify({'error': 'Job description is required'}), 400
+
+        # Perform job-specific ATS analysis
+        analysis_result = analyze_resume_against_job(resume, job_description, job_title)
+        return jsonify(analysis_result)
+        
+    except Exception as e:
+        app.logger.error(f"Error analyzing resume {resume_id} against job: {str(e)}")
+        return jsonify({'error': 'Job-specific analysis failed'}), 500
+
+def analyze_resume_against_job(resume, job_description, job_title=""):
+    """
+    Analyze resume against specific job description for targeted improvements
+    """
+    # Get basic ATS analysis
+    basic_analysis = analyze_resume_ats_score(resume)
+    
+    # Get resume content
+    content = get_resume_text_content(resume)
+    
+    # Extract keywords from job description
+    job_keywords = extract_job_keywords(job_description, job_title)
+    
+    # Analyze keyword match
+    keyword_match_score, keyword_suggestions = analyze_keyword_match(content, job_keywords)
+    
+    # Analyze skill requirements
+    skill_match_score, skill_suggestions = analyze_skill_requirements(resume, job_description)
+    
+    # Update scores with job-specific analysis
+    job_specific_score = (
+        basic_analysis['score'] * 0.6 +  # 60% basic ATS
+        keyword_match_score * 0.25 +    # 25% keyword match
+        skill_match_score * 0.15         # 15% skill match
+    )
+    
+    return {
+        'score': round(job_specific_score),
+        'basic_ats_score': basic_analysis['score'],
+        'keyword_match_score': keyword_match_score,
+        'skill_match_score': skill_match_score,
+        'breakdown': basic_analysis['breakdown'],
+        'job_analysis': {
+            'matched_keywords': job_keywords['matched'],
+            'missing_keywords': job_keywords['missing'][:10],  # Top 10 missing
+            'keyword_suggestions': keyword_suggestions,
+            'skill_suggestions': skill_suggestions,
+            'job_title_match': analyze_title_match(resume, job_title) if job_title else None
+        },
+        'recommendations': basic_analysis['recommendations'] + keyword_suggestions + skill_suggestions,
+        'improvement_tips': basic_analysis['improvement_tips'],
+        'analysis_details': basic_analysis['analysis_details']
+    }
+
+def extract_job_keywords(job_description, job_title=""):
+    """
+    Extract important keywords from job description
+    """
+    import re
+    from collections import Counter
+    
+    # Common stop words to exclude
+    stop_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'must', 'shall', 'this', 'that', 'these', 'those', 'they', 'them', 'their', 'we', 'our', 'you', 'your', 'he', 'she', 'it', 'his', 'her', 'its'}
+    
+    # Clean and tokenize job description
+    text = re.sub(r'[^\w\s]', ' ', job_description.lower())
+    words = [word for word in text.split() if len(word) > 2 and word not in stop_words]
+    
+    # Count word frequency
+    word_freq = Counter(words)
+    
+    # Common technical/professional terms that are usually important
+    priority_terms = ['experience', 'management', 'leadership', 'analysis', 'development', 'project', 'team', 'strategy', 'communication', 'problem', 'solution', 'software', 'technical', 'business', 'customer', 'sales', 'marketing', 'finance', 'operations', 'quality', 'process', 'data', 'digital', 'cloud', 'agile', 'scrum']
+    
+    # Extract most frequent meaningful words
+    important_keywords = []
+    for word, count in word_freq.most_common(50):
+        if count >= 2 or word in priority_terms:  # Words mentioned multiple times or priority terms
+            important_keywords.append(word)
+    
+    # Add job title keywords if provided
+    if job_title:
+        title_words = [word for word in re.sub(r'[^\w\s]', ' ', job_title.lower()).split() if len(word) > 2 and word not in stop_words]
+        important_keywords.extend(title_words)
+    
+    return {
+        'all_keywords': list(set(important_keywords)),
+        'matched': [],
+        'missing': []
+    }
+
+def analyze_keyword_match(content, job_keywords):
+    """
+    Analyze how well resume content matches job keywords
+    """
+    if not content:
+        return 0, ["Add content to your resume to analyze keyword matching"]
+    
+    content_lower = content.lower()
+    all_keywords = job_keywords['all_keywords']
+    
+    matched_keywords = []
+    missing_keywords = []
+    
+    for keyword in all_keywords:
+        if keyword in content_lower:
+            matched_keywords.append(keyword)
+        else:
+            missing_keywords.append(keyword)
+    
+    # Update job_keywords with results
+    job_keywords['matched'] = matched_keywords
+    job_keywords['missing'] = missing_keywords
+    
+    # Calculate match percentage
+    if not all_keywords:
+        match_score = 100
+    else:
+        match_score = (len(matched_keywords) / len(all_keywords)) * 100
+    
+    suggestions = []
+    if match_score < 60:
+        suggestions.append(f"Add more job-specific keywords. You're missing {len(missing_keywords)} important terms")
+    if missing_keywords:
+        top_missing = missing_keywords[:5]
+        suggestions.append(f"Consider including these keywords: {', '.join(top_missing)}")
+    
+    return match_score, suggestions
+
+def analyze_skill_requirements(resume, job_description):
+    """
+    Analyze skill match between resume and job requirements
+    """
+    # Common skill categories and their keywords
+    skill_categories = {
+        'technical': ['python', 'java', 'javascript', 'sql', 'html', 'css', 'react', 'angular', 'vue', 'node', 'docker', 'kubernetes', 'aws', 'azure', 'git', 'linux', 'windows', 'mac'],
+        'management': ['leadership', 'management', 'team', 'project', 'strategy', 'planning', 'coordination', 'supervision'],
+        'analytics': ['analysis', 'data', 'analytics', 'reporting', 'metrics', 'dashboard', 'excel', 'powerbi', 'tableau'],
+        'communication': ['communication', 'presentation', 'writing', 'documentation', 'training', 'client', 'stakeholder']
+    }
+    
+    job_lower = job_description.lower()
+    resume_skills = (resume.skills or '').lower()
+    resume_content = get_resume_text_content(resume).lower()
+    
+    matched_skills = []
+    missing_skills = []
+    
+    for category, skills in skill_categories.items():
+        for skill in skills:
+            if skill in job_lower:
+                if skill in resume_skills or skill in resume_content:
+                    matched_skills.append(skill)
+                else:
+                    missing_skills.append(skill)
+    
+    # Calculate skill match score
+    total_required_skills = len(matched_skills) + len(missing_skills)
+    if total_required_skills == 0:
+        skill_score = 100
+    else:
+        skill_score = (len(matched_skills) / total_required_skills) * 100
+    
+    suggestions = []
+    if skill_score < 70:
+        suggestions.append("Your resume is missing several key skills mentioned in the job description")
+    if missing_skills:
+        top_missing_skills = missing_skills[:3]
+        suggestions.append(f"Consider highlighting these skills if you have them: {', '.join(top_missing_skills)}")
+    
+    return skill_score, suggestions
+
+def analyze_title_match(resume, job_title):
+    """
+    Analyze how well current job titles match the target job
+    """
+    if not job_title or not resume.experience:
+        return None
+    
+    experience_lower = resume.experience.lower()
+    job_title_lower = job_title.lower()
+    
+    # Extract key words from job title
+    title_words = [word for word in job_title_lower.split() if len(word) > 2]
+    
+    matches = sum(1 for word in title_words if word in experience_lower)
+    match_percentage = (matches / len(title_words)) * 100 if title_words else 0
+    
+    return {
+        'match_percentage': round(match_percentage),
+        'suggestion': f"Consider emphasizing experience related to '{job_title}' in your job descriptions" if match_percentage < 50 else None
+    }
 
 @app.route('/upload-resume', methods=['POST'])
 @login_required

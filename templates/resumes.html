@@ -752,7 +752,7 @@
 
         <!-- ATS Analysis Modal -->
         <div class="modal fade" id="atsModal" tabindex="-1" aria-labelledby="atsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="atsModalLabel">
@@ -848,28 +848,192 @@
                             </div>
                         `;
                     } else {
+                        const scoreColor = data.score >= 80 ? 'bg-success' : data.score >= 60 ? 'bg-warning' : 'bg-danger';
+                        const scoreLabel = data.score >= 80 ? 'Excellent' : data.score >= 60 ? 'Good' : 'Needs Improvement';
+                        
                         atsContent.innerHTML = `
+                            <!-- Overall Score -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-speedometer2 me-2"></i>Overall ATS Score
+                                    </h6>
+                                    <span class="badge ${scoreColor.replace('bg-', 'text-bg-')}">${scoreLabel}</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 25px;">
+                                    <div class="progress-bar ${scoreColor}" role="progressbar" 
+                                         style="width: ${data.score}%">
+                                        <strong>${data.score}%</strong>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Score based on format (25%), keywords (30%), contact info (15%), sections (20%), and readability (10%)
+                                </small>
+                            </div>
+
+                            <!-- Detailed Breakdown -->
                             <div class="mb-4">
                                 <h6 class="mb-3">
-                                    <i class="bi bi-speedometer2 me-2"></i>ATS Score
+                                    <i class="bi bi-bar-chart me-2"></i>Detailed Analysis
                                 </h6>
-                                <div class="progress mb-2" style="height: 20px;">
-                                    <div class="progress-bar bg-primary" role="progressbar" 
-                                         style="width: ${data.score}%">${data.score}%</div>
+                                <div class="row g-2">
+                                    ${Object.entries(data.breakdown || {}).map(([category, score]) => {
+                                        const categoryNames = {
+                                            'format': 'Format & Structure',
+                                            'keywords': 'Keywords & Content',
+                                            'contact': 'Contact Information',
+                                            'sections': 'Section Organization',
+                                            'length': 'Length & Readability'
+                                        };
+                                        const categoryIcons = {
+                                            'format': 'bi-layout-text-window-reverse',
+                                            'keywords': 'bi-tags',
+                                            'contact': 'bi-person-vcard',
+                                            'sections': 'bi-list-ul',
+                                            'length': 'bi-text-paragraph'
+                                        };
+                                        const categoryColor = score >= 80 ? 'success' : score >= 60 ? 'warning' : 'danger';
+                                        return `
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">
+                                                        <i class="bi ${categoryIcons[category]} me-1"></i>
+                                                        ${categoryNames[category]}
+                                                    </small>
+                                                    <small class="text-${categoryColor} fw-bold">${Math.round(score)}%</small>
+                                                </div>
+                                                <div class="progress" style="height: 8px;">
+                                                    <div class="progress-bar bg-${categoryColor}" style="width: ${score}%"></div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
-                            <div>
+
+                            <!-- Quick Stats -->
+                            ${data.analysis_details ? `
+                            <div class="mb-4">
                                 <h6 class="mb-3">
-                                    <i class="bi bi-lightbulb me-2"></i>Recommendations
+                                    <i class="bi bi-graph-up me-2"></i>Resume Statistics
                                 </h6>
-                                <ul class="list-unstyled">
-                                    ${data.recommendations.map(rec => `
-                                        <li class="mb-2">
-                                            <i class="bi bi-check-circle text-success me-2"></i>
-                                            ${rec}
-                                        </li>
+                                <div class="row g-3">
+                                    <div class="col-4 text-center">
+                                        <div class="badge bg-light text-dark p-2 w-100">
+                                            <div class="h5 mb-0">${data.analysis_details.total_words}</div>
+                                            <small>Words</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <div class="badge ${data.analysis_details.ats_friendly_format ? 'bg-success' : 'bg-warning'} p-2 w-100">
+                                            <div class="h6 mb-0">
+                                                <i class="bi ${data.analysis_details.ats_friendly_format ? 'bi-check-circle' : 'bi-exclamation-triangle'}"></i>
+                                            </div>
+                                            <small>ATS Format</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <div class="badge ${data.analysis_details.strong_keywords ? 'bg-success' : 'bg-warning'} p-2 w-100">
+                                            <div class="h6 mb-0">
+                                                <i class="bi ${data.analysis_details.strong_keywords ? 'bi-check-circle' : 'bi-exclamation-triangle'}"></i>
+                                            </div>
+                                            <small>Keywords</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Top Recommendations -->
+                            <div class="mb-4">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-lightbulb me-2"></i>Priority Improvements
+                                </h6>
+                                <div class="list-group list-group-flush">
+                                    ${(data.recommendations || []).slice(0, 5).map((rec, index) => `
+                                        <div class="list-group-item px-0 py-2">
+                                            <div class="d-flex align-items-start">
+                                                <span class="badge bg-primary rounded-pill me-2">${index + 1}</span>
+                                                <span class="small">${rec}</span>
+                                            </div>
+                                        </div>
                                     `).join('')}
-                                </ul>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Tips -->
+                            ${data.improvement_tips && data.improvement_tips.length > 0 ? `
+                            <div class="mb-4">
+                                <div class="accordion" id="atsAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                    data-bs-target="#improvementTips" aria-expanded="false">
+                                                <i class="bi bi-tools me-2"></i>
+                                                Detailed Improvement Tips (${data.improvement_tips.length})
+                                            </button>
+                                        </h2>
+                                        <div id="improvementTips" class="accordion-collapse collapse" data-bs-parent="#atsAccordion">
+                                            <div class="accordion-body">
+                                                <div class="list-group list-group-flush">
+                                                    ${data.improvement_tips.map(tip => `
+                                                        <div class="list-group-item px-0 py-2">
+                                                            <i class="bi bi-arrow-right-circle text-primary me-2"></i>
+                                                            <small>${tip}</small>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    ${data.analysis_details && data.analysis_details.keyword_density && Object.keys(data.analysis_details.keyword_density).length > 0 ? `
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                                    data-bs-target="#keywordDensity" aria-expanded="false">
+                                                <i class="bi bi-tags me-2"></i>
+                                                Keyword Analysis
+                                            </button>
+                                        </h2>
+                                        <div id="keywordDensity" class="accordion-collapse collapse" data-bs-parent="#atsAccordion">
+                                            <div class="accordion-body">
+                                                <p class="small text-muted mb-3">Keywords found in your resume (percentage of total words):</p>
+                                                <div class="row g-2">
+                                                    ${Object.entries(data.analysis_details.keyword_density).map(([keyword, density]) => `
+                                                        <div class="col-6">
+                                                            <div class="d-flex justify-content-between">
+                                                                <small class="text-capitalize">${keyword}:</small>
+                                                                <small class="fw-bold ${density > 1 ? 'text-success' : density > 0.5 ? 'text-warning' : 'text-muted'}">${density}%</small>
+                                                            </div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                                <div class="alert alert-info mt-3 py-2">
+                                                    <small>
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Aim for 1-2% density for important keywords. Higher density may seem like keyword stuffing.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <!-- Action Buttons -->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary btn-sm" onclick="bootstrap.Modal.getInstance(document.getElementById('atsModal')).hide(); window.location.href='/edit-resume/${resumeId}'">
+                                    <i class="bi bi-pencil-square me-2"></i>
+                                    Edit Resume to Improve Score
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="analyzeResume(${resumeId})">
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    Re-analyze Resume
+                                </button>
                             </div>
                         `;
                     }
