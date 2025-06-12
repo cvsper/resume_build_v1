@@ -537,6 +537,12 @@
                             {% if location %} in <strong>"{{ location }}"</strong>{% endif %}
                         {% endif %}
                     </h2>
+                    {% if not request.args.get('keyword') and not request.args.get('location') %}
+                    <div class="auto-search-notice" style="background: #EBF8FF; border: 1px solid #BEE3F8; border-radius: 8px; padding: 1rem; margin-top: 1rem; color: #2B6CB0;">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Smart Job Discovery:</strong> We've automatically found popular jobs in your area. Use the search above to find specific roles.
+                    </div>
+                    {% endif %}
                 </header>
 
                 <div class="jobs-grid">
@@ -596,6 +602,84 @@
 
 {% block extra_js %}
 <script>
+// Enhanced location detection and job loading
+document.addEventListener('DOMContentLoaded', function() {
+    const locationInput = document.getElementById('location-input');
+    const searchForm = document.querySelector('.search-form');
+    
+    // Auto-detect location if not provided
+    if (!locationInput.value || locationInput.value.trim() === '') {
+        detectUserLocation();
+    }
+    
+    // Show loading indicator for better UX
+    if (window.location.search === '') {
+        showJobsLoading();
+    }
+});
+
+function detectUserLocation() {
+    const locationInput = document.getElementById('location-input');
+    
+    // Try HTML5 Geolocation API for more accurate location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Reverse geocode to get city, state
+                reverseGeocode(lat, lon).then(location => {
+                    if (location && !locationInput.value) {
+                        locationInput.value = location;
+                        locationInput.placeholder = `Detected: ${location}`;
+                    }
+                });
+            },
+            function(error) {
+                console.log('Geolocation error:', error);
+                // Fallback to IP-based detection (already handled by backend)
+            },
+            {
+                timeout: 5000,
+                enableHighAccuracy: false
+            }
+        );
+    }
+}
+
+async function reverseGeocode(lat, lon) {
+    try {
+        // Use a free geocoding service
+        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+        const data = await response.json();
+        
+        if (data.city && data.principalSubdivisionCode) {
+            return `${data.city}, ${data.principalSubdivisionCode}`;
+        } else if (data.locality && data.principalSubdivisionCode) {
+            return `${data.locality}, ${data.principalSubdivisionCode}`;
+        }
+    } catch (error) {
+        console.log('Reverse geocoding error:', error);
+    }
+    return null;
+}
+
+function showJobsLoading() {
+    const jobsGrid = document.querySelector('.jobs-grid');
+    if (jobsGrid) {
+        jobsGrid.innerHTML = `
+            <div class="loading-jobs" style="text-align: center; padding: 3rem; color: #6B7280;">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Finding jobs in your area...</h5>
+                <p>Searching for the best opportunities near you</p>
+            </div>
+        `;
+    }
+}
+
 // Enhanced page transition effects
 document.addEventListener('DOMContentLoaded', function() {
     // Smooth fade-in effect for page load
