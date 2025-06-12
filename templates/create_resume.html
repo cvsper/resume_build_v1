@@ -456,8 +456,14 @@
                 <div>
                     <label for="content" class="form-label">Experience & Background</label>
                     <textarea class="form-control tall" name="content" id="content" 
-                              placeholder="Describe your work experience, skills, education, and key accomplishments. Include specific technologies, tools, and achievements that demonstrate your qualifications." 
+                              placeholder="Describe your work experience, skills, education, and key accomplishments. Include specific technologies, tools, and achievements that demonstrate your qualifications.
+
+💡 Pro Tip: If job URL analysis failed, paste the full job description here along with your experience. Our AI will automatically optimize your resume content to match the job requirements!" 
                               required></textarea>
+                    <div class="form-text">
+                        <i class="bi bi-lightbulb"></i>
+                        <strong>For best results:</strong> Include the job description text if automatic analysis didn't work. Our AI will tailor your content to match job requirements.
+                    </div>
                 </div>
             </div>
 
@@ -539,16 +545,87 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('job_title').value = data.title;
                 }
             } else {
-                alert('Could not analyze job posting: ' + (data.error || 'Unknown error'));
+                // Show detailed error guidance
+                showJobAnalysisError(data.error, jobUrl);
             }
         } catch (error) {
             console.error('Error analyzing job:', error);
-            alert('Error analyzing job posting. Please try again.');
+            showJobAnalysisError('Network error occurred. Please check your connection and try again.', jobUrl);
         } finally {
             fetchJobBtn.disabled = false;
             fetchJobBtn.innerHTML = '<i class="bi bi-download"></i> Analyze Job';
         }
     });
+
+    // Enhanced error handling for job analysis
+    function showJobAnalysisError(errorMessage, jobUrl) {
+        const domain = new URL(jobUrl).hostname;
+        let userMessage = '';
+        let guidance = '';
+
+        if (errorMessage.includes('403') || errorMessage.includes('Forbidden') || errorMessage.includes('blocks automated access')) {
+            userMessage = `🚫 ${domain} blocks automated access`;
+            guidance = `
+                <div class="alert alert-warning mt-3">
+                    <h6><i class="bi bi-exclamation-triangle"></i> Job Site Protection Detected</h6>
+                    <p><strong>${domain}</strong> prevents automatic job analysis to protect against bots.</p>
+                    
+                    <h6>📋 Manual Alternative (Recommended):</h6>
+                    <ol>
+                        <li>Open the job posting in a new tab</li>
+                        <li>Copy the full job description text</li>
+                        <li>Paste it into the <strong>"Experience & Background"</strong> field below</li>
+                        <li>Our AI will optimize your resume based on the pasted content</li>
+                    </ol>
+                    
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openJobInNewTab('${jobUrl}')">
+                            <i class="bi bi-box-arrow-up-right"></i> Open Job Posting
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (errorMessage.includes('timeout') || errorMessage.includes('Network')) {
+            userMessage = '⏱️ Connection timeout - please try again';
+            guidance = `
+                <div class="alert alert-info mt-3">
+                    <h6><i class="bi bi-wifi"></i> Connection Issue</h6>
+                    <p>The job site took too long to respond. This could be due to:</p>
+                    <ul>
+                        <li>Slow network connection</li>
+                        <li>Job site being temporarily slow</li>
+                        <li>Job posting no longer available</li>
+                    </ul>
+                    <p><strong>Try again in a few moments, or use the manual method above.</strong></p>
+                </div>
+            `;
+        } else {
+            userMessage = '❌ Could not analyze job posting automatically';
+            guidance = `
+                <div class="alert alert-warning mt-3">
+                    <h6><i class="bi bi-info-circle"></i> Manual Analysis Available</h6>
+                    <p>While automatic analysis failed, you can still get optimal results:</p>
+                    <ol>
+                        <li>Copy the job description from the posting</li>
+                        <li>Paste it into the resume content field below</li>
+                        <li>Our AI will tailor your resume to match the job requirements</li>
+                    </ol>
+                </div>
+            `;
+        }
+
+        // Show error message
+        alert(userMessage);
+        
+        // Display guidance in job details area
+        document.getElementById('jobDetails').innerHTML = guidance;
+        document.getElementById('jobDetails').classList.add('show');
+    }
+
+    // Helper function to open job in new tab
+    window.openJobInNewTab = function(url) {
+        window.open(url, '_blank');
+    };
 
     // Form submission enhancement
     document.getElementById('createResumeForm').addEventListener('submit', function(e) {

@@ -400,7 +400,14 @@ def analyze_job_posting_api():
         analysis = analyze_job_posting(job_url)
         
         if 'error' in analysis:
-            return jsonify({'success': False, 'error': analysis['error']}), 500
+            return jsonify({
+                'success': False, 
+                'error': analysis['error'],
+                'suggestion': analysis.get('suggestion', ''),
+                'company': analysis.get('company', 'Company'),
+                'title': analysis.get('title', 'Position'),
+                'requirements': analysis.get('requirements', 'Please paste job description manually for optimal results.')
+            }), 500
         
         return jsonify({
             'success': True,
